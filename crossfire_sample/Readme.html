@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Readme</title>
+    <style>
+        html, body {
+            font-family: sans-serif;
+        }
+        code {
+            font-family: monospace;
+            font-size: 120%;
+        }
+
+        .page {
+            max-width: 800px;
+            margin: auto;
+        }
+
+        .note {
+            background-color: #e4e4e4;
+            padding: 4px;
+            box-shadow: 0 0 5px #333;
+        }
+
+        .note:before {
+            content: 'Note';
+            background-color:deepskyblue;
+            width: 100%;
+            display: block;
+            margin-left: -4px;
+            margin-top: -4px;
+            padding: 4px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <h1>Crossfire API sample</h1>
+        <p>Welcome to the Crossfire API sample which shows how to use the Crossfire API.</p>
+        <section>
+            <h2>Installation</h2>
+            <p>Make sure the Crossfire API driver is installed and that Crossfire is enabled in the CCC. You also need to use the provided <code>CFXPanel</code> to enable the <code>AfrControlSupported</code> setting before you can use the API.</p>
+            <p class="note">If Crossfire is not enabled in the CCC, or <code>AfrControlSupported</code> is not set, the extension will not load. Instead, a <code>nullptr</code> will be returned.</p>
+        </section>
+
+        <section>
+            <h2>How does the sample work?</h2>
+            <p>The sample has a texture/render-target (<code>texture_</code>) which is updated in every <em>odd</em> frame by rendering into it. On a Crossfire system running in alternate frame rendering (AFR), the rendering will happen only on one GPU and hence the application will exhibit flickering.</p>
+            <p>The Crossfire API solves this by allowing the developer to mark up the resource for copy.</p>
+            <p>The Crossfire API consists of three main entry points:</p>
+            <ul>
+                <li><code>NotifyResourceBeginAllAccess</code>: Called before the first use of a resource. Ensures a copy is finished at this point.</li>
+                <li><code>NotifyResourceEndWrites</code>: Called after the last write access to a resource. After this point, the resource can be copied.</li>
+                <li><code>NotifyResourceEndAllAccess</code>: Called after the last read access to a resource. While a resource is being accessed, it cannot be updated from another GPU.</li>
+            </ul>
+            <p>Here's an illustration of the process. The boxes indicate frames, the orange area is the time between begin/end any access and the striped region is the time between begin and end write access. The left-hand side is the normal case, where the copy is initiated immediately after the write access has ended so it's available in time on the second GPU.</p>
+            <p>The right-hand side illustrates why the <code>EndAnyAccess</code> is needed. Without it, the copy would overwrite the resource while it's still in use on GPU 0. With <code>EndAnyAccess</code>, it can be properly delayed until GPU 0 is done using it.</p>
+            <figure style="width: 100%; text-align: center;">
+                <img src="media/cfx-api.svg" style="width: 50%; margin: auto; background-color: white;">
+            </figure>
+        </section>
+        <section>
+            <h2>Limitations</h2>
+            <p>Currently, the API only supports <code>AmdAfrTransferApp1StepP2P</code> and <code>AmdAfrTransferDisable</code> transfer modes.</p>
+        </section>
+    </div>
+</body>
+</html>
