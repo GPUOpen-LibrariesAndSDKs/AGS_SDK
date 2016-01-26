@@ -1,33 +1,30 @@
-# AMD AGS Library SDK
+# AMD AGS SDK
 <img src="ags_lib/doc/amd_logo_black.png" width="512" height="123" />
 
-The AMD GPU Services (AGS) library provides software developers with the ability to query AMD GPU software and hardware state information that is not normally available through standard operating systems or graphic APIs. Version 3.1 of the library includes support for querying graphics driver version info, GPU performance, Crossfire (AMD's multi-GPU rendering technology) configuration info, as well as Eyefinity (AMD's multi-display rendering technology) configuration info. AGS also exposes some additional functionality supported in the DirectX11 AMD driver.
-
+The AMD GPU Services (AGS) library provides software developers with the ability to query AMD GPU software and hardware state information that is not normally available through standard operating systems or graphic APIs. Version 3.1 of the library includes support for querying graphics driver version info, GPU performance, Crossfire&trade; (AMD's multi-GPU rendering technology) configuration info, and Eyefinity (AMD's multi-display rendering technology) configuration info. AGS also exposes the explicit Crossfire API, as well as additional functionality supported in the AMD DirectX 11 driver.
 In addition to the library itself, the AGS SDK includes several samples to demonstrate use of the library.
 
-### What's new in AGS3.1 since 3.0
-AGS3.1 now returns a lot more information from the GPU in addition to exposing the explicit Crossfire API for DX11. The following changes are new to AGS3.1:
-* The initialization function can now return information about the GPU:
-  * Whether the GPU is GCN or not.
-  * The adapter string and device id.
-  * The driver version is now rolled into this structure instead of a separate function call.
-  * Performance metrics such as the number of compute units and clock speeds.
-* A new API to transfer resources between GPUs in Crossfire configuration in DirectX11.
-* A method to register your app and engine with the DirectX11 driver.
-* The screen rect primitive is now available in DirectX11 if supported.
+### What's new in AGS
+AGS now returns a lot more information from the GPU in addition to exposing the explicit Crossfire API and other extensions for DirectX 11. Highlights include the following:
 
-### What's new in AGS3
-AGS3 contains a number of architectural changes as well as including some exciting new features supported in the DirectX11 AMD driver. The following changes are new to AGS3:
-* The library is now only available as a dynamic link library (DLL) for simplicity.
-* The library is now thread-safe. Previously, the API would have to be called on the same thread. Now, each API call is fully re-entrant.
-* ADL 1 is no longer supported. Parts of AGS3 are built on ADL 2 which was introduced in Catalyst version 12.20. If your driver is older than this, AGS3 will fail to initialize.
-* There is now an API for querying the total number of GPUs, not only the ones that are in a Crossfire configuration, and an API to query the amount of memory local to each of those GPUs.
-* AGS3 now provides public access to some of the extensions available in the AMD DirectX11 driver. These include the Quad List primitive type, UAV overlap, depth bounds test and multi-draw indirect.
+* The initialization function can now return information about the GPU:
+  * Whether the GPU is GCN or not
+  * The adapter string and device id
+  * The driver version is now rolled into this structure instead of a separate function call
+  * Performance metrics such as the number of compute units and clock speeds
+* New explicit Crossfire API
+  * Provides the ability to control resource transfers between GPUs in Crossfire configuration in DirectX 11
+  * Allows improved performance in multi-GPU configurations
+* AGS provides access to some of the extensions available in the DirectX 11 driver:
+  * Quad List primitive type
+  * UAV overlap
+  * Depth bounds test
+  * Multi-draw indirect
 
 ### Prerequisites
 * AMD Radeon&trade; GCN-based GPU (HD 7000 series or newer)
-* 64-bit Windows 7 (SP1 with the [Platform Update](https://msdn.microsoft.com/en-us/library/windows/desktop/jj863687.aspx)), Windows 8.1, or Windows 10
-* Visual Studio 2012, Visual Studio 2013, or Visual Studio 2015
+* 64-bit Windows&reg; 7 (SP1 with the [Platform Update](https://msdn.microsoft.com/en-us/library/windows/desktop/jj863687.aspx)), Windows&reg; 8.1, or Windows&reg; 10
+* Visual Studio&reg; 2012, Visual Studio&reg; 2013, or Visual Studio&reg; 2015
 
 ### Getting Started
 * It is recommended to take a look at the sample source code.
@@ -50,3 +47,7 @@ The default SDK for a particular version of Visual Studio (for 2012 or higher) i
 ### Third-Party Software
 * DXUT is distributed under the terms of the MIT License. See `eyefinity_sample\dxut\MIT.txt`.
 * Premake is distributed under the terms of the BSD License. See `premake\LICENSE.txt`.
+
+### Attribution
+* AMD, the AMD Arrow logo, Radeon, Crossfire, and combinations thereof are either registered trademarks or trademarks of Advanced Micro Devices, Inc. in the United States and/or other countries.
+* Microsoft, DirectX, Visual Studio, and Windows are either registered trademarks or trademarks of Microsoft Corporation in the United States and/or other countries.
