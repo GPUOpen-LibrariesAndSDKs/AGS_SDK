@@ -1,7 +1,8 @@
 # AMD AGS SDK
 <img src="ags_lib/doc/amd_logo_black.png" width="512" height="123" />
 
-The AMD GPU Services (AGS) library provides software developers with the ability to query AMD GPU software and hardware state information that is not normally available through standard operating systems or graphic APIs. Version 3.1 of the library includes support for querying graphics driver version info, GPU performance, Crossfire&trade; (AMD's multi-GPU rendering technology) configuration info, and Eyefinity (AMD's multi-display rendering technology) configuration info. AGS also exposes the explicit Crossfire API, as well as additional functionality supported in the AMD DirectX 11 driver.
+The AMD GPU Services (AGS) library provides software developers with the ability to query AMD GPU software and hardware state information that is not normally available through standard operating systems or graphic APIs. Version 3.1 of the library includes support for querying graphics driver version info, GPU performance, Crossfire&trade; (AMD's multi-GPU rendering technology) configuration info, and Eyefinity (AMD's multi-display rendering technology) configuration info. AGS also exposes the explicit Crossfire API, as well as additional functionality supported in the AMD driver for DirectX 11.
+
 In addition to the library itself, the AGS SDK includes several samples to demonstrate use of the library.
 
 ### What's new in AGS
@@ -15,7 +16,7 @@ AGS now returns a lot more information from the GPU in addition to exposing the 
 * New explicit Crossfire API
   * Provides the ability to control resource transfers between GPUs in Crossfire configuration in DirectX 11
   * Allows improved performance in multi-GPU configurations
-* AGS provides access to some of the extensions available in the DirectX 11 driver:
+* AGS provides access to some of the extensions available in the AMD driver for DirectX 11:
   * Quad List primitive type
   * UAV overlap
   * Depth bounds test
@@ -23,6 +24,7 @@ AGS now returns a lot more information from the GPU in addition to exposing the 
 
 ### Prerequisites
 * AMD Radeon&trade; GCN-based GPU (HD 7000 series or newer)
+  * Or other DirectX&reg; 11 compatible GPU with Shader Model 5 support<sup>[1](#ags-sdk-footnote1)</sup> 
 * 64-bit Windows&reg; 7 (SP1 with the [Platform Update](https://msdn.microsoft.com/en-us/library/windows/desktop/jj863687.aspx)), Windows&reg; 8.1, or Windows&reg; 10
 * Visual Studio&reg; 2012, Visual Studio&reg; 2013, or Visual Studio&reg; 2015
 
@@ -53,3 +55,6 @@ For Visual Studio 2015, this version of Premake adds the `WindowsTargetPlatformV
 ### Attribution
 * AMD, the AMD Arrow logo, Radeon, Crossfire, and combinations thereof are either registered trademarks or trademarks of Advanced Micro Devices, Inc. in the United States and/or other countries.
 * Microsoft, DirectX, Visual Studio, and Windows are either registered trademarks or trademarks of Microsoft Corporation in the United States and/or other countries.
+
+### Notes
+<a name="ags-sdk-footnote1">1</a>: While the AGS SDK samples will run on non-AMD hardware, they will be of limited usefulness, since the purpose of AGS is to provide convenient access to AMD-specific information and extensions.

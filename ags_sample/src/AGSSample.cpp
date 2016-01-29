@@ -32,6 +32,7 @@
 #include <crtdbg.h>
 #include <amd_ags.h>
 
+
 #pragma warning( disable : 4100 ) // disable unreference formal parameter warnings for /W4 builds
 
 void GetEyefinityInfo( AGSContext* context, int primaryDisplayIndex )
@@ -122,12 +123,11 @@ int main(int argc, char* argv[])
 
     if ( agsInit( &agsContext, &info ) == AGS_SUCCESS )
     {
-        printf( "AGS Library initialized\n\n" );
+        printf( "AGS Library initialized: v%d.%d.%d\n\n", AMD_AGS_LIB_VERSION_MAJOR, AMD_AGS_LIB_VERSION_MINOR, AMD_AGS_LIB_VERSION_PATCH );
         printf( "-----------------------------------------------------------------\n" );
 
         printf( "%s, device id: 0x%04X, revision id: 0x%02X\n", info.adapterString ? info.adapterString : "unknown GPU", info.deviceId, info.revisionId );
         printf( "Driver version:            %s\n", info.driverVersion );
-        printf( "Radeon Software:           %s\n", info.radeonSoftwareVersion );
         printf( "-----------------------------------------------------------------\n" );
 
         printf( "Is %sGCN, %d CUs, core clock %d MHz, memory clock %d MHz, %.1f Tflops\n", info.version == AGSGPUInfo::ArchitectureVersion_GCN ? "" : "not ", info.iNumCUs, info.iCoreClock, info.iMemoryClock, info.fTFlops );
