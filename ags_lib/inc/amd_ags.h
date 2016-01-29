@@ -19,8 +19,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
-#ifndef __AMD_AGS_H
-#define __AMD_AGS_H
+#ifndef AMD_AGS_LIB_AMD_AGS_H_
+#define AMD_AGS_LIB_AMD_AGS_H_
+
+#define AMD_AGS_LIB_VERSION_MAJOR 3
+#define AMD_AGS_LIB_VERSION_MINOR 1
+#define AMD_AGS_LIB_VERSION_PATCH 1
 
 #ifdef __cplusplus
 extern "C" {
@@ -172,7 +176,6 @@ struct AGSGPUInfo
     int                     revisionId;                     // The revision id
 
     const char*             driverVersion;                  // The driver package version
-    const char*             radeonSoftwareVersion;          // The Radeon Software version
 
     int                     iNumCUs;                        // Number of GCN compute units. Zero if not GCN
     int                     iCoreClock;                     // core clock speed at 100% power in MHz
@@ -424,4 +427,4 @@ AMD_AGS_API AGSReturnCode agsDriverExtensions_NotifyResourceEndAllAccess( AGSCon
 }; // extern C
 #endif
 
-#endif // __AMD_AGS_H
+#endif // AMD_AGS_LIB_AMD_AGS_H_
