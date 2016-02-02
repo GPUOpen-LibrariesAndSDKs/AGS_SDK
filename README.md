@@ -5,6 +5,13 @@ The AMD GPU Services (AGS) library provides software developers with the ability
 
 In addition to the library itself, the AGS SDK includes several samples to demonstrate use of the library.
 
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="114" height="29">
+  <a xlink:href="https://github.com/GPUOpen-LibrariesAndSDKs/AGS_SDK/releases/latest/">
+    <rect rx="3" ry="3" width="114" height="29" style="fill:#6cc644"></rect>
+    <text x="57" y="14" fill="white" font-weight="bold" text-anchor="middle" alignment-baseline="central">Latest release</text>
+  </a>
+</svg>
+
 ### What's new in AGS
 AGS now returns a lot more information from the GPU in addition to exposing the explicit Crossfire API and other extensions for DirectX 11. Highlights include the following:
 
