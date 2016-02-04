@@ -1,16 +1,13 @@
 # AMD AGS SDK
-<img src="ags_lib/doc/amd_logo_black.png" width="512" height="123" />
+![AMD AGS SDK](http://gpuopen-librariesandsdks.github.io/media/amd_logo_black.png)
 
 The AMD GPU Services (AGS) library provides software developers with the ability to query AMD GPU software and hardware state information that is not normally available through standard operating systems or graphic APIs. Version 3.1 of the library includes support for querying graphics driver version info, GPU performance, Crossfire&trade; (AMD's multi-GPU rendering technology) configuration info, and Eyefinity (AMD's multi-display rendering technology) configuration info. AGS also exposes the explicit Crossfire API, as well as additional functionality supported in the AMD driver for DirectX 11.
 
 In addition to the library itself, the AGS SDK includes several samples to demonstrate use of the library.
 
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="114" height="29">
-  <a xlink:href="https://github.com/GPUOpen-LibrariesAndSDKs/AGS_SDK/releases/latest/">
-    <rect rx="3" ry="3" width="114" height="29" style="fill:#6cc644"></rect>
-    <text x="57" y="14" fill="white" font-weight="bold" text-anchor="middle" alignment-baseline="central">Latest release</text>
-  </a>
-</svg>
+<div>
+  <a href="https://github.com/GPUOpen-LibrariesAndSDKs/AGS_SDK/releases/latest/"><img src="http://gpuopen-librariesandsdks.github.io/media/latest-release-button.svg" alt="Latest release" title="Latest release"></a>
+</div>
 
 ### What's new in AGS
 AGS now returns a lot more information from the GPU in addition to exposing the explicit Crossfire API and other extensions for DirectX 11. Highlights include the following:
