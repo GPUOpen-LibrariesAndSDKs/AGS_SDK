@@ -19,8 +19,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
-#ifndef AMD_AGS_SDK_CFX_API_SAMPLE_MAIN_H_
-#define AMD_AGS_SDK_CFX_API_SAMPLE_MAIN_H_
+#ifndef AMD_AGS_CFX_API_SAMPLE_MAIN_H
+#define AMD_AGS_CFX_API_SAMPLE_MAIN_H
 
 #include <d3d11.h>
 #include <wrl.h>
@@ -74,6 +74,7 @@ private:
 	void Present ();
 	void CreateDeviceAndSwapChain ();
 	void CreateMeshBuffers ();
+	void InitializeAMDAGS ();
 	void InitializeAMDCFXAPI ();
 
 	std::unique_ptr<Window> window_;

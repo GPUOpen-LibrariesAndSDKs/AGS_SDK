@@ -200,7 +200,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 #endif
 
 	// Initialise AGS lib
-    agsInit( &g_AGSContext, nullptr );
+    agsInit( &g_AGSContext, nullptr, nullptr );
 
     // DXUT will create and use the best device 
     // that is available on the system depending on which D3D callbacks are set below

@@ -202,16 +202,21 @@ void CFXAPISample::Present ()
 	swapChain_->Present (1, 0);
 }
 
+void CFXAPISample::InitializeAMDAGS()
+{
+	// the desired Crossfire mode needs to be passed to agsInit
+	// prior to device creation
+	AGSConfiguration config;
+	config.crossfireMode = AGS_CROSSFIRE_MODE_EXPLICIT_AFR;
+	agsInit (&agsContext_, &config, nullptr );
+}
+
 void CFXAPISample::InitializeAMDCFXAPI ()
 {
-	agsInit (&agsContext_, nullptr);
-
 	unsigned int supportedExtensions = 0;
 	agsDriverExtensions_Init (agsContext_, device_.Get (), &supportedExtensions);
 
 	if ((supportedExtensions & AGS_EXTENSION_CROSSFIRE_API) == AGS_EXTENSION_CROSSFIRE_API) {
-		agsDriverExtensions_SetCrossfireMode (agsContext_, AGS_CROSSFIRE_MODE_EXPLICIT_AFR);
-
 		cfxEnabled_ = true;
 	} else {
 		cfxEnabled_ = false;
@@ -222,6 +227,9 @@ void CFXAPISample::InitializeAMDCFXAPI ()
 void CFXAPISample::Initialize ()
 {
 	window_.reset (new Window ("AMD CFX API test", 1920, 1080));
+
+	// Call this before device creation
+	InitializeAMDAGS ();
 
 	CreateDeviceAndSwapChain ();
 
@@ -286,12 +294,13 @@ void CFXAPISample::Initialize ()
 void CFXAPISample::Shutdown ()
 {
 	agsDriverExtensions_DeInit (agsContext_);
-	agsDeInit (agsContext_);
 
 	// Clear things out to avoid false-positive D3D debug runtime ref-count warnings.
 	swapChain_->SetFullscreenState (FALSE, 0);
 	deviceContext_->ClearState ();
 	deviceContext_->Flush ();
+
+	agsDeInit (agsContext_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -20,27 +20,35 @@
 #define STRICT
 #endif
 
-// If app hasn't choosen, set to work with Windows Vista and beyond
+// If app hasn't choosen, set to work with Windows 7 and beyond
 #ifndef WINVER
-#define WINVER         0x0600
+#define WINVER         0x0601
 #endif
 #ifndef _WIN32_WINDOWS
-#define _WIN32_WINDOWS 0x0600
+#define _WIN32_WINDOWS 0x0601
 #endif
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT   0x0600
+#define _WIN32_WINNT   0x0601
 #endif
 
 #if (_WIN32_WINNT >= 0x0A00) && !defined(USE_DIRECT3D11_3)
-#define DIRECT3D11_3
+#define USE_DIRECT3D11_3
 #endif
 
 #if (_WIN32_WINNT >= 0x0603) && !defined(USE_DIRECT3D11_2)
-#define DIRECT3D11_2
+#define USE_DIRECT3D11_2
 #endif
 
 #if defined(USE_DIRECT3D11_3) && !defined(USE_DIRECT3D11_2)
 #define USE_DIRECT3D11_2
+#endif
+
+#if (_WIN32_WINNT >= 0x0602) && !defined(USE_DIRECT3D11_1)
+#define USE_DIRECT3D11_1
+#endif
+
+#if defined(USE_DIRECT3D11_2) && !defined(USE_DIRECT3D11_1)
+#define USE_DIRECT3D11_1
 #endif
 
 // #define DXUT_AUTOLIB to automatically include the libs needed for DXUT 
@@ -78,8 +86,12 @@
 // Direct3D11 includes
 #include <d3dcommon.h>
 #include <dxgi.h>
-#include <d3d11_1.h>
+#include <d3d11.h>
 #include <d3dcompiler.h>
+
+#ifdef USE_DIRECT3D11_1
+#include <d3d11_1.h>
+#endif
 
 #ifdef USE_DIRECT3D11_2
 #include <d3d11_2.h>
@@ -142,7 +154,7 @@
     ((DWORD)((((a)&0xff)<<24)|(((r)&0xff)<<16)|(((g)&0xff)<<8)|((b)&0xff)))
 #endif
 
-#define DXUT_VERSION 1110
+#define DXUT_VERSION 1111
 
 //--------------------------------------------------------------------------------------
 // Structs
@@ -291,8 +303,10 @@ ID3D11DepthStencilView*  WINAPI DXUTGetD3D11DepthStencilView();
 ID3D11Device*            WINAPI DXUTGetD3D11Device();
 ID3D11DeviceContext*     WINAPI DXUTGetD3D11DeviceContext();
 
+#ifdef USE_DIRECT3D11_1
 ID3D11Device1*           WINAPI DXUTGetD3D11Device1();
 ID3D11DeviceContext1*	 WINAPI DXUTGetD3D11DeviceContext1();
+#endif
 
 #ifdef USE_DIRECT3D11_2
 ID3D11Device2*           WINAPI DXUTGetD3D11Device2();

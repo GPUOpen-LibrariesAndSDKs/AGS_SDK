@@ -119,18 +119,17 @@ int main(int argc, char* argv[])
         displayIndex++;
     }
 
-    AGSGPUInfo info;
-
-    if ( agsInit( &agsContext, &info ) == AGS_SUCCESS )
+    AGSGPUInfo gpuInfo;
+    if ( agsInit( &agsContext, nullptr, &gpuInfo ) == AGS_SUCCESS )
     {
-        printf( "AGS Library initialized: v%d.%d.%d\n\n", AMD_AGS_LIB_VERSION_MAJOR, AMD_AGS_LIB_VERSION_MINOR, AMD_AGS_LIB_VERSION_PATCH );
+        printf( "AGS Library initialized: v%d.%d.%d\n\n", gpuInfo.agsVersionMajor, gpuInfo.agsVersionMinor, gpuInfo.agsVersionPatch );
         printf( "-----------------------------------------------------------------\n" );
 
-        printf( "%s, device id: 0x%04X, revision id: 0x%02X\n", info.adapterString ? info.adapterString : "unknown GPU", info.deviceId, info.revisionId );
-        printf( "Driver version:            %s\n", info.driverVersion );
+        printf( "%s, device id: 0x%04X, revision id: 0x%02X\n", gpuInfo.adapterString ? gpuInfo.adapterString : "unknown GPU", gpuInfo.deviceId, gpuInfo.revisionId );
+        printf( "Driver version:            %s\n", gpuInfo.driverVersion );
         printf( "-----------------------------------------------------------------\n" );
 
-        printf( "Is %sGCN, %d CUs, core clock %d MHz, memory clock %d MHz, %.1f Tflops\n", info.version == AGSGPUInfo::ArchitectureVersion_GCN ? "" : "not ", info.iNumCUs, info.iCoreClock, info.iMemoryClock, info.fTFlops );
+        printf( "Is %sGCN, %d CUs, core clock %d MHz, memory clock %d MHz, %.1f Tflops\n", gpuInfo.architectureVersion == AGSGPUInfo::ArchitectureVersion_GCN ? "" : "not ", gpuInfo.iNumCUs, gpuInfo.iCoreClock, gpuInfo.iMemoryClock, gpuInfo.fTFlops );
 
         int totalGPUs = 0;
         if ( agsGetTotalGPUCount( agsContext, &totalGPUs ) == AGS_SUCCESS )
