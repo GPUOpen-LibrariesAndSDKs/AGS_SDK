@@ -19,12 +19,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
-#ifndef AMD_AGS_LIB_AMD_AGS_H_
-#define AMD_AGS_LIB_AMD_AGS_H_
+#ifndef AMD_AGS_H
+#define AMD_AGS_H
 
-#define AMD_AGS_LIB_VERSION_MAJOR 3
-#define AMD_AGS_LIB_VERSION_MINOR 1
-#define AMD_AGS_LIB_VERSION_PATCH 1
+#define AMD_AGS_VERSION_MAJOR 3
+#define AMD_AGS_VERSION_MINOR 2
+#define AMD_AGS_VERSION_PATCH 0
 
 #ifdef __cplusplus
 extern "C" {
@@ -79,8 +79,9 @@ enum AGSPrimitiveTopology
 
 enum AGSCrossfireMode
 {
-    AGS_CROSSFIRE_MODE_DRIVER_AFR,      // Use the default driver-based AFR rendering
-    AGS_CROSSFIRE_MODE_EXPLICIT_AFR     // Use the AGS Crossfire API functions to perform explicit AFR rendering
+    AGS_CROSSFIRE_MODE_DRIVER_AFR = 0,  // Use the default driver-based AFR rendering
+    AGS_CROSSFIRE_MODE_EXPLICIT_AFR,    // Use the AGS Crossfire API functions to perform explicit AFR rendering
+    AGS_CROSSFIRE_MODE_DISABLE          // Completely disable AFR rendering
 };
 
 enum AGSAfrTransferType
@@ -161,6 +162,11 @@ struct AGSDisplayInfo
                                     // defined by this rect.
 };
 
+struct AGSConfiguration
+{
+    AGSCrossfireMode        crossfireMode;                  // Desired Crossfire mode. See AGSCrossfireMode for more details
+};
+
 struct AGSGPUInfo
 {
     enum ArchitectureVersion
@@ -170,7 +176,11 @@ struct AGSGPUInfo
         ArchitectureVersion_GCN
     };
 
-    ArchitectureVersion     version;                        // Set to Unknown if not AMD hardware
+    int                     agsVersionMajor;                // Major field of Major.Minor.Patch AGS version number
+    int                     agsVersionMinor;                // Minor field of Major.Minor.Patch AGS version number
+    int                     agsVersionPatch;                // Patch field of Major.Minor.Patch AGS version number
+
+    ArchitectureVersion     architectureVersion;            // Set to Unknown if not AMD hardware
     const char*             adapterString;                  // The adapter name string. NULL if not AMD hardware
     int                     deviceId;                       // The device id
     int                     revisionId;                     // The revision id
@@ -183,16 +193,17 @@ struct AGSGPUInfo
     float                   fTFlops;                        // Teraflops of GPU. Zero if not GCN. Calculated from iCoreClock * iNumCUs * 64 Pixels/clk * 2 instructions/MAD
 };
 
-
 // Description
 //   Function used to initialize the AGS library.
 //   Must be called prior to any of the subsequent AGS API calls.
+//   Must be called prior to ID3D11Device creation.
 //
 // Input params
 //   context - Address of a pointer to a context. This function allocates a context on the heap which is then required for all subsequent API calls.
-//   info    - Optional pointer to a AGSGPUInfo struct which will get filled in for the primary adapter.
+//   config  - Optional pointer to a AGSConfiguration struct to override the default library configuration.
+//   gpuInfo - Optional pointer to a AGSGPUInfo struct which will get filled in for the primary adapter.
 //
-AMD_AGS_API AGSReturnCode agsInit( AGSContext** context, AGSGPUInfo* info );
+AMD_AGS_API AGSReturnCode agsInit( AGSContext** context, const AGSConfiguration* config, AGSGPUInfo* gpuInfo );
 
 // Description
 //   Function used to clean up the AGS library.
@@ -362,15 +373,6 @@ AMD_AGS_API AGSReturnCode agsDriverExtensions_MultiDrawIndexedInstancedIndirect(
 AMD_AGS_API AGSReturnCode agsDriverExtensions_RegisterApp( AGSContext* context, const char* engineName, unsigned int engineVersion, const char* appName, unsigned int appVersion );
 
 // Description
-//   Function to inform the driver how the app wants to behave in Crossfire mode. See AGSCrossfireMode for more details.
-//
-// Input params
-//   context -             Pointer to a context.
-//   mode -                The AFR mode to use.
-//
-AMD_AGS_API AGSReturnCode agsDriverExtensions_SetCrossfireMode( AGSContext* context, AGSCrossfireMode mode );
-
-// Description
 //   Functions to create a Direct3D11 resource with the specified AFR transfer type
 //
 // Input params
@@ -427,4 +429,4 @@ AMD_AGS_API AGSReturnCode agsDriverExtensions_NotifyResourceEndAllAccess( AGSCon
 }; // extern C
 #endif
 
-#endif // AMD_AGS_LIB_AMD_AGS_H_
+#endif // AMD_AGS_H
