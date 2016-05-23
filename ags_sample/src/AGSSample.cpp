@@ -126,7 +126,8 @@ int main(int argc, char* argv[])
         printf( "-----------------------------------------------------------------\n" );
 
         printf( "%s, device id: 0x%04X, revision id: 0x%02X\n", gpuInfo.adapterString ? gpuInfo.adapterString : "unknown GPU", gpuInfo.deviceId, gpuInfo.revisionId );
-        printf( "Driver version:            %s\n", gpuInfo.driverVersion );
+        printf( "Radeon Software Version:   %s\n", gpuInfo.radeonSoftwareVersion );
+        printf( "Driver Version:            %s\n", gpuInfo.driverVersion );
         printf( "-----------------------------------------------------------------\n" );
 
         printf( "Is %sGCN, %d CUs, core clock %d MHz, memory clock %d MHz, %.1f Tflops\n", gpuInfo.architectureVersion == AGSGPUInfo::ArchitectureVersion_GCN ? "" : "not ", gpuInfo.iNumCUs, gpuInfo.iCoreClock, gpuInfo.iMemoryClock, gpuInfo.fTFlops );
