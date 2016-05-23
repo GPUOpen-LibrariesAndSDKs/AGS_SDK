@@ -24,7 +24,7 @@
 
 #define AMD_AGS_VERSION_MAJOR 3
 #define AMD_AGS_VERSION_MINOR 2
-#define AMD_AGS_VERSION_PATCH 0
+#define AMD_AGS_VERSION_PATCH 1
 
 #ifdef __cplusplus
 extern "C" {
@@ -142,7 +142,7 @@ struct AGSDisplayInfo
                                     // area associated with this display. If bezel compensation is enabled, this
                                     // area will be larger than what the display can natively present to account
                                     // for bezel area. If bezel compensation is disabled, this area will be equal
-                                    // to what the display can support natively. 
+                                    // to what the display can support natively.
 
     AGSRect displayRectVisible;     // Contains the base offset and dimensions in pixels of the SLS rendering area
                                     // associated with this display that is visible to the end user. If bezel
@@ -186,6 +186,7 @@ struct AGSGPUInfo
     int                     revisionId;                     // The revision id
 
     const char*             driverVersion;                  // The driver package version
+    const char*             radeonSoftwareVersion;          // The Radeon Software Version
 
     int                     iNumCUs;                        // Number of GCN compute units. Zero if not GCN
     int                     iCoreClock;                     // core clock speed at 100% power in MHz
@@ -223,7 +224,7 @@ AMD_AGS_API AGSReturnCode agsDeInit( AGSContext* context );
 //   context - Pointer to a context.
 //
 // Output params
-// 	 numGPUs - Number of GPUs used for Crossfire acceleration
+//   numGPUs - Number of GPUs used for Crossfire acceleration
 //
 AMD_AGS_API AGSReturnCode agsGetCrossfireGPUCount( AGSContext* context, int* numGPUs );
 
@@ -424,9 +425,8 @@ AMD_AGS_API AGSReturnCode agsDriverExtensions_NotifyResourceBeginAllAccess( AGSC
 AMD_AGS_API AGSReturnCode agsDriverExtensions_NotifyResourceEndAllAccess( AGSContext* context, ID3D11Resource* resource );
 
 
-
 #ifdef __cplusplus
-}; // extern C
+} // extern "C"
 #endif
 
 #endif // AMD_AGS_H
