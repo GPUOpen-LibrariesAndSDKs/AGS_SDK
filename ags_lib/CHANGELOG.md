@@ -1,5 +1,11 @@
 # AMD AGS Library Changelog
 
+### v3.2.2 - 2016-05-23
+* Add back `radeonSoftwareVersion` now that updated driver is public
+  * Radeon Software Crimson Edition 16.5.2 or later  
+* Fix GPU info when primary adapter is > 0
+* Update the implementation of agsDriverExtensions_NotifyResourceEndWrites
+
 ### v3.2.0 - 2016-02-12
 * Add ability to disable Crossfire
   * This is in addition to the existing ability to enable the explicit Crossfire API
