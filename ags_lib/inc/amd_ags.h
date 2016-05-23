@@ -24,7 +24,7 @@
 
 #define AMD_AGS_VERSION_MAJOR 3
 #define AMD_AGS_VERSION_MINOR 2
-#define AMD_AGS_VERSION_PATCH 1
+#define AMD_AGS_VERSION_PATCH 2
 
 #ifdef __cplusplus
 extern "C" {
