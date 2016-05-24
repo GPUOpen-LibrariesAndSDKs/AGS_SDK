@@ -1,7 +1,7 @@
 # AMD AGS SDK
 ![AMD AGS SDK](http://gpuopen-librariesandsdks.github.io/media/amd_logo_black.png)
 
-The AMD GPU Services (AGS) library provides software developers with the ability to query AMD GPU software and hardware state information that is not normally available through standard operating systems or graphic APIs. Version 3.2 of the library includes support for querying graphics driver version info, GPU performance, Crossfire&trade; (AMD's multi-GPU rendering technology) configuration info, and Eyefinity (AMD's multi-display rendering technology) configuration info. AGS also exposes the explicit Crossfire API, as well as additional functionality supported in the AMD driver for DirectX 11.
+The AMD GPU Services (AGS) library provides software developers with the ability to query AMD GPU software and hardware state information that is not normally available through standard operating systems or graphic APIs. Version 4.0 of the library includes support for querying graphics driver version info, GPU performance, Crossfire&trade; (AMD's multi-GPU rendering technology) configuration info, and Eyefinity (AMD's multi-display rendering technology) configuration info. AGS also exposes the explicit Crossfire API extension, GCN shader extensions, and additional extensions supported in the AMD drivers for DirectX 11 and DirectX 12.
 
 In addition to the library itself, the AGS SDK includes several samples to demonstrate use of the library.
 
@@ -10,7 +10,7 @@ In addition to the library itself, the AGS SDK includes several samples to demon
 </div>
 
 ### What's new in AGS
-AGS now returns a lot more information from the GPU in addition to exposing the explicit Crossfire API and other extensions for DirectX 11. Highlights include the following:
+AGS now returns a lot more information from the GPU in addition to exposing the explicit Crossfire API and other extensions for DirectX 11. Version 4.0 also exposes GCN shader extensions for both DirectX 11 and DirectX 12. Highlights include the following:
 
 * The initialization function can now return information about the GPU:
   * Whether the GPU is GCN or not
@@ -20,7 +20,10 @@ AGS now returns a lot more information from the GPU in addition to exposing the 
 * New explicit Crossfire API
   * Provides the ability to control resource transfers between GPUs in Crossfire configuration in DirectX 11
   * Allows improved performance in multi-GPU configurations
-* AGS provides access to some of the extensions available in the AMD driver for DirectX 11:
+* New GCN shader extension support
+  * DirectX 11 and DirectX 12
+  * Requires Radeon Software Crimson Edition 16.5.2 or later
+* AGS provides access to additional extensions available in the AMD driver for DirectX 11:
   * Quad List primitive type
   * UAV overlap
   * Depth bounds test
