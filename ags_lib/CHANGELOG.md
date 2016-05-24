@@ -1,8 +1,15 @@
 # AMD AGS Library Changelog
 
+### v4.0.0 - 2016-05-24
+* Add support for GCN shader extensions
+  * Shader extensions are exposed for both DirectX 11 and DirectX 12
+  * Requires Radeon Software Crimson Edition 16.5.2 or later
+* Remove `RegisterApp` from the extension API
+  * This extension is not currently supported in the driver
+
 ### v3.2.2 - 2016-05-23
 * Add back `radeonSoftwareVersion` now that updated driver is public
-  * Radeon Software Crimson Edition 16.5.2 or later  
+  * Radeon Software Crimson Edition 16.5.2 or later
 * Fix GPU info when primary adapter is > 0
 * Update the implementation of agsDriverExtensions_NotifyResourceEndWrites
 
