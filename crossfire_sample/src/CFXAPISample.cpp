@@ -100,7 +100,7 @@ void CFXAPISample::Render ()
 	if (cfxEnabled_) {
 		// We're starting to use texture_, notify the API. Notice that we need
 		// to notify even if we don't actually write to it in this frame.
-		agsDriverExtensions_NotifyResourceBeginAllAccess (agsContext_, texture_.Get ());
+		agsDriverExtensionsDX11_NotifyResourceBeginAllAccess (agsContext_, texture_.Get ());
 	}
 	
 	if ((frameNumber & 1) == 1) {
@@ -135,7 +135,7 @@ void CFXAPISample::Render ()
 		if (cfxEnabled_) {
 			// We're done with writes to texture_, notify the API so it can
 			// start copying
-			agsDriverExtensions_NotifyResourceEndWrites (agsContext_, texture_.Get (),
+			agsDriverExtensionsDX11_NotifyResourceEndWrites (agsContext_, texture_.Get (),
 				nullptr, nullptr, 0);
 		}
 	}
@@ -163,7 +163,7 @@ void CFXAPISample::Render ()
 
 	if (cfxEnabled_) {
 		// We're done using texture_ for this frame, notify the API
-		agsDriverExtensions_NotifyResourceEndAllAccess (agsContext_, texture_.Get ());
+		agsDriverExtensionsDX11_NotifyResourceEndAllAccess (agsContext_, texture_.Get ());
 	}
 
 	ID3D11ShaderResourceView* psNullSRVs[] = {
@@ -214,9 +214,9 @@ void CFXAPISample::InitializeAMDAGS()
 void CFXAPISample::InitializeAMDCFXAPI ()
 {
 	unsigned int supportedExtensions = 0;
-	agsDriverExtensions_Init (agsContext_, device_.Get (), &supportedExtensions);
+	agsDriverExtensionsDX11_Init (agsContext_, device_.Get (), &supportedExtensions);
 
-	if ((supportedExtensions & AGS_EXTENSION_CROSSFIRE_API) == AGS_EXTENSION_CROSSFIRE_API) {
+	if ( supportedExtensions & AGS_DX11_EXTENSION_CROSSFIRE_API ) {
 		cfxEnabled_ = true;
 	} else {
 		cfxEnabled_ = false;
@@ -272,7 +272,7 @@ void CFXAPISample::Initialize ()
 	if (cfxEnabled_) {
 		// Our texture is also a render target and is only updated every second
 		// frame. Create it using the Crossfire API to enable transfers on it.
-		agsDriverExtensions_CreateTexture2D (agsContext_, &textureDesc, nullptr, &texture_,
+		agsDriverExtensionsDX11_CreateTexture2D (agsContext_, &textureDesc, nullptr, &texture_,
 			// If set to TransferDisable, flickering will be present
 			// as the updated version is not transfered to the second GPU.
 			// With TransferApp1StepP2P, the Crossfire API will copy the
@@ -293,7 +293,7 @@ void CFXAPISample::Initialize ()
 ///////////////////////////////////////////////////////////////////////////////
 void CFXAPISample::Shutdown ()
 {
-	agsDriverExtensions_DeInit (agsContext_);
+	agsDriverExtensionsDX11_DeInit (agsContext_);
 
 	// Clear things out to avoid false-positive D3D debug runtime ref-count warnings.
 	swapChain_->SetFullscreenState (FALSE, 0);

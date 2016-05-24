@@ -1,6 +1,9 @@
 # AMD AGS SDK Changelog
 
-See `ags_lib\CHANGELOG.md` for changes to the core AGS library. 
+See `ags_lib\CHANGELOG.md` for changes to the core AGS library.
+
+### v4.0.0 - 2016-05-24
+* Fix up crossfire_sample now that extension API calls specify DX11 or DX12
 
 ### v3.2.2 - 2016-05-23
 * Display `radeonSoftwareVersion` in ags_sample again, now that updated driver is public
