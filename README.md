@@ -41,6 +41,12 @@ AGS now returns a lot more information from the GPU in addition to exposing the 
 * Visual Studio projects for VS2012, VS2013, and VS2015 can be found in each sample's `build` directory.
 * Additional documentation, including API documentation and instructions on how to add AGS support to an existing project, can be found in the `ags_lib\doc` directory.
 
+### Additional Samples
+In addition to the three samples included in this repo, there are other samples available on GitHub that use AGS:
+* [CrossfireAPI11](https://github.com/GPUOpen-LibrariesAndSDKs/CrossfireAPI11) - a larger example of using the explicit Crossfire API
+* [DepthBoundsTest11](https://github.com/GPUOpen-LibrariesAndSDKs/DepthBoundsTest11) - a sample showing how to use the depth bounds test extension
+* [Barycentrics12](https://github.com/GPUOpen-LibrariesAndSDKs/Barycentrics12) - a sample showing how to use the GCN shader extensions for DirectX 12
+
 ### Premake
 The Visual Studio projects in each sample's `build` directory were generated with Premake. To generate the project files yourself (for another version of Visual Studio, for example), open a command prompt in the sample's `premake` directory (where the premake5.lua script for that sample is located, not the top-level directory where the premake5 executable is located) and execute the following command:
 
