@@ -2,6 +2,10 @@
 
 See `ags_lib\CHANGELOG.md` for changes to the core AGS library. 
 
+### v3.2.2 - 2016-05-23
+* Display `radeonSoftwareVersion` in ags_sample again, now that updated driver is public
+  * Radeon Software Crimson Edition 16.5.2 or later
+
 ### v3.2.0 - 2016-02-12
 * Update ags_sample to use the library version number from the optional info parameter of `agsInit`
 * Update crossfire_sample to call `agsInit` prior to device creation
