@@ -24,7 +24,7 @@
 
 #define AMD_AGS_VERSION_MAJOR 4
 #define AMD_AGS_VERSION_MINOR 0
-#define AMD_AGS_VERSION_PATCH 0
+#define AMD_AGS_VERSION_PATCH 1
 
 #ifdef __cplusplus
 extern "C" {
@@ -81,7 +81,6 @@ enum AGSDriverExtensionDX11
     AGS_DX11_EXTENSION_INTRINSIC_BARYCENTRICS   = 1 << 13
 };
 
-const unsigned int AGS_DX11_SHADER_INSTRINSICS_RESOURCE_SLOT = 127;
 const unsigned int AGS_DX11_SHADER_INSTRINSICS_SAMPLER_SLOT = 15;
 
 enum AGSDriverExtensionDX12
