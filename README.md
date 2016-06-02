@@ -44,7 +44,9 @@ AGS now returns a lot more information from the GPU in addition to exposing the 
 ### Additional Samples
 In addition to the three samples included in this repo, there are other samples available on GitHub that use AGS:
 * [CrossfireAPI11](https://github.com/GPUOpen-LibrariesAndSDKs/CrossfireAPI11) - a larger example of using the explicit Crossfire API
+  * The CrossfireAPI11 sample also comes with an extensive guide for multi-GPU: the *AMD Crossfire guide for Direct3D&reg; 11 applications*
 * [DepthBoundsTest11](https://github.com/GPUOpen-LibrariesAndSDKs/DepthBoundsTest11) - a sample showing how to use the depth bounds test extension
+* [Barycentrics11](https://github.com/GPUOpen-LibrariesAndSDKs/Barycentrics11) - a sample showing how to use the GCN shader extensions for DirectX 11
 * [Barycentrics12](https://github.com/GPUOpen-LibrariesAndSDKs/Barycentrics12) - a sample showing how to use the GCN shader extensions for DirectX 12
 
 ### Premake
