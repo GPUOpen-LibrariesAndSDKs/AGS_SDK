@@ -5,6 +5,8 @@ The AMD GPU Services (AGS) library provides software developers with the ability
 
 In addition to the library itself, the AGS SDK includes several samples to demonstrate use of the library.
 
+**Note:** Shader extension support has been temporarily removed while we wait for an updated driver that fixes certain issues.
+
 <div>
   <a href="https://github.com/GPUOpen-LibrariesAndSDKs/AGS_SDK/releases/latest/"><img src="http://gpuopen-librariesandsdks.github.io/media/latest-release-button.svg" alt="Latest release" title="Latest release"></a>
 </div>
