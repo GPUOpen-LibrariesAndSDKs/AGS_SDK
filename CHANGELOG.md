@@ -1,6 +1,9 @@
 # AMD AGS SDK Changelog
 
-See `ags_lib\CHANGELOG.md` for changes to the core AGS library.
+**Note:** See `ags_lib\CHANGELOG.md` for changes to the core AGS library.
+
+### v4.0.3 - 2016-08-18
+* Fix up crossfire_sample for latest AGS API
 
 ### v4.0.0 - 2016-05-24
 * Fix up crossfire_sample now that extension API calls specify DX11 or DX12

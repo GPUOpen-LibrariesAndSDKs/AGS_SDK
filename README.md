@@ -1,18 +1,16 @@
 # AMD AGS SDK
 ![AMD AGS SDK](http://gpuopen-librariesandsdks.github.io/media/amd_logo_black.png)
 
-The AMD GPU Services (AGS) library provides software developers with the ability to query AMD GPU software and hardware state information that is not normally available through standard operating systems or graphic APIs. Version 4.0 of the library includes support for querying graphics driver version info, GPU performance, Crossfire&trade; (AMD's multi-GPU rendering technology) configuration info, and Eyefinity (AMD's multi-display rendering technology) configuration info. AGS also exposes the explicit Crossfire API extension and additional extensions supported in the AMD drivers for DirectX 11.
+The AMD GPU Services (AGS) library provides software developers with the ability to query AMD GPU software and hardware state information that is not normally available through standard operating systems or graphic APIs. Version 4.0 of the library includes support for querying graphics driver version info, GPU performance, Crossfire&trade; (AMD's multi-GPU rendering technology) configuration info, and Eyefinity (AMD's multi-display rendering technology) configuration info. AGS also exposes the explicit Crossfire API extension, GCN shader extensions, and additional extensions supported in the AMD drivers for DirectX 11 and DirectX 12.
 
 In addition to the library itself, the AGS SDK includes several samples to demonstrate use of the library.
-
-**Note:** Shader extension support has been temporarily removed while we wait for an updated driver that fixes certain issues.
 
 <div>
   <a href="https://github.com/GPUOpen-LibrariesAndSDKs/AGS_SDK/releases/latest/"><img src="http://gpuopen-librariesandsdks.github.io/media/latest-release-button.svg" alt="Latest release" title="Latest release"></a>
 </div>
 
 ### What's new in AGS
-AGS now returns a lot more information from the GPU in addition to exposing the explicit Crossfire API and other extensions for DirectX 11. Highlights include the following:
+AGS now returns a lot more information from the GPU in addition to exposing the explicit Crossfire API and other extensions for DirectX 11. Version 4.0 also exposes GCN shader extensions for both DirectX 11 and DirectX 12. Highlights include the following:
 
 * The initialization function can now return information about the GPU:
   * Whether the GPU is GCN or not
@@ -22,6 +20,9 @@ AGS now returns a lot more information from the GPU in addition to exposing the 
 * New explicit Crossfire API
   * Provides the ability to control resource transfers between GPUs in Crossfire configuration in DirectX 11
   * Allows improved performance in multi-GPU configurations
+* New GCN shader extension support
+  * DirectX 11 and DirectX 12
+  * Requires Radeon Software Crimson Edition 16.9.1 (driver version 16.40) or later
 * AGS provides access to additional extensions available in the AMD driver for DirectX 11:
   * Quad List primitive type
   * UAV overlap
@@ -45,6 +46,8 @@ In addition to the three samples included in this repo, there are other samples 
 * [CrossfireAPI11](https://github.com/GPUOpen-LibrariesAndSDKs/CrossfireAPI11) - a larger example of using the explicit Crossfire API
   * The CrossfireAPI11 sample also comes with an extensive guide for multi-GPU: the *AMD Crossfire guide for Direct3D&reg; 11 applications*
 * [DepthBoundsTest11](https://github.com/GPUOpen-LibrariesAndSDKs/DepthBoundsTest11) - a sample showing how to use the depth bounds test extension
+* [Barycentrics11](https://github.com/GPUOpen-LibrariesAndSDKs/Barycentrics11) - a sample showing how to use the GCN shader extensions for DirectX 11
+* [Barycentrics12](https://github.com/GPUOpen-LibrariesAndSDKs/Barycentrics12) - a sample showing how to use the GCN shader extensions for DirectX 12
 
 ### Premake
 The Visual Studio projects in each sample's `build` directory were generated with Premake. To generate the project files yourself (for another version of Visual Studio, for example), open a command prompt in the sample's `premake` directory (where the premake5.lua script for that sample is located, not the top-level directory where the premake5 executable is located) and execute the following command:
