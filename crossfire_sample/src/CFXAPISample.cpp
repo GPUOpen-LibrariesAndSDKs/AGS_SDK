@@ -214,7 +214,7 @@ void CFXAPISample::InitializeAMDAGS()
 void CFXAPISample::InitializeAMDCFXAPI ()
 {
 	unsigned int supportedExtensions = 0;
-	agsDriverExtensionsDX11_Init (agsContext_, device_.Get (), &supportedExtensions);
+	agsDriverExtensionsDX11_Init (agsContext_, device_.Get (), 7, &supportedExtensions);
 
 	if ( supportedExtensions & AGS_DX11_EXTENSION_CROSSFIRE_API ) {
 		cfxEnabled_ = true;
