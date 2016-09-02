@@ -1,5 +1,11 @@
 # AMD AGS Library Changelog
 
+### v4.0.3 - 2016-08-18
+* Improve support for DirectX 11 and DirectX 12 GCN shader extensions
+* Add support for Multidraw Indirect Count Indirect for DirectX 11
+* Fix clock speed information for Polaris GPUs
+* Requires Radeon Software Crimson Edition 16.9.1 (driver version 16.40) or later
+
 ### v4.0.0 - 2016-05-24
 * Add support for GCN shader extensions
   * Shader extensions are exposed for both DirectX 11 and DirectX 12
