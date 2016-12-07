@@ -42,6 +42,7 @@ AGS exposes GCN shader extensions for both DirectX 11 and DirectX 12. It also pr
   * There are three samples: ags_sample, crossfire_sample, and eyefinity_sample.
 * Visual Studio projects for VS2012, VS2013, and VS2015 can be found in each sample's `build` directory.
 * Additional documentation, including API documentation and instructions on how to add AGS support to an existing project, can be found in the `ags_lib\doc` directory.
+  * There is also [online documentation](http://gpuopen-librariesandsdks.github.io/ags/). 
 
 ### Additional Samples
 In addition to the three samples included in this repo, there are other samples available on GitHub that use AGS:
