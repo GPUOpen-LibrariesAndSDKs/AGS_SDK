@@ -1,5 +1,16 @@
 # AMD AGS Library Changelog
 
+### v5.0.5 - 2016-12-07
+* Add function to set displays into HDR mode
+* Implement full GPU enumeration with adapter string, device id, revision id, and vendor id
+* Implement per-GPU display enumeration including information on display name, resolution, and HDR capabilities
+* Remove agsGetGPUMemorySize and agsGetEyefinityConfigInfo in favor of including this information in the device and display enumeration
+* Add optional user-supplied memory allocator
+* Add DirectX11 shader compiler controls
+* Add DirectX11 multiview extension
+* Update DirectX11 Crossfire API to support using the API without needing a driver profile
+* Update DirectX11 Crossfire API to allow specifying the transfer engine
+
 ### v4.0.3 - 2016-08-18
 * Improve support for DirectX 11 and DirectX 12 GCN shader extensions
 * Add support for Multidraw Indirect Count Indirect for DirectX 11
