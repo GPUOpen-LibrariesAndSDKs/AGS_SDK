@@ -3,8 +3,10 @@
 
 # Explicit settings for specific file types.
 *.h         eol=crlf
+*.hlsl      eol=crlf
 *.txt       eol=crlf
 *.md        eol=crlf
+*.chm       binary
 *.pdf       binary
 *.png       binary
 *.dll       binary
