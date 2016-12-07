@@ -73,16 +73,12 @@ ID3D11PixelShader*					g_pScenePS = NULL;
 
 bool								g_bMultiCameraMode = false;
 AGSContext*                         g_AGSContext = nullptr;
-AGSEyefinityInfo				    g_eyefinityInfo = {0};
-int									g_iNumDisplaysInfo;
-AGSDisplayInfo*				        g_pDisplaysInfo = NULL;
-RECT								g_MainDisplayRect;	
+AGSGPUInfo                          g_AGSGPUInfo = {};
+bool                                g_EyefinityEnabled = false; // If Eyefinity group has been set and we are in fullscreen
+RECT								g_MainDisplayRect;
 DirectX::XMMATRIX					g_SingleCameraProjM;
 DirectX::XMMATRIX                   g_MultiCameraProjM;
 float								g_FovX = 0.0f;
-
-#define USE_DEFAULT_DISPLAY_ID 0xFFFFFFFF
-
 
 //--------------------------------------------------------------------------------------
 // Retrieve the main display info and place the dialog on main display 
@@ -200,7 +196,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 #endif
 
 	// Initialise AGS lib
-    agsInit( &g_AGSContext, nullptr, nullptr );
+    agsInit( &g_AGSContext, nullptr, &g_AGSGPUInfo );
 
     // DXUT will create and use the best device 
     // that is available on the system depending on which D3D callbacks are set below
@@ -224,57 +220,27 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
     DXUTSetCursorSettings( true, true ); // Show the cursor and clip it when in full screen
     DXUTCreateWindow( L"Eyefinity Sample" );
 
-	int iOSDisplayIndex = USE_DEFAULT_DISPLAY_ID;
-	
-	// Get the default active display
-	int iDevNum = 0;
-	DISPLAY_DEVICE displayDevice;	
-
-	displayDevice.cb = sizeof(displayDevice);
-
-	while ( EnumDisplayDevices(0, iDevNum, &displayDevice, 0) )
-	{
-		if (0 != (displayDevice.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) )
-		{
-			iOSDisplayIndex = iDevNum;
-			break;
-		}
-		iDevNum++;
-	}
-
-	// Find out if this display has an Eyefinity config enabled.
+    // Find out if this display has an Eyefinity config enabled.
     int width = 768;
     int height = 480;
     bool windowed = true;
-    if ( agsGetEyefinityConfigInfo( g_AGSContext, iOSDisplayIndex, nullptr, &g_iNumDisplaysInfo, nullptr ) == AGS_SUCCESS && g_iNumDisplaysInfo > 0 )
+
+    const AGSDeviceInfo& device = g_AGSGPUInfo.devices[ 0 ];
+
+    if ( device.eyefinityEnabled )
     {
-        g_pDisplaysInfo = new AGSDisplayInfo[ g_iNumDisplaysInfo ];
-        ZeroMemory( g_pDisplaysInfo, g_iNumDisplaysInfo * sizeof( *g_pDisplaysInfo ) );
-	    if ( agsGetEyefinityConfigInfo( g_AGSContext, iOSDisplayIndex, &g_eyefinityInfo, &g_iNumDisplaysInfo, g_pDisplaysInfo ) == AGS_SUCCESS )
-	    {		
-		    if ( g_eyefinityInfo.iSLSActive )
-		    {			
-			    // Use full screen mode if Eyefinity is enabled.
-				width = g_eyefinityInfo.iSLSWidth;
-                height = g_eyefinityInfo.iSLSHeight;
-                windowed = false;
-		    }
-	    }
+        // Use full screen mode if Eyefinity is enabled.
+        width = device.eyefinityResolutionX;
+        height = device.eyefinityResolutionY;
+        windowed = false;
     }
 
     DXUTCreateDevice(D3D_FEATURE_LEVEL_11_0, windowed, width, height );
 
     DXUTMainLoop(); // Enter into the DXUT render loop	
-	// Release the config info which is allocated from last call of Eyefinity API.
 
-    if ( g_pDisplaysInfo )
-    {
-        delete[] g_pDisplaysInfo;
-        g_pDisplaysInfo = nullptr;
-    }
-
-	// Clean up AGS lib
-	agsDeInit( g_AGSContext );
+    // Clean up AGS lib
+    agsDeInit( g_AGSContext );
 
     return DXUTGetExitCode();
 }
@@ -294,7 +260,7 @@ void InitApp()
     g_HUD.AddButton( IDC_TOGGLEREF, L"Toggle REF (F3)", 5, iY += 24, 150, 22, VK_F3 );
 
     iY += 40;
-    g_HUD.AddCheckBox( IDC_USEMULTICAMERA, L"Multi-Camera Mode", 5, iY += 24, 150, 22, g_bMultiCameraMode );	
+    g_HUD.AddCheckBox( IDC_USEMULTICAMERA, L"Multi-Camera Mode", 5, iY += 24, 150, 22, g_bMultiCameraMode, VK_F5 );	
 	
     g_SampleUI.SetCallback( OnGUIEvent ); iY = 10;
 }
@@ -465,65 +431,35 @@ HRESULT CALLBACK OnD3D11SwapChainResized( ID3D11Device* pd3dDevice, IDXGISwapCha
 
     g_iWidth = pBackBufferSurfaceDesc->Width;
     g_iHeight = pBackBufferSurfaceDesc->Height;		
-	// Get the default active display
-	int iOSDisplayIndex = USE_DEFAULT_DISPLAY_ID;
-	
-	int iDevNum = 0;
-	DISPLAY_DEVICE displayDevice;	
 
-	displayDevice.cb = sizeof(displayDevice);
-	while ( EnumDisplayDevices(0, iDevNum, &displayDevice, 0) )
-	{
-		if (0 != (displayDevice.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) )
-		{
-			iOSDisplayIndex = iDevNum;
-			break;
-		}
-		iDevNum++;
-	}
+    const AGSDeviceInfo& device = g_AGSGPUInfo.devices[ 0 ];
+    g_EyefinityEnabled = false;
 
-	memset(&g_eyefinityInfo, 0, sizeof(g_eyefinityInfo));		
-	// Release the config info which is allocated from last call of Eyefinity API
-	if ( g_pDisplaysInfo )
+    if ( device.eyefinityEnabled )
     {
-        delete[] g_pDisplaysInfo;
-        g_pDisplaysInfo = nullptr;
+        BOOL bFullScreen;
+        pSwapChain->GetFullscreenState( &bFullScreen, NULL );
+
+        if ( bFullScreen )
+        {
+            g_EyefinityEnabled = true;
+            for ( int i = 0; i< device.numDisplays; i++ )
+            {
+                if ( device.displays[ i ].displayFlags & AGS_DISPLAYFLAG_EYEFINITY_PREFERRED_DISPLAY )
+                {
+                    // Get the view rect of visibleResolution instead of currentResolution so the UI wouldn't be occluded by the bezels.
+                    g_MainDisplayRect.left = device.displays[ i ].visibleResolution.offsetX;
+                    g_MainDisplayRect.right = device.displays[ i ].visibleResolution.offsetX + device.displays[ i ].visibleResolution.width;
+                    g_MainDisplayRect.top = device.displays[ i ].visibleResolution.offsetY;
+                    g_MainDisplayRect.bottom = device.displays[ i ].visibleResolution.offsetY + device.displays[ i ].visibleResolution.height;
+                }
+            }
+        }
     }
 
-    bool eyefinityDetected = false;
-    // Find out if this display has an Eyefinity config enabled
-    if ( agsGetEyefinityConfigInfo( g_AGSContext, iOSDisplayIndex, nullptr, &g_iNumDisplaysInfo, nullptr ) == AGS_SUCCESS && g_iNumDisplaysInfo > 0 )
+    if ( !g_EyefinityEnabled )
     {
-        g_pDisplaysInfo = new AGSDisplayInfo[ g_iNumDisplaysInfo ];
-        ZeroMemory( g_pDisplaysInfo, g_iNumDisplaysInfo * sizeof( *g_pDisplaysInfo ) );
-	    if ( agsGetEyefinityConfigInfo( g_AGSContext, iOSDisplayIndex, &g_eyefinityInfo, &g_iNumDisplaysInfo, g_pDisplaysInfo ) == AGS_SUCCESS )
-	    {		
-            BOOL bFullScreen;
-		    pSwapChain->GetFullscreenState(&bFullScreen, NULL);
-
-		    if ( bFullScreen && g_eyefinityInfo.iSLSActive )
-		    {
-			    eyefinityDetected = true;
-
-                for (int i=0; i<g_iNumDisplaysInfo; i++)
-			    {
-				    if (g_pDisplaysInfo[i].iPreferredDisplay)
-				    {
-					    // Get the view rect of displayRectVisible instead of displayRect so the UI wouldn't be occluded by the bezels.
-					    g_MainDisplayRect.left	 = g_pDisplaysInfo[i].displayRectVisible.iXOffset;
-					    g_MainDisplayRect.right  = g_pDisplaysInfo[i].displayRectVisible.iXOffset + g_pDisplaysInfo[i].displayRectVisible.iWidth;
-					    g_MainDisplayRect.top	 = g_pDisplaysInfo[i].displayRectVisible.iYOffset;
-					    g_MainDisplayRect.bottom = g_pDisplaysInfo[i].displayRectVisible.iYOffset + g_pDisplaysInfo[i].displayRectVisible.iHeight;
-				    }
-			    }
-		    }
-	    }
-    }
-
-    if ( !eyefinityDetected )
-    {
-        g_eyefinityInfo.iSLSActive = false;
-		g_MainDisplayRect.left	 = 0;
+        g_MainDisplayRect.left	 = 0;
 		g_MainDisplayRect.right  = g_iWidth;
 		g_MainDisplayRect.top	 = 0;
 		g_MainDisplayRect.bottom = g_iHeight;
@@ -536,21 +472,16 @@ HRESULT CALLBACK OnD3D11SwapChainResized( ID3D11Device* pd3dDevice, IDXGISwapCha
 	const float YFOV = DirectX::XM_PI/4.0f;
 	
 	float fAspectRatio;
-	if ( TRUE == g_eyefinityInfo.iSLSActive )
+	if ( g_EyefinityEnabled )
 	{
-		fAspectRatio = (float)g_pDisplaysInfo[0].displayRect.iWidth/(float)(g_pDisplaysInfo[0].displayRect.iHeight*g_eyefinityInfo.iSLSGridHeight);
+		fAspectRatio = (float)(device.eyefinityResolutionX / device.eyefinityGridWidth ) / (float)( device.eyefinityResolutionY / device.eyefinityGridHeight );
 		
 		g_MultiCameraProjM = DirectX::XMMatrixPerspectiveFovLH( YFOV, fAspectRatio, 0.01f, 500.0f );
 		
 		float xScale = (cos(YFOV*0.5f)/sin(YFOV*0.5f)) / fAspectRatio;
 		g_FovX = 2.0f * atan( 1.0f / xScale ); 
-		
-		g_HUD.GetCheckBox(IDC_USEMULTICAMERA)->SetEnabled(true);
-	}
-	else
-	{
-		g_HUD.GetCheckBox(IDC_USEMULTICAMERA)->SetEnabled(false);
-	}
+    }
+
 	fAspectRatio = pBackBufferSurfaceDesc->Width / ( FLOAT )pBackBufferSurfaceDesc->Height;	
 	// The projection matrix for the camera of single camera mode.
 	g_SingleCameraProjM = DirectX::XMMatrixPerspectiveFovLH( YFOV, fAspectRatio, 0.01f, 500.0f );
@@ -559,7 +490,10 @@ HRESULT CALLBACK OnD3D11SwapChainResized( ID3D11Device* pd3dDevice, IDXGISwapCha
 	g_HUD.SetLocation( g_MainDisplayRect.right - 170, g_MainDisplayRect.top );
 	g_HUD.SetSize( 170, 170 );
     g_SampleUI.SetLocation( g_MainDisplayRect.right - 170, g_MainDisplayRect.top + 300 );
-    g_SampleUI.SetSize( 170, 170 );	
+    g_SampleUI.SetSize( 170, 170 );
+
+    // Only enable multi camera mode in 3x1 Eyefinity mode
+    g_HUD.GetCheckBox( IDC_USEMULTICAMERA )->SetEnabled( g_EyefinityEnabled && device.eyefinityGridWidth == 3 && device.eyefinityGridHeight == 1 );
 
     return hr;
 }
@@ -618,9 +552,11 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
 	D3D11_VIEWPORT Viewport;
 	DirectX::XMMATRIX ViewM, VPM;
 
-	if ( g_eyefinityInfo.iSLSActive )
+    if ( g_EyefinityEnabled )
 	{
-		if (g_bMultiCameraMode)
+        const AGSDeviceInfo& device = g_AGSGPUInfo.devices[ 0 ];
+	
+		if (g_bMultiCameraMode && device.eyefinityGridWidth == 3 && device.eyefinityGridHeight == 1)
 		{
 			CModelViewerCamera Camera;
 
@@ -630,62 +566,62 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
 
 			DirectX::XMMATRIX RM;
 
-			switch (g_iNumDisplaysInfo)
+			for (int i=0; i<device.numDisplays; i++)
 			{
-				case 3:
-					for (int i=0; i<g_iNumDisplaysInfo; i++)
-					{
-						Viewport.TopLeftX	= (FLOAT)g_pDisplaysInfo[i].displayRect.iXOffset;
-						Viewport.TopLeftY	= (FLOAT)g_pDisplaysInfo[i].displayRect.iYOffset;
-						Viewport.Width		= (FLOAT)g_pDisplaysInfo[i].displayRect.iWidth;
-						Viewport.Height		= (FLOAT)g_pDisplaysInfo[i].displayRect.iHeight;
-						Viewport.MinDepth	= 0.0f;
-						Viewport.MaxDepth	= 1.0f;
-						pd3dImmediateContext->RSSetViewports(1, &Viewport);
+                const AGSDisplayInfo& display = device.displays[ i ];
 
-						DirectX::XMVECTOR TViewDir;
-						DirectX::XMVECTOR AT;
-						switch (g_pDisplaysInfo[i].iGridXCoord)
-						{
-						case 0:
-							RM = DirectX::XMMatrixRotationAxis( g_Camera.GetWorldUp(), -g_FovX );
-							TViewDir = DirectX::XMVector3TransformNormal( ViewDir, RM );
-							AT = DirectX::XMVectorAdd( oldEye, TViewDir );
-							ViewM = DirectX::XMMatrixLookAtLH( oldEye, AT, g_Camera.GetWorldUp());
-							VPM = ViewM * g_MultiCameraProjM;
-							break;
+                if ( display.displayFlags & AGS_DISPLAYFLAG_EYEFINITY_IN_GROUP )
+                {
+                    Viewport.TopLeftX	= (FLOAT)display.currentResolution.offsetX;
+				    Viewport.TopLeftY	= (FLOAT)display.currentResolution.offsetY;
+				    Viewport.Width		= (FLOAT)display.currentResolution.width;
+				    Viewport.Height		= (FLOAT)display.currentResolution.height;
+				    Viewport.MinDepth	= 0.0f;
+				    Viewport.MaxDepth	= 1.0f;
+				    pd3dImmediateContext->RSSetViewports(1, &Viewport);
 
-						case 1:
-							ViewM = DirectX::XMMatrixLookAtLH( oldEye, oldAt, g_Camera.GetWorldUp());
-							VPM = ViewM * g_MultiCameraProjM;
-							break;
+				    DirectX::XMVECTOR TViewDir;
+				    DirectX::XMVECTOR AT;
+				    switch (display.eyefinityGridCoordX)
+				    {
+				    case 0:
+					    RM = DirectX::XMMatrixRotationAxis( g_Camera.GetWorldUp(), -g_FovX );
+					    TViewDir = DirectX::XMVector3TransformNormal( ViewDir, RM );
+					    AT = DirectX::XMVectorAdd( oldEye, TViewDir );
+					    ViewM = DirectX::XMMatrixLookAtLH( oldEye, AT, g_Camera.GetWorldUp());
+					    VPM = ViewM * g_MultiCameraProjM;
+					    break;
 
-						case 2:
-							RM = DirectX::XMMatrixRotationAxis( g_Camera.GetWorldUp(), g_FovX );
-							TViewDir = DirectX::XMVector3TransformNormal( ViewDir, RM );
-							AT = DirectX::XMVectorAdd( oldEye, TViewDir );
-							ViewM = DirectX::XMMatrixLookAtLH( oldEye, AT, g_Camera.GetWorldUp());
-							VPM = ViewM * g_MultiCameraProjM;
-							break;
-						}
-						RenderScene(pd3dDevice, pd3dImmediateContext, VPM);
-					}
-					Viewport.TopLeftX	= 0.0f;
-					Viewport.TopLeftY	= 0.0f;
-					Viewport.Width		= (FLOAT)g_eyefinityInfo.iSLSWidth;
-					Viewport.Height		= (FLOAT)g_eyefinityInfo.iSLSHeight;
-					Viewport.MinDepth	= 0.0f;
-					Viewport.MaxDepth	= 1.0f;
-					pd3dImmediateContext->RSSetViewports(1, &Viewport);	
-					break;
-			}
+				    case 1:
+					    ViewM = DirectX::XMMatrixLookAtLH( oldEye, oldAt, g_Camera.GetWorldUp());
+					    VPM = ViewM * g_MultiCameraProjM;
+					    break;
+
+				    case 2:
+					    RM = DirectX::XMMatrixRotationAxis( g_Camera.GetWorldUp(), g_FovX );
+					    TViewDir = DirectX::XMVector3TransformNormal( ViewDir, RM );
+					    AT = DirectX::XMVectorAdd( oldEye, TViewDir );
+					    ViewM = DirectX::XMMatrixLookAtLH( oldEye, AT, g_Camera.GetWorldUp());
+					    VPM = ViewM * g_MultiCameraProjM;
+					    break;
+				    }
+				    RenderScene(pd3dDevice, pd3dImmediateContext, VPM);
+			    }
+            }
+			Viewport.TopLeftX	= 0.0f;
+			Viewport.TopLeftY	= 0.0f;
+			Viewport.Width		= (FLOAT)device.eyefinityResolutionX;
+			Viewport.Height		= (FLOAT)device.eyefinityResolutionY;
+			Viewport.MinDepth	= 0.0f;
+			Viewport.MaxDepth	= 1.0f;
+			pd3dImmediateContext->RSSetViewports(1, &Viewport);	
 		}
 		else  //Single camera mode
 		{
 			Viewport.TopLeftX	= 0.0f;
 			Viewport.TopLeftY	= 0.0f;
-			Viewport.Width		= (FLOAT)g_eyefinityInfo.iSLSWidth;
-			Viewport.Height		= (FLOAT)g_eyefinityInfo.iSLSHeight;
+			Viewport.Width		= (FLOAT)device.eyefinityResolutionX;
+			Viewport.Height		= (FLOAT)device.eyefinityResolutionY;
 			Viewport.MinDepth	= 0.0f;
 			Viewport.MaxDepth	= 1.0f;
 			pd3dImmediateContext->RSSetViewports(1, &Viewport);
@@ -715,9 +651,8 @@ void RenderText()
     g_pTxtHelper->SetForegroundColor( DirectX::XMVectorSet( 1.0f, 1.0f, 0.0f, 1.0f ) );
     g_pTxtHelper->DrawTextLine( DXUTGetFrameStats( DXUTIsVsyncEnabled() ) );
     g_pTxtHelper->DrawTextLine( DXUTGetDeviceStats() );	
-	g_pTxtHelper->DrawTextLine( g_eyefinityInfo.iSLSActive ? L"Eyefinity : ON" : L"Eyefinity : OFF" );
-	g_pTxtHelper->DrawTextLine( g_eyefinityInfo.iBezelCompensatedDisplay ? L"Bezel Compensation : ON" : L"Bezel Compensation : OFF" );
-    g_pTxtHelper->End();
+	g_pTxtHelper->DrawTextLine( g_EyefinityEnabled ? L"Eyefinity : ON" : L"Eyefinity : OFF" );
+	g_pTxtHelper->End();
 }
 //--------------------------------------------------------------------------------------
 // Release D3D11 resources created in OnD3D11ResizedSwapChain 

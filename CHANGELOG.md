@@ -2,6 +2,9 @@
 
 **Note:** See `ags_lib\CHANGELOG.md` for changes to the core AGS library.
 
+### v5.0.5 - 2016-12-07
+* Update samples for latest AGS API
+
 ### v4.0.3 - 2016-08-18
 * Fix up crossfire_sample for latest AGS API
 

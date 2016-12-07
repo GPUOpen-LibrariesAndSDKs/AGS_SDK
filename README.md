@@ -1,7 +1,7 @@
 # AMD AGS SDK
 ![AMD AGS SDK](http://gpuopen-librariesandsdks.github.io/media/amd_logo_black.png)
 
-The AMD GPU Services (AGS) library provides software developers with the ability to query AMD GPU software and hardware state information that is not normally available through standard operating systems or graphic APIs. Version 4.0 of the library includes support for querying graphics driver version info, GPU performance, Crossfire&trade; (AMD's multi-GPU rendering technology) configuration info, and Eyefinity (AMD's multi-display rendering technology) configuration info. AGS also exposes the explicit Crossfire API extension, GCN shader extensions, and additional extensions supported in the AMD drivers for DirectX 11 and DirectX 12.
+The AMD GPU Services (AGS) library provides software developers with the ability to query AMD GPU software and hardware state information that is not normally available through standard operating systems or graphic APIs. AGS includes support for querying graphics driver version info, GPU performance, Crossfire&trade; (AMD's multi-GPU rendering technology) configuration info, and Eyefinity (AMD's multi-display rendering technology) configuration info. AGS also exposes the explicit Crossfire API extension, GCN shader extensions, and additional extensions supported in the AMD drivers for DirectX 11 and DirectX 12. Version 5.0 adds support for HDR displays.
 
 In addition to the library itself, the AGS SDK includes several samples to demonstrate use of the library.
 
@@ -10,24 +10,26 @@ In addition to the library itself, the AGS SDK includes several samples to demon
 </div>
 
 ### What's new in AGS
-AGS now returns a lot more information from the GPU in addition to exposing the explicit Crossfire API and other extensions for DirectX 11. Version 4.0 also exposes GCN shader extensions for both DirectX 11 and DirectX 12. Highlights include the following:
+Version 5.0 is a major overhaul of the library designed to provide a much clearer view of the GPUs in the system and the displays attached to them. It also exposes the ability to query each display for HDR capabilities and put those HDR-capable displays into various HDR modes.
 
-* The initialization function can now return information about the GPU:
-  * Whether the GPU is GCN or not
-  * The adapter string and device id
-  * The driver version is now rolled into this structure instead of a separate function call
-  * Performance metrics such as the number of compute units and clock speeds
-* New explicit Crossfire API
-  * Provides the ability to control resource transfers between GPUs in Crossfire configuration in DirectX 11
-  * Allows improved performance in multi-GPU configurations
-* New GCN shader extension support
-  * DirectX 11 and DirectX 12
-  * Requires Radeon Software Crimson Edition 16.9.1 (driver version 16.40) or later
-* AGS provides access to additional extensions available in the AMD driver for DirectX 11:
+Highlights include the following:
+* Full GPU enumeration with adapter string, device id, revision id and vendor id.
+* Per-GPU display enumeration including information on display name, resolution, and HDR capabilities.
+* Optional user-supplied memory allocator.
+* Function to set displays into HDR mode.
+* DirectX 11 shader compiler controls.
+* DirectX 11 multiview extension.
+* DirectX 11 Crossfire API updates.
+  * Now supports using the API without needing a driver profile.
+  * You can also now specify the transfer engine.
+
+### Driver extensions
+AGS exposes GCN shader extensions for both DirectX 11 and DirectX 12. It also provides access to additional extensions available in the AMD driver for DirectX 11:
   * Quad List primitive type
   * UAV overlap
   * Depth bounds test
   * Multi-draw indirect
+  * Multiview
 
 ### Prerequisites
 * AMD Radeon&trade; GCN-based GPU (HD 7000 series or newer)

@@ -33,69 +33,104 @@
 #include <amd_ags.h>
 
 
-#pragma warning( disable : 4100 ) // disable unreference formal parameter warnings for /W4 builds
 
-void GetEyefinityInfo( AGSContext* context, int primaryDisplayIndex )
+const char* getVendorName( int vendorId )
 {
-    int numDisplaysInfo = 0;
-
-    // Query the number of displays first
-    if ( agsGetEyefinityConfigInfo( context, primaryDisplayIndex, nullptr, &numDisplaysInfo, nullptr ) == AGS_SUCCESS && numDisplaysInfo > 0 )
+    switch ( vendorId )
     {
-        AGSEyefinityInfo eyefinityInfo = {};
-        AGSDisplayInfo* displaysInfo = new AGSDisplayInfo[ numDisplaysInfo ];
-        ZeroMemory( displaysInfo, numDisplaysInfo * sizeof( *displaysInfo ) );
-
-        // Find out if this display has an Eyefinity config enabled
-        if ( agsGetEyefinityConfigInfo( context, primaryDisplayIndex, &eyefinityInfo, &numDisplaysInfo, displaysInfo ) == AGS_SUCCESS )
-        {
-            if ( eyefinityInfo.iSLSActive )
-            {
-                printf( "Eyefinity enabled for display index %d:\n", primaryDisplayIndex );
-                printf( "  SLS grid is %d displays wide by %d displays tall\n", eyefinityInfo.iSLSGridWidth, eyefinityInfo.iSLSGridHeight );
-                printf( "  SLS resolution is %d x %d pixels\n", eyefinityInfo.iSLSWidth, eyefinityInfo.iSLSHeight );
-
-                if ( eyefinityInfo.iBezelCompensatedDisplay )
-                {
-                    printf( " SLS is bezel-compensated\n" );
-                }
-
-                for ( int i = 0; i < numDisplaysInfo; i++ )
-                {
-                    printf( "Display %d\n", i );
-
-                    if ( displaysInfo[ i ].iPreferredDisplay )
-                    {
-                        printf( " Preferred/main monitor\n" );
-                    }
-
-                    printf( " SLS grid coord [%d,%d]\n", displaysInfo[i].iGridXCoord, displaysInfo[i].iGridYCoord );
-                    printf( " Base coord [%d,%d]\n", displaysInfo[i].displayRect.iXOffset, displaysInfo[i].displayRect.iYOffset );
-                    printf( " Dimensions [%d x %d]\n", displaysInfo[i].displayRect.iWidth, displaysInfo[i].displayRect.iHeight );
-                    printf( " Visible base coord [%d,%d]\n", displaysInfo[i].displayRectVisible.iXOffset, displaysInfo[i].displayRectVisible.iYOffset );
-                    printf( " Visible dimensions [%d x %d]\n", displaysInfo[i].displayRectVisible.iWidth, displaysInfo[i].displayRectVisible.iHeight );
-                }
-            }
-            else
-            {
-                printf( "Eyefinity not enabled for display index %d\n", primaryDisplayIndex );
-            }
-        }
-        else
-        {
-            printf( "Eyefinity configuration query failed to get display info for display index %d\n", primaryDisplayIndex );
-        }
-
-        delete[] displaysInfo;
-    }
-    else
-    {
-        printf( "Eyefinity configuration query failed to get number of displays for display index %d\n", primaryDisplayIndex );
+        case 0x1002: return "AMD";
+        case 0x8086: return "INTEL";
+        case 0x10DE: return "NVIDIA";
+        default: return "unknown";
     }
 }
 
 
-int main(int argc, char* argv[])
+void PrintDisplayInfo( const AGSGPUInfo& gpuInfo )
+{
+    for ( int gpuIndex = 0; gpuIndex < gpuInfo.numDevices; gpuIndex++ )
+    {
+        const AGSDeviceInfo& device = gpuInfo.devices[ gpuIndex ];
+
+        printf( "\n---------- Device %d%s, %s\n", gpuIndex, device.isPrimaryDevice ? " [primary]" : "", device.adapterString );
+
+        printf( "Vendor id:   0x%04X (%s)\n", device.vendorId, getVendorName( device.vendorId ) );
+        printf( "Device id:   0x%04X\n", device.deviceId );
+        printf( "Revision id: 0x%04X\n\n", device.revisionId );
+
+        if ( device.vendorId == 0x1002 )
+        {
+            printf( "Is %sGCN, %d CUs, core clock %d MHz, memory clock %d MHz, %.1f Tflops\n", device.architectureVersion == AGSDeviceInfo::ArchitectureVersion_GCN ? "" : "not ", device.numCUs, device.coreClock, device.memoryClock, device.teraFlops );
+            printf( "local memory: %d MBs\n\n", (int)( device.localMemoryInBytes / ( 1024 * 1024 ) ) );
+        }
+
+        printf( "\n" );
+
+        if ( device.eyefinityEnabled )
+        {
+            printf( "SLS grid is %d displays wide by %d displays tall\n", device.eyefinityGridWidth, device.eyefinityGridHeight );
+            printf( "SLS resolution is %d x %d pixels\n", device.eyefinityResolutionX, device.eyefinityResolutionY );
+
+            if ( device.eyefinityBezelCompensated )
+            {
+                printf( " SLS is bezel-compensated\n" );
+            }
+        }
+        else
+        {
+            printf( "Eyefinity not enabled on this device\n" );
+        }
+
+        printf( "\n" );
+
+        for ( int i = 0; i < device.numDisplays; i++ )
+        {
+            const AGSDisplayInfo& display = device.displays[ i ];
+
+            printf( "\t---------- Display %d %s----------------------------------------\n", i, display.displayFlags & AGS_DISPLAYFLAG_PRIMARY_DISPLAY ? "[primary]" : "---------" );
+
+            printf( "\tdevice name: %s\n", display.displayDeviceName );
+            printf( "\tmonitor name: %s\n\n", display.name );
+
+            printf( "\tMax resolution:             %d x %d, %.1f Hz\n", display.maxResolutionX, display.maxResolutionY, display.maxRefreshRate );
+            printf( "\tCurrent resolution:         %d x %d, Offset (%d, %d), %.1f Hz\n", display.currentResolution.width, display.currentResolution.height, display.currentResolution.offsetX, display.currentResolution.offsetY, display.currentRefreshRate );
+            printf( "\tVisible resolution:         %d x %d, Offset (%d, %d)\n\n", display.visibleResolution.width, display.visibleResolution.height, display.visibleResolution.offsetX, display.visibleResolution.offsetY );
+
+            printf( "\tchromaticity red:           %f, %f\n", display.chromaticityRedX, display.chromaticityRedY );
+            printf( "\tchromaticity green:         %f, %f\n", display.chromaticityGreenX, display.chromaticityGreenY );
+            printf( "\tchromaticity blue:          %f, %f\n", display.chromaticityBlueX, display.chromaticityBlueY );
+            printf( "\tchromaticity white point:   %f, %f\n\n", display.chromaticityWhitePointX, display.chromaticityWhitePointY );
+
+            printf( "\tluminance: [min, max, avg]  %f, %f, %f\n", display.minLuminance, display.maxLuminance, display.avgLuminance );
+
+            printf( "\tscreen reflectance diffuse  %f\n", display.screenDiffuseReflectance );
+            printf( "\tscreen reflectance specular %f\n\n", display.screenSpecularReflectance );
+
+            if ( display.displayFlags & AGS_DISPLAYFLAG_HDR10 )
+                printf( "\tHDR10 supported\n" );
+
+            if ( display.displayFlags & AGS_DISPLAYFLAG_DOLBYVISION )
+                printf( "\tDolby Vision supported\n" );
+
+            printf( "\n" );
+
+            if ( display.displayFlags & AGS_DISPLAYFLAG_EYEFINITY_IN_GROUP )
+            {
+                printf( "\tEyefinity Display [%s mode] %s\n", display.displayFlags & AGS_DISPLAYFLAG_EYEFINITY_IN_PORTRAIT_MODE ? "portrait" : "landscape", display.displayFlags & AGS_DISPLAYFLAG_EYEFINITY_PREFERRED_DISPLAY ? " (preferred display)" : "" );
+
+                printf( "\tGrid coord %d x %d\n", display.eyefinityGridCoordX, display.eyefinityGridCoordY );
+            }
+
+            printf( "\tlogical display index: %d\n", display.logicalDisplayIndex );
+            printf( "\tADL adapter index: %d\n\n", display.adlAdapterIndex );
+
+            printf( "\n" );
+        }
+    }
+}
+
+
+int main(int , char**)
 {
     // Enable run-time memory check for debug builds.
     // (When _DEBUG is not defined, calls to _CrtSetDbgFlag are removed during preprocessing.)
@@ -104,58 +139,28 @@ int main(int argc, char* argv[])
     AGSContext* agsContext = nullptr;
 
     int displayIndex = 0;
-    int primaryDisplayIndex = 0;
     DISPLAY_DEVICEA displayDevice;
     displayDevice.cb = sizeof( displayDevice );
     while ( EnumDisplayDevicesA( 0, displayIndex, &displayDevice, 0 ) )
     {
-        if ( displayDevice.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE )
-        {
-            primaryDisplayIndex = displayIndex;
-        }
-
-        //printf( "Display Device: %d %s %s\n", displayIndex, displayDevice.DeviceString, displayDevice.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE ? "(primary)" : "" );
-
+        printf( "Display Device: %d: %s, %s %s%s\n", displayIndex, displayDevice.DeviceString, displayDevice.DeviceName, displayDevice.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE ? "(primary)" : "", displayDevice.StateFlags & DISPLAY_DEVICE_ACTIVE ? "" : " [disabled]" );
         displayIndex++;
     }
 
     AGSGPUInfo gpuInfo;
-    if ( agsInit( &agsContext, nullptr, &gpuInfo ) == AGS_SUCCESS )
+
+    AGSConfiguration config = {};
+    config.crossfireMode = AGS_CROSSFIRE_MODE_EXPLICIT_AFR;
+
+    if ( agsInit( &agsContext, &config, &gpuInfo ) == AGS_SUCCESS )
     {
-        printf( "AGS Library initialized: v%d.%d.%d\n\n", gpuInfo.agsVersionMajor, gpuInfo.agsVersionMinor, gpuInfo.agsVersionPatch );
+        printf( "\nAGS Library initialized: v%d.%d.%d\n", gpuInfo.agsVersionMajor, gpuInfo.agsVersionMinor, gpuInfo.agsVersionPatch );
+        printf( "Is%s WACK compliant for use in UWP apps\n", gpuInfo.isWACKCompliant ? "" : " *not*" );
         printf( "-----------------------------------------------------------------\n" );
 
-        printf( "%s, device id: 0x%04X, revision id: 0x%02X\n", gpuInfo.adapterString ? gpuInfo.adapterString : "unknown GPU", gpuInfo.deviceId, gpuInfo.revisionId );
         printf( "Radeon Software Version:   %s\n", gpuInfo.radeonSoftwareVersion );
         printf( "Driver Version:            %s\n", gpuInfo.driverVersion );
         printf( "-----------------------------------------------------------------\n" );
-
-        printf( "Is %sGCN, %d CUs, core clock %d MHz, memory clock %d MHz, %.1f Tflops\n", gpuInfo.architectureVersion == AGSGPUInfo::ArchitectureVersion_GCN ? "" : "not ", gpuInfo.iNumCUs, gpuInfo.iCoreClock, gpuInfo.iMemoryClock, gpuInfo.fTFlops );
-
-        int totalGPUs = 0;
-        if ( agsGetTotalGPUCount( agsContext, &totalGPUs ) == AGS_SUCCESS )
-        {
-            printf( "Total system GPU count = %d\n", totalGPUs );
-
-            for ( int i = 0; i < totalGPUs; i++ )
-            {
-                long long memory = 0;
-                if ( agsGetGPUMemorySize( agsContext, i, &memory ) == AGS_SUCCESS )
-                {
-                    printf( "GPU %d Memory: %dMBs\n", i, (int)(memory / (1024*1024)) );
-                }
-                else
-                {
-                    printf( "Failed to get memory size from GPU %d\n", i );
-                }
-            }
-
-            printf( "-----------------------------------------------------------------\n" );
-        }
-        else
-        {
-            printf( "Failed to get total GPU count\n" );
-        }
 
         int numCrossfireGPUs = 0;
         if ( agsGetCrossfireGPUCount( agsContext, &numCrossfireGPUs ) == AGS_SUCCESS )
@@ -168,7 +173,7 @@ int main(int argc, char* argv[])
             printf( "Failed to get Crossfire GPU count\n" );
         }
 
-        GetEyefinityInfo( agsContext, primaryDisplayIndex );
+        PrintDisplayInfo( gpuInfo );
         printf( "-----------------------------------------------------------------\n" );
 
         if ( agsDeInit( agsContext ) != AGS_SUCCESS )

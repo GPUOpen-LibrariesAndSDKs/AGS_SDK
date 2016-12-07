@@ -206,7 +206,7 @@ void CFXAPISample::InitializeAMDAGS()
 {
 	// the desired Crossfire mode needs to be passed to agsInit
 	// prior to device creation
-	AGSConfiguration config;
+    AGSConfiguration config = {};
 	config.crossfireMode = AGS_CROSSFIRE_MODE_EXPLICIT_AFR;
 	agsInit (&agsContext_, &config, nullptr );
 }
@@ -277,7 +277,7 @@ void CFXAPISample::Initialize ()
 			// as the updated version is not transfered to the second GPU.
 			// With TransferApp1StepP2P, the Crossfire API will copy the
 			// data to the second GPU.
-			AGS_AFR_TRANSFER_1STEP_P2P);
+			AGS_AFR_TRANSFER_1STEP_P2P, AGS_AFR_TRANSFERENGINE_DEFAULT);
 	} else {
 		device_->CreateTexture2D (&textureDesc, nullptr, &texture_);
 	}
