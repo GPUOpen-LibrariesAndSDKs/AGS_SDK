@@ -1,13 +1,14 @@
 # AMD AGS Library Changelog
 
-### v5.0.5 - 2016-12-07
+### v5.0.5 - 2016-12-08
 * Add function to set displays into HDR mode
 * Implement full GPU enumeration with adapter string, device id, revision id, and vendor id
 * Implement per-GPU display enumeration including information on display name, resolution, and HDR capabilities
-* Remove agsGetGPUMemorySize and agsGetEyefinityConfigInfo in favor of including this information in the device and display enumeration
+* Remove `agsGetGPUMemorySize` and `agsGetEyefinityConfigInfo` in favor of including this information in the device and display enumeration
 * Add optional user-supplied memory allocator
 * Add DirectX11 shader compiler controls
 * Add DirectX11 multiview extension
+  * Requires Radeon Software Crimson ReLive Edition 16.12.1 (driver version 16.50.2001) or later
 * Update DirectX11 Crossfire API to support using the API without needing a driver profile
 * Update DirectX11 Crossfire API to allow specifying the transfer engine
 
@@ -15,7 +16,7 @@
 * Improve support for DirectX 11 and DirectX 12 GCN shader extensions
 * Add support for Multidraw Indirect Count Indirect for DirectX 11
 * Fix clock speed information for Polaris GPUs
-* Requires Radeon Software Crimson Edition 16.9.1 (driver version 16.40) or later
+* Requires Radeon Software Crimson Edition 16.9.2 (driver version 16.40.2311) or later
 
 ### v4.0.0 - 2016-05-24
 * Add support for GCN shader extensions
