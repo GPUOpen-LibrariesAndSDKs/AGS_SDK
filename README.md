@@ -16,9 +16,9 @@ Highlights include the following:
 * Full GPU enumeration with adapter string, device id, revision id and vendor id.
 * Per-GPU display enumeration including information on display name, resolution, and HDR capabilities.
 * Optional user-supplied memory allocator.
-* Function to set displays into HDR mode.
-* DirectX 11 shader compiler controls.
-* DirectX 11 multiview extension.
+* Function to set displays into HDR mode.<sup>[1](#ags-sdk-footnote1)</sup>
+* DirectX 11 shader compiler controls.<sup>[1](#ags-sdk-footnote1)</sup>
+* DirectX 11 multiview extension.<sup>[2](#ags-sdk-footnote1)</sup>
 * DirectX 11 Crossfire API updates.
   * Now supports using the API without needing a driver profile.
   * You can also now specify the transfer engine.
@@ -33,9 +33,10 @@ AGS exposes GCN shader extensions for both DirectX 11 and DirectX 12. It also pr
 
 ### Prerequisites
 * AMD Radeon&trade; GCN-based GPU (HD 7000 series or newer)
-  * Or other DirectX&reg; 11 compatible GPU with Shader Model 5 support<sup>[1](#ags-sdk-footnote1)</sup> 
+  * Or other DirectX&reg; 11 compatible GPU with Shader Model 5 support<sup>[3](#ags-sdk-footnote1)</sup> 
 * 64-bit Windows&reg; 7 (SP1 with the [Platform Update](https://msdn.microsoft.com/en-us/library/windows/desktop/jj863687.aspx)), Windows&reg; 8.1, or Windows&reg; 10
 * Visual Studio&reg; 2012, Visual Studio&reg; 2013, or Visual Studio&reg; 2015
+* Recommended driver: Radeon Software Crimson ReLive Edition 16.12.1 (driver version 16.50.2001) or later 
 
 ### Getting Started
 * It is recommended to take a look at the sample source code.
@@ -75,4 +76,8 @@ For Visual Studio 2015, this version of Premake adds the `WindowsTargetPlatformV
 * Microsoft, DirectX, Visual Studio, and Windows are either registered trademarks or trademarks of Microsoft Corporation in the United States and/or other countries.
 
 ### Notes
-<a name="ags-sdk-footnote1">1</a>: While the AGS SDK samples will run on non-AMD hardware, they will be of limited usefulness, since the purpose of AGS is to provide convenient access to AMD-specific information and extensions.
+<a name="ags-sdk-footnote1">1</a>: Requires Radeon Software Crimson Edition 16.9.2 (driver version 16.40.2311) or later.
+
+<a name="ags-sdk-footnote1">2</a>: Requires Radeon Software Crimson ReLive Edition 16.12.1 (driver version 16.50.2001) or later.
+
+<a name="ags-sdk-footnote1">3</a>: While the AGS SDK samples will run on non-AMD hardware, they will be of limited usefulness, since the purpose of AGS is to provide convenient access to AMD-specific information and extensions.
