@@ -30,15 +30,17 @@ externalproject "DXUTOpt"
 project (_AMD_SAMPLE_NAME)
    kind "WindowedApp"
    language "C++"
+   characterset "Unicode"
    location "../build"
    filename (_AMD_SAMPLE_NAME .. _AMD_VS_SUFFIX)
    targetdir "../bin"
    objdir "../build/%{_AMD_SAMPLE_DIR_LAYOUT}"
    warnings "Extra"
    floatingpoint "Fast"
+   symbols "On"
 
    -- Specify WindowsTargetPlatformVersion here for VS2015
-   windowstarget (_AMD_WIN_SDK_VERSION)
+   systemversion (_AMD_WIN_SDK_VERSION)
 
    -- Copy DLLs to the local bin directory
    postbuildcommands { amdAgsSamplePostbuildCommands(true) }
@@ -51,11 +53,11 @@ project (_AMD_SAMPLE_NAME)
 
    filter "configurations:Debug"
       defines { "WIN32", "_DEBUG", "DEBUG", "PROFILE", "_WINDOWS", "_WIN32_WINNT=0x0601" }
-      flags { "Symbols", "FatalWarnings", "Unicode", "WinMain" }
+      flags { "FatalWarnings", "WinMain" }
       targetsuffix ("_Debug" .. _AMD_VS_SUFFIX)
 
    filter "configurations:Release"
       defines { "WIN32", "NDEBUG", "PROFILE", "_WINDOWS", "_WIN32_WINNT=0x0601" }
-      flags { "LinkTimeOptimization", "Symbols", "FatalWarnings", "Unicode", "WinMain" }
+      flags { "LinkTimeOptimization", "FatalWarnings", "WinMain" }
       targetsuffix ("_Release" .. _AMD_VS_SUFFIX)
       optimize "On"

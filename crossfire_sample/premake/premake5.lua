@@ -16,6 +16,7 @@ workspace (_AMD_SAMPLE_NAME)
 project (_AMD_SAMPLE_NAME)
    kind "ConsoleApp"
    language "C++"
+   characterset "Unicode"
    location "../build"
    filename (_AMD_SAMPLE_NAME .. _AMD_VS_SUFFIX)
    uuid "4C0AC3AC-57E7-4DCD-8B36-7074CA208B3B"
@@ -23,9 +24,10 @@ project (_AMD_SAMPLE_NAME)
    objdir "../build/%{_AMD_SAMPLE_DIR_LAYOUT}"
    warnings "Extra"
    floatingpoint "Fast"
+   symbols "On"
 
    -- Specify WindowsTargetPlatformVersion here for VS2015
-   windowstarget (_AMD_WIN_SDK_VERSION)
+   systemversion (_AMD_WIN_SDK_VERSION)
 
    -- Copy DLLs to the local bin directory
    postbuildcommands { amdAgsSamplePostbuildCommands(true) }
@@ -38,11 +40,11 @@ project (_AMD_SAMPLE_NAME)
 
    filter "configurations:Debug"
       defines { "WIN32", "_DEBUG", "_CONSOLE", "_WIN32_WINNT=0x0601" }
-      flags { "Symbols", "FatalWarnings", "Unicode" }
+      flags { "FatalWarnings" }
       targetsuffix ("_Debug" .. _AMD_VS_SUFFIX)
 
    filter "configurations:Release"
       defines { "WIN32", "NDEBUG", "_CONSOLE", "_WIN32_WINNT=0x0601" }
-      flags { "LinkTimeOptimization", "Symbols", "FatalWarnings", "Unicode" }
+      flags { "LinkTimeOptimization", "FatalWarnings" }
       targetsuffix ("_Release" .. _AMD_VS_SUFFIX)
       optimize "On"

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="ags_lib">
@@ -13,11 +13,6 @@
     <Filter Include="src\Shaders">
       <UniqueIdentifier>{06ADC7FB-7262-40F1-FB56-3AC8670B37F5}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\src\Shaders\shaders.hlsl">
-      <Filter>src\Shaders</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\ags_lib\inc\amd_ags.h">
@@ -37,5 +32,10 @@
     <ClCompile Include="..\src\Window.cpp">
       <Filter>src</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\Shaders\shaders.hlsl">
+      <Filter>src\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

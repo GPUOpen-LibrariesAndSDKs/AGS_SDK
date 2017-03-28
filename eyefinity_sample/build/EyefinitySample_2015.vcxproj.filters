@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="ags_lib">
@@ -18,14 +18,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\src\ResourceFiles\dpiaware.manifest">
-      <Filter>src\ResourceFiles</Filter>
-    </None>
-    <None Include="..\src\Shaders\EyefinitySample.hlsl">
-      <Filter>src\Shaders</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="..\..\ags_lib\inc\amd_ags.h">
       <Filter>ags_lib\inc</Filter>
     </ClInclude>
@@ -37,6 +29,14 @@
     <ClCompile Include="..\src\EyefinitySample.cpp">
       <Filter>src</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\ResourceFiles\dpiaware.manifest">
+      <Filter>src\ResourceFiles</Filter>
+    </None>
+    <None Include="..\src\Shaders\EyefinitySample.hlsl">
+      <Filter>src\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\src\ResourceFiles\EyefinitySample.rc">

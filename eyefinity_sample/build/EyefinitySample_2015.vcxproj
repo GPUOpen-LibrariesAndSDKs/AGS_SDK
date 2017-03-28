@@ -139,11 +139,11 @@ xcopy "..\..\ags_lib\lib\amd_ags_x64.dll"  "..\bin" /H /R /Y &gt; nul</Command>
     <ResourceCompile Include="..\src\ResourceFiles\EyefinitySample.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DXUT\Optional\DXUTOpt_2015.vcxproj">
-      <Project>{61B333C2-C4F7-4CC1-A9BF-83F6D95588EB}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\DXUT\Core\DXUT_2015.vcxproj">
       <Project>{85344B7F-5AA0-4E12-A065-D1333D11F6CA}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\DXUT\Optional\DXUTOpt_2015.vcxproj">
+      <Project>{61B333C2-C4F7-4CC1-A9BF-83F6D95588EB}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
