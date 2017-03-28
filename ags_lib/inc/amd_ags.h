@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2016 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2017 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -43,8 +43,9 @@
 /// * Per GPU display enumeration including information on display name, resolution and HDR capabilities.
 /// * Optional user supplied memory allocator.
 /// * Function to set displays into HDR mode.
+/// * A Microsoft WACK compliant version of the library.
 /// * DirectX11 shader compiler controls.
-/// * DirectX11 multiview extension.
+/// * DirectX11 multiview extension enabling MultiView and MultiRes rendering.
 /// * DirectX11 Crossfire API now supports using the API without needing a driver profile. Can also specify the transfer engine.
 ///
 /// Using the AGS library
@@ -56,7 +57,7 @@
 /// The AGSSample application is the simplest of the three examples and demonstrates the code required to initialize AGS and use it to query the GPU and Eyefinity state. 
 /// The CrossfireSample application demonstrates the use of the new API to transfer resources on GPUs in Crossfire mode. Lastly, the EyefinitySample application provides a more 
 /// extensive example of Eyefinity setup than the basic example provided in AGSSample.
-/// There are other samples on Github that demonstrate the DirectX shader extensions, such as the Barycentrics11 and Barycentrics12 samples.
+/// There are other samples on GitHub that demonstrate the DirectX shader extensions, such as the Barycentrics11 and Barycentrics12 samples.
 ///
 /// To add AGS support to an existing project, follow these steps:
 /// * Link your project against the correct import library. Choose from either the 32 bit or 64 bit version.
@@ -74,7 +75,7 @@
 
 #define AMD_AGS_VERSION_MAJOR 5             ///< AGS major version
 #define AMD_AGS_VERSION_MINOR 0             ///< AGS minor version
-#define AMD_AGS_VERSION_PATCH 5             ///< AGS patch version
+#define AMD_AGS_VERSION_PATCH 6             ///< AGS patch version
 
 #ifdef __cplusplus
 extern "C" {
@@ -105,7 +106,7 @@ struct ID3D12Device;
 /// The return codes
 enum AGSReturnCode
 {
-    AGS_SUCCESS,                    ///< Succesful function call
+    AGS_SUCCESS,                    ///< Successful function call
     AGS_FAILURE,                    ///< Failed to complete call for some unspecified reason
     AGS_INVALID_ARGS,               ///< Invalid arguments into the function
     AGS_OUT_OF_MEMORY,              ///< Out of memory when allocating space internally
@@ -154,7 +155,7 @@ enum AGSDriverExtensionDX12
 const unsigned int AGS_DX12_SHADER_INSTRINSICS_SPACE_ID = 0x7FFF0ADE; // 2147420894
 
 
-/// Addtional topologies supported via extensions
+/// Additional topologies supported via extensions
 enum AGSPrimitiveTopology
 {
     AGS_PRIMITIVE_TOPOLOGY_QUADLIST                         = 7,
@@ -191,7 +192,7 @@ enum AGSAfrTransferEngine
 /// The display flags describing various properties of the display.
 enum AGSDisplayFlags
 {
-    AGS_DISPLAYFLAG_PRIMARY_DISPLAY                         = 1 << 0,   ///< Whether this display is marked as the primary display
+    AGS_DISPLAYFLAG_PRIMARY_DISPLAY                         = 1 << 0,   ///< Whether this display is marked as the primary display. Not set on the WACK version.
     AGS_DISPLAYFLAG_HDR10                                   = 1 << 1,   ///< HDR10 is supported on this display
     AGS_DISPLAYFLAG_DOLBYVISION                             = 1 << 2,   ///< Dolby Vision is supported on this display
     AGS_DISPLAYFLAG_EYEFINITY_IN_GROUP                      = 1 << 4,   ///< The display is part of the Eyefinity group
@@ -228,7 +229,7 @@ struct AGSClipRect
 struct AGSDisplayInfo
 {
     char                    name[ 256 ];                    ///< The name of the display
-    char                    displayDeviceName[ 32 ];        ///< The display device name, ie DISPLAY_DEVICE::DeviceName
+    char                    displayDeviceName[ 32 ];        ///< The display device name, i.e. DISPLAY_DEVICE::DeviceName
 
     unsigned int            displayFlags;                   ///< Bitfield of ::AGSDisplayFlags
 
@@ -289,7 +290,7 @@ struct AGSDeviceInfo
     int                             memoryClock;                    ///< Memory clock speed at 100% power in MHz
     float                           teraFlops;                      ///< Teraflops of GPU. Zero if not GCN. Calculated from iCoreClock * iNumCUs * 64 Pixels/clk * 2 instructions/MAD
 
-    int                             isPrimaryDevice;                ///< Whether or not this is the primary adapter in the system.
+    int                             isPrimaryDevice;                ///< Whether or not this is the primary adapter in the system. Not set on the WACK version.
     long long                       localMemoryInBytes;             ///< The size of local memory in bytes. 0 for non AMD hardware.
 
     int                             numDisplays;                    ///< The number of active displays found to be attached to this adapter.
@@ -309,8 +310,8 @@ struct AGSDeviceInfo
 /// API for initialization, cleanup, HDR display modes and Crossfire GPU count
 /// @{
 
-typedef void* (__stdcall *AGS_ALLOC_CALLBACK)( int allocationSize );    ///< AGS user defined allocation protoype
-typedef void (__stdcall *AGS_FREE_CALLBACK)( void* allocationPtr );     ///< AGS user defined free protoype
+typedef void* (__stdcall *AGS_ALLOC_CALLBACK)( int allocationSize );    ///< AGS user defined allocation prototype
+typedef void (__stdcall *AGS_FREE_CALLBACK)( void* allocationPtr );     ///< AGS user defined free prototype
 
                                                                         /// The configuration options that can be passed in to \ref agsInit
 struct AGSConfiguration
@@ -365,7 +366,7 @@ struct AGSDisplaySettings
     double                  maxLuminance;                   ///< The maximum scene luminance in nits
 
     double                  maxContentLightLevel;           ///< The maximum content light level in nits (MaxCLL)
-    double                  maxFrameAverageLightLevel;      ///< The maximum frame average light livel in nits (MaxFALL)
+    double                  maxFrameAverageLightLevel;      ///< The maximum frame average light level in nits (MaxFALL)
 };
 
 ///
@@ -457,7 +458,7 @@ AMD_AGS_API AGSReturnCode agsDriverExtensionsDX12_DeInit( AGSContext* context );
 ///
 /// \param [in] context                             Pointer to a context. This is generated by \ref agsInit
 /// \param [in] device                              The D3D11 device.
-/// \param [in] uavSlot                             The UAV slot reserved for intrinsic support. This must match the slot defined in the HLSL, ie #define AmdDxExtShaderIntrinsicsUAVSlot.
+/// \param [in] uavSlot                             The UAV slot reserved for intrinsic support. This must match the slot defined in the HLSL, i.e. #define AmdDxExtShaderIntrinsicsUAVSlot.
 ///                                                 The default slot is 7, but the caller is free to use an alternative slot.
 /// \param [out] extensionsSupported                Pointer to a bit mask that this function will fill in to indicate which extensions are supported. See AGSDriverExtensionDX11
 ///
@@ -484,7 +485,7 @@ AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_DeInit( AGSContext* context );
 /// In order to use this function, AGS must already be initialized and agsDriverExtensionsDX11_Init must have been called successfully.
 ///
 /// The Screen Rect extension, which is only available on GCN hardware, allows the user to pass in three of the four corners of a rectangle. 
-/// The hardware then uses the bounding box of the vertices to rasterize the rectangle primitive (ie as a rectangle rather than two triangles). 
+/// The hardware then uses the bounding box of the vertices to rasterize the rectangle primitive (i.e. as a rectangle rather than two triangles). 
 /// \note Note that this will not return valid interpolated values, only valid SV_Position values.
 /// \note If either the Quad List or Screen Rect extension are used, then agsDriverExtensionsDX11_IASetPrimitiveTopology should be called in place of the native DirectX11 equivalent all the time.
 ///
@@ -633,7 +634,7 @@ AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndir
 
 ///
 /// This method can be used to limit the maximum number of threads the driver uses for asynchronous shader compilation.
-/// Setting it to 0 will disable asynchronous compilation completely and force the shaders to be compiled “inline” on the threads that call Create*Shader.
+/// Setting it to 0 will disable asynchronous compilation completely and force the shaders to be compiled "inline" on the threads that call Create*Shader.
 ///
 /// This method can only be called before any shaders are created and being compiled by the driver.
 /// If this method is called after shaders have been created the function will return AGS_FAILURE.

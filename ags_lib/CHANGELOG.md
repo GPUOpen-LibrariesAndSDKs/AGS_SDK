@@ -1,5 +1,10 @@
 # AMD AGS Library Changelog
 
+### v5.0.6 - 2016-03-28
+* Fix min/max/avg luminance in display info
+* Clean up documentation
+* Add WACK-compliant version of the library
+
 ### v5.0.5 - 2016-12-08
 * Add function to set displays into HDR mode
 * Implement full GPU enumeration with adapter string, device id, revision id, and vendor id
