@@ -39,11 +39,11 @@
 <body>
     <div class="page">
         <h1>Crossfire API sample</h1>
-        <p>Welcome to the Crossfire API sample which shows how to use the Crossfire API.</p>
+        <p>Welcome to the Crossfire API sample, which shows how to use the Crossfire API.</p>
         <section>
             <h2>Installation</h2>
-            <p>Make sure the Crossfire API driver is installed and that Crossfire is enabled in the CCC. You also need to use the provided <code>CFXPanel</code> to enable the <code>AfrControlSupported</code> setting before you can use the API.</p>
-            <p class="note">If Crossfire is not enabled in the CCC, or <code>AfrControlSupported</code> is not set, the extension will not load. Instead, a <code>nullptr</code> will be returned.</p>
+            <p>Make sure a driver with Crossfire API support is installed and that Crossfire is enabled in Radeon Settings.</p>
+            <p class="note">If Crossfire is not enabled in Radeon Settings, the extension will not load, and the AGS_DX11_EXTENSION_CROSSFIRE_API flag will not be set.</p>
         </section>
 
         <section>
@@ -61,10 +61,6 @@
             <figure style="width: 100%; text-align: center;">
                 <img src="media/cfx-api.svg" style="width: 50%; margin: auto; background-color: white;">
             </figure>
-        </section>
-        <section>
-            <h2>Limitations</h2>
-            <p>Currently, the API only supports <code>AmdAfrTransferApp1StepP2P</code> and <code>AmdAfrTransferDisable</code> transfer modes.</p>
         </section>
     </div>
 </body>
