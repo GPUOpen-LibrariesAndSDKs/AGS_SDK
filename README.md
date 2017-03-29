@@ -17,6 +17,7 @@ Highlights include the following:
 * Per-GPU display enumeration including information on display name, resolution, and HDR capabilities.
 * Optional user-supplied memory allocator.
 * Function to set displays into HDR mode.<sup>[1](#ags-sdk-footnote1)</sup>
+* A Microsoft WACK compliant version of the library.
 * DirectX 11 shader compiler controls.<sup>[1](#ags-sdk-footnote1)</sup>
 * DirectX 11 multiview extension.<sup>[2](#ags-sdk-footnote1)</sup>
 * DirectX 11 Crossfire API updates.
