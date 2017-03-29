@@ -2,6 +2,14 @@
 
 **Note:** See `ags_lib\CHANGELOG.md` for changes to the core AGS library.
 
+### v5.0.6 - 2016-03-28
+* Update to newer version of Premake, 5.0 alpha 10
+  * Plus local changes for auto-generating props files
+* Drop support for VS2012
+* Perform minor cleanup
+  * Update the readme for the Crossfire sample
+  * Update the AMD icon to the black version
+
 ### v5.0.5 - 2016-12-07
 * Update samples for latest AGS API
 
