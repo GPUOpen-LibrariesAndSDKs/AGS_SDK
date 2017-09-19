@@ -33,9 +33,24 @@
 /// Online documentation is publicly hosted here: http://gpuopen-librariesandsdks.github.io/ags/
 /// \endinternal
 ///
-/// What's new in AGS 5.0 since version 4.x
+/// What's new in AGS 5.1.1 since version 5.0.6
 /// ---------------------------------------
-/// Version 5.0 is a major overhaul of the library designed to provide a much clearer view of the GPUs in the system and the displays attached to them. 
+/// AGS 5.1.1 includes the following updates:
+/// * An API change for DX11 extensions
+///   - It is now mandatory to call agsDriverExtensionsDX11_CreateDevice() when creating a device if the user wants to access any DX11 AMD extensions.
+///   - The corresponding agsDriverExtensionsDX11_DestroyDevice() call must be called to release the device and free up the internal resources allocated by the create call.
+/// * App registration extension for DX11.
+/// * Freesync 2 HDR support.
+/// * Wave reduce and wave scan shader extensions.
+/// * AMD user markers for DX12.
+/// * Eyefinity bug fixes.
+/// * MultiDrawIndexedInstancedIndirectCountIndirect parameter bug fix.
+/// * Static lib versions of the binary.
+/// * VS2017 support for the samples.
+///
+/// What's new in AGS 5.x since version 4.x
+/// ---------------------------------------
+/// Version 5.x is a major overhaul of the library designed to provide a much clearer view of the GPUs in the system and the displays attached to them. 
 /// It also exposes the ability to query each display for HDR capabilities and put those HDR capable displays into various HDR modes.
 /// Some functions such as agsGetGPUMemorySize and agsGetEyefinityConfigInfo have been removed in favor of including this information in the device & display enumeration.
 /// Features include:
@@ -57,7 +72,7 @@
 /// The AGSSample application is the simplest of the three examples and demonstrates the code required to initialize AGS and use it to query the GPU and Eyefinity state. 
 /// The CrossfireSample application demonstrates the use of the new API to transfer resources on GPUs in Crossfire mode. Lastly, the EyefinitySample application provides a more 
 /// extensive example of Eyefinity setup than the basic example provided in AGSSample.
-/// There are other samples on GitHub that demonstrate the DirectX shader extensions, such as the Barycentrics11 and Barycentrics12 samples.
+/// There are other samples on Github that demonstrate the DirectX shader extensions, such as the Barycentrics11 and Barycentrics12 samples.
 ///
 /// To add AGS support to an existing project, follow these steps:
 /// * Link your project against the correct import library. Choose from either the 32 bit or 64 bit version.
@@ -74,8 +89,8 @@
 #define AMD_AGS_H
 
 #define AMD_AGS_VERSION_MAJOR 5             ///< AGS major version
-#define AMD_AGS_VERSION_MINOR 0             ///< AGS minor version
-#define AMD_AGS_VERSION_PATCH 6             ///< AGS patch version
+#define AMD_AGS_VERSION_MINOR 1             ///< AGS minor version
+#define AMD_AGS_VERSION_PATCH 1             ///< AGS patch version
 
 #ifdef __cplusplus
 extern "C" {
@@ -85,7 +100,13 @@ extern "C" {
 #define AMD_AGS_API __declspec(dllexport)   ///< AGS calling convention
 
 // Forward declaration of D3D11 types
+struct IDXGIAdapter;
+enum D3D_DRIVER_TYPE;
+enum D3D_FEATURE_LEVEL;
+struct DXGI_SWAP_CHAIN_DESC;
 struct ID3D11Device;
+struct ID3D11DeviceContext;
+struct IDXGISwapChain;
 struct ID3D11Resource;
 struct ID3D11Buffer;
 struct ID3D11Texture1D;
@@ -101,6 +122,7 @@ typedef tagRECT D3D11_RECT;             ///< typedef this ourselves so we don't 
 
 // Forward declaration of D3D12 types
 struct ID3D12Device;
+struct ID3D12GraphicsCommandList;
 
 
 /// The return codes
@@ -134,21 +156,27 @@ enum AGSDriverExtensionDX11
     AGS_DX11_EXTENSION_INTRINSIC_MBCOUNT                    = 1 << 12,
     AGS_DX11_EXTENSION_INTRINSIC_COMPARE3                   = 1 << 13,
     AGS_DX11_EXTENSION_INTRINSIC_BARYCENTRICS               = 1 << 14,
-    AGS_DX11_EXTENSION_CREATE_SHADER_CONTROLS               = 1 << 15,
-    AGS_DX11_EXTENSION_MULTIVIEW                            = 1 << 16
+    AGS_DX11_EXTENSION_INTRINSIC_WAVE_REDUCE                = 1 << 15,   ///< Supported in Radeon Software Version 17.9.1 onwards.
+    AGS_DX11_EXTENSION_INTRINSIC_WAVE_SCAN                  = 1 << 16,   ///< Supported in Radeon Software Version 17.9.1 onwards.
+    AGS_DX11_EXTENSION_CREATE_SHADER_CONTROLS               = 1 << 17,
+    AGS_DX11_EXTENSION_MULTIVIEW                            = 1 << 18,
+    AGS_DX11_EXTENSION_APP_REGISTRATION                     = 1 << 19    ///< Supported in Radeon Software Version 17.9.1 onwards.
 };
 
 /// The DirectX12 extension support bits
 enum AGSDriverExtensionDX12
 {
-    AGS_DX12_EXTENSION_INTRINSIC_READFIRSTLANE              = 1 << 0,
-    AGS_DX12_EXTENSION_INTRINSIC_READLANE                   = 1 << 1,
-    AGS_DX12_EXTENSION_INTRINSIC_LANEID                     = 1 << 2,
-    AGS_DX12_EXTENSION_INTRINSIC_SWIZZLE                    = 1 << 3,
-    AGS_DX12_EXTENSION_INTRINSIC_BALLOT                     = 1 << 4,
-    AGS_DX12_EXTENSION_INTRINSIC_MBCOUNT                    = 1 << 5,
-    AGS_DX12_EXTENSION_INTRINSIC_COMPARE3                   = 1 << 6,
-    AGS_DX12_EXTENSION_INTRINSIC_BARYCENTRICS               = 1 << 7,
+    AGS_DX12_EXTENSION_INTRINSIC_READFIRSTLANE              = 1 << 0,   ///< Supported in Radeon Software Version 16.9.2 (driver version 16.40.2311) onwards.
+    AGS_DX12_EXTENSION_INTRINSIC_READLANE                   = 1 << 1,   ///< Supported in Radeon Software Version 16.9.2 (driver version 16.40.2311) onwards.
+    AGS_DX12_EXTENSION_INTRINSIC_LANEID                     = 1 << 2,   ///< Supported in Radeon Software Version 16.9.2 (driver version 16.40.2311) onwards.
+    AGS_DX12_EXTENSION_INTRINSIC_SWIZZLE                    = 1 << 3,   ///< Supported in Radeon Software Version 16.9.2 (driver version 16.40.2311) onwards.
+    AGS_DX12_EXTENSION_INTRINSIC_BALLOT                     = 1 << 4,   ///< Supported in Radeon Software Version 16.9.2 (driver version 16.40.2311) onwards.
+    AGS_DX12_EXTENSION_INTRINSIC_MBCOUNT                    = 1 << 5,   ///< Supported in Radeon Software Version 16.9.2 (driver version 16.40.2311) onwards.
+    AGS_DX12_EXTENSION_INTRINSIC_COMPARE3                   = 1 << 6,   ///< Supported in Radeon Software Version 16.9.2 (driver version 16.40.2311) onwards.
+    AGS_DX12_EXTENSION_INTRINSIC_BARYCENTRICS               = 1 << 7,   ///< Supported in Radeon Software Version 16.9.2 (driver version 16.40.2311) onwards.
+    AGS_DX12_EXTENSION_INTRINSIC_WAVE_REDUCE                = 1 << 8,   ///< Supported in Radeon Software Version 17.9.1 onwards.
+    AGS_DX12_EXTENSION_INTRINSIC_WAVE_SCAN                  = 1 << 9,   ///< Supported in Radeon Software Version 17.9.1 onwards.
+    AGS_DX12_EXTENSION_USER_MARKERS                         = 1 << 10   ///< Supported in Radeon Software Version 17.9.1 onwards.
 };
 
 /// The space id for DirectX12 intrinsic support
@@ -195,9 +223,11 @@ enum AGSDisplayFlags
     AGS_DISPLAYFLAG_PRIMARY_DISPLAY                         = 1 << 0,   ///< Whether this display is marked as the primary display. Not set on the WACK version.
     AGS_DISPLAYFLAG_HDR10                                   = 1 << 1,   ///< HDR10 is supported on this display
     AGS_DISPLAYFLAG_DOLBYVISION                             = 1 << 2,   ///< Dolby Vision is supported on this display
-    AGS_DISPLAYFLAG_EYEFINITY_IN_GROUP                      = 1 << 4,   ///< The display is part of the Eyefinity group
-    AGS_DISPLAYFLAG_EYEFINITY_PREFERRED_DISPLAY             = 1 << 5,   ///< The display is the preferred display in the Eyefinity group for displaying the UI
-    AGS_DISPLAYFLAG_EYEFINITY_IN_PORTRAIT_MODE              = 1 << 6,   ///< The display is in the Eyefinity group but in portrait mode
+    AGS_DISPLAYFLAG_FREESYNC                                = 1 << 3,   ///< Freesync is supported on this display
+    AGS_DISPLAYFLAG_FREESYNC_2                              = 1 << 4,   ///< Freesync 2 is supported on this display
+    AGS_DISPLAYFLAG_EYEFINITY_IN_GROUP                      = 1 << 5,   ///< The display is part of the Eyefinity group
+    AGS_DISPLAYFLAG_EYEFINITY_PREFERRED_DISPLAY             = 1 << 6,   ///< The display is the preferred display in the Eyefinity group for displaying the UI
+    AGS_DISPLAYFLAG_EYEFINITY_IN_PORTRAIT_MODE              = 1 << 7,   ///< The display is in the Eyefinity group but in portrait mode
 };
 
 struct AGSContext;  ///< All function calls in AGS require a pointer to a context. This is generated via \ref agsInit
@@ -233,13 +263,13 @@ struct AGSDisplayInfo
 
     unsigned int            displayFlags;                   ///< Bitfield of ::AGSDisplayFlags
 
-    int                     maxResolutionX;                 ///< The maximum supported resolution of the display
-    int                     maxResolutionY;                 ///< The maximum supported resolution of the display
+    int                     maxResolutionX;                 ///< The maximum supported resolution of the unrotated display
+    int                     maxResolutionY;                 ///< The maximum supported resolution of the unrotated display
     float                   maxRefreshRate;                 ///< The maximum supported refresh rate of the display
 
-    AGSRect                 currentResolution;              ///< The current resolution and position in the desktop
-    AGSRect                 visibleResolution;              ///< The visible resolution and position. Note this may be a sub region
-                                                            ///< of currentResolution when Eyefinity bezel compensation is enabled
+    AGSRect                 currentResolution;              ///< The current resolution and position in the desktop, ignoring Eyefinity bezel compensation
+    AGSRect                 visibleResolution;              ///< The visible resolution and position. When Eyefinity bezel compensation is enabled this will
+                                                            ///< be the sub region in the Eyefinity single large surface (SLS)
     float                   currentRefreshRate;             ///< The current refresh rate
 
     int                     eyefinityGridCoordX;            ///< The X coordinate in the Eyefinity grid. -1 if not in an Eyefinity group
@@ -343,8 +373,9 @@ struct AGSDisplaySettings
     enum Mode
     {
         Mode_SDR,                                           ///< SDR mode
-        Mode_scRGB,                                         ///< scRGB, requiring an FP16 swapchain. Values of 1.0 == 80 nits, 125.0 == 10000 nits. Uses REC709 primaries.
-        Mode_PQ,                                            ///< PQ encoding, requiring a 1010102 UNORM swapchain and PQ encoding in the output shader. Uses BT2020 primaries.
+        Mode_HDR10_PQ,                                      ///< HDR10 PQ encoding, requiring a 1010102 UNORM swapchain and PQ encoding in the output shader.
+        Mode_HDR10_scRGB,                                   ///< HDR10 scRGB, requiring an FP16 swapchain. Values of 1.0 == 80 nits, 125.0 == 10000 nits.
+        Mode_Freesync2_scRGB,                               ///< Freesync2 scRGB, requiring an FP16 swapchain. Values in the range of 0.0 to 125.0 where 125.0 == AGSDisplayInfo::maxLuminance.
         Mode_DolbyVision                                    ///< Dolby Vision, requiring an 8888 UNORM swapchain
     };
 
@@ -402,7 +433,10 @@ AMD_AGS_API AGSReturnCode agsGetCrossfireGPUCount( AGSContext* context, int* num
 /// Function used to set a specific display into HDR mode
 /// \note Setting all of the values apart from color space and transfer function to zero will cause the display to use defaults.
 /// \note Call this function after each mode change (switch to fullscreen, any change in swapchain etc).
-/// \note HDR10 PQ mode requires a 1010102 swapchain. HDR10 linear125 mode requires an FP16 swapchain.
+/// \note HDR10 PQ mode requires a 1010102 swapchain.
+/// \note HDR10 scRGB mode requires an FP16 swapchain.
+/// \note Freesync2 Gamma mode requires a 1010102 swapchain.
+/// \note Freesync2 scRGB mode requires an FP16 swapchain.
 /// \note Dolby Vision requires a 8888 UNORM swapchain.
 ///
 /// \param [in] context                             Pointer to a context. This is generated by \ref agsInit
@@ -423,8 +457,12 @@ AMD_AGS_API AGSReturnCode agsSetDisplayMode( AGSContext* context, int deviceInde
 
 ///
 /// Function used to initialize the AMD-specific driver extensions for D3D12.
-/// D3D12 extensions are supported in Radeon Software Crimson Edition 16.9.2 (driver version 16.40.2311) onwards.
-/// Newer extensions may require more recent versions of the driver. Check support with extensionsSupported.
+/// Extensions require support in the driver, therefore it is important to check the extensionsSupported bitfield.
+///
+/// When using the HLSL shader extensions please note:
+/// * The shader compiler should not use the D3DCOMPILE_SKIP_OPTIMIZATION option, otherwise it will not work.
+/// * The intrinsic instructions require a 5.1 shader model.
+/// * The Root Signature will need to use an extra resource and sampler. These are not real resources/samplers, they are just used to encode the intrinsic instruction.
 ///
 /// \param [in] context                             Pointer to a context. This is generated by \ref agsInit
 /// \param [in] device                              The D3D12 device.
@@ -441,36 +479,143 @@ AMD_AGS_API AGSReturnCode agsDriverExtensionsDX12_DeInit( AGSContext* context );
 
 /// @}
 
+/// \defgroup dx12usermarkers User Markers
+/// @{
+
+///
+/// Function used to push an AMD user marker onto the command list.
+/// This is only has an effect if AGS_DX12_EXTENSION_USER_MARKERS is present in the extensionsSupported bitfield of agsDriverExtensionsDX12_Init()
+/// Supported in Radeon Software Version 17.9.1 onwards.
+///
+/// \param [in] context                             Pointer to a context.
+/// \param [in] commandList                         Pointer to the command list.
+/// \param [in] data                                The marker string.
+///
+AMD_AGS_API AGSReturnCode agsDriverExtensionsDX12_PushMarker( AGSContext* context, ID3D12GraphicsCommandList* commandList, const char* data );
+
+///
+/// Function used to pop an AMD user marker on the command list.
+/// Supported in Radeon Software Version 17.9.1 onwards.
+///
+/// \param [in] context                             Pointer to a context.
+/// \param [in] commandList                         Pointer to the command list.
+///
+AMD_AGS_API AGSReturnCode agsDriverExtensionsDX12_PopMarker( AGSContext* context, ID3D12GraphicsCommandList* commandList );
+
+///
+/// Function used to insert an single event AMD user marker onto the command list.
+/// Supported in Radeon Software Version 17.9.1 onwards.
+///
+/// \param [in] context                             Pointer to a context.
+/// \param [in] commandList                         Pointer to the command list.
+/// \param [in] data                                The marker string.
+///
+AMD_AGS_API AGSReturnCode agsDriverExtensionsDX12_SetMarker( AGSContext* context, ID3D12GraphicsCommandList* commandList, const char* data );
+
+/// @}
+
 /// @}
 
 /// \defgroup dx11 DirectX11 Extensions
 /// DirectX11 driver extensions
 /// @{
 
-/// \defgroup dx11init Initialization and Cleanup
+/// \defgroup dx11init Device creation and cleanup
+/// It is now mandatory to call agsDriverExtensionsDX11_CreateDevice() when creating a device if the user wants to access any DX11 AMD extensions.
+/// The corresponding agsDriverExtensionsDX11_DestroyDevice() call must be called to release the device and free up the internal resources allocated by the create call.
 /// @{
 
+/// The struct to specify the existing DX11 device creation parameters
+struct AGSDX11DeviceCreationParams
+{
+    IDXGIAdapter*               pAdapter;                   ///< Consult the DX documentation on D3D11CreateDevice for this parameter
+    D3D_DRIVER_TYPE             DriverType;                 ///< Consult the DX documentation on D3D11CreateDevice for this parameter
+    HMODULE                     Software;                   ///< Consult the DX documentation on D3D11CreateDevice for this parameter
+    UINT                        Flags;                      ///< Consult the DX documentation on D3D11CreateDevice for this parameter
+    const D3D_FEATURE_LEVEL*    pFeatureLevels;             ///< Consult the DX documentation on D3D11CreateDevice for this parameter
+    UINT                        FeatureLevels;              ///< Consult the DX documentation on D3D11CreateDevice for this parameter
+    UINT                        SDKVersion;                 ///< Consult the DX documentation on D3D11CreateDevice for this parameter
+    const DXGI_SWAP_CHAIN_DESC* pSwapChainDesc;             ///< Optional swapchain description. Specify this to invoke D3D11CreateDeviceAndSwapChain instead of D3D11CreateDevice. This must be null on the WACK compliant version
+};
+
+#define AGS_MAKE_VERSION( major, minor, patch ) ( ( major << 22 ) | ( minor << 12 ) | patch ) ///< Macro to create the app and engine versions for the fields in \ref AGSDX11ExtensionParams
+#define AGS_UNSPECIFIED_VERSION 0xFFFFAD00                                                    ///< Use this to specify no version
+
+/// The struct to specify DX11 additional device creation parameters
+struct AGSDX11ExtensionParams
+{
+    unsigned int    uavSlot;           ///< The UAV slot reserved for intrinsic support. This must match the slot defined in the HLSL, i.e. #define AmdDxExtShaderIntrinsicsUAVSlot.
+                                       /// The default slot is 7, but the caller is free to use an alternative slot.
+    const WCHAR*    pAppName;          ///< Application name
+    UINT            appVersion;        ///< Application version
+    const WCHAR*    pEngineName;       ///< Engine name
+    UINT            engineVersion;     ///< Engine version
+};
+
+/// The struct to hold all the returned parameters from the device creation call
+struct AGSDX11ReturnedParams
+{
+    ID3D11Device*           pDevice;                ///< The newly created device
+    D3D_FEATURE_LEVEL       FeatureLevel;           ///< The feature level supported by the newly created device
+    ID3D11DeviceContext*    pImmediateContext;      ///< The newly created immediate device context
+    IDXGISwapChain*         pSwapChain;             ///< The newly created swap chain. This is only created if a valid pSwapChainDesc is supplied in AGSDX11DeviceCreationParams. This is not supported on the WACK compliant version
+    unsigned int            extensionsSupported;    ///< Bit mask that \ref agsDriverExtensionsDX11_CreateDevice will fill in to indicate which extensions are supported. See AGSDriverExtensionDX11
+};
+
 ///
-/// Function used to initialize the AMD-specific driver extensions for D3D11.
-/// Shader intrinsics are supported in Radeon Software Crimson Edition 16.9.2 (driver version 16.40.2311) onwards.
-/// The multiview extension requires Radeon Software Crimson ReLive Edition 16.12.1 (driver version 16.50.2001) or later.
-/// Newer extensions may require more recent versions of the driver. Check support with extensionsSupported.
+/// Function used to create a D3D11 device with additional AMD-specific initialization parameters.
+///
+/// When using the HLSL shader extensions please note:
+/// * The shader compiler should not use the D3DCOMPILE_SKIP_OPTIMIZATION option, otherwise it will not work.
 ///
 /// \param [in] context                             Pointer to a context. This is generated by \ref agsInit
-/// \param [in] device                              The D3D11 device.
-/// \param [in] uavSlot                             The UAV slot reserved for intrinsic support. This must match the slot defined in the HLSL, i.e. #define AmdDxExtShaderIntrinsicsUAVSlot.
-///                                                 The default slot is 7, but the caller is free to use an alternative slot.
-/// \param [out] extensionsSupported                Pointer to a bit mask that this function will fill in to indicate which extensions are supported. See AGSDriverExtensionDX11
+/// \param [in] creationParams                      Pointer to the struct to specify the existing DX11 device creation parameters.
+/// \param [in] extensionParams                     Optional pointer to the struct to specify DX11 additional device creation parameters.
+/// \param [out] returnedParams                     Pointer to struct to hold all the returned parameters from the call.
 ///
-AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_Init( AGSContext* context, ID3D11Device* device, unsigned int uavSlot, unsigned int* extensionsSupported );
+AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_CreateDevice( AGSContext* context, AGSDX11DeviceCreationParams* creationParams, AGSDX11ExtensionParams* extensionParams, AGSDX11ReturnedParams* returnedParams );
 
 ///
-/// Function used to cleanup any AMD-specific driver extensions for D3D11
+/// Function to destroy the D3D11 device.
+/// This call will also cleanup any AMD-specific driver extensions for D3D11.
 ///
 /// \param [in] context                             Pointer to a context.
+/// \param [in] device                              Pointer to the D3D11 device.
+/// \param [out] references                         Optional pointer to an unsigned int that will be set to the value returned from device->Release().
 ///
-AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_DeInit( AGSContext* context );
+AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_DestroyDevice( AGSContext* context, ID3D11Device* device, unsigned int* references );
 
+/// @}
+
+
+/// \defgroup dx11appreg App Registration
+/// @{
+/// This extension allows an apllication to voluntarily register itself with the driver, providing a more robust app detection solution and avoid the issue of the driver 
+/// relying on exe names to match the app to a driver profile.
+/// This feature is supported in Radeon Software Version 17.9.2 onwards.
+/// Rules:
+/// * AppName or EngineName must be set, but both are not required. Engine profiles will be used only if app specific profiles do not exist.
+/// * In an engine, the EngineName should be set, so a default profile can be built. If an app modifies the engine, the AppName should be set, to allow a profile for the specific app.
+/// * Version number is not mandatory, but heavily suggested. The use of which can prevent the use of profiles for incompatible versions (for instance engine versions that introduce or change features), and can help prevent older profiles from being used (and introducing new bugs) before the profile is tested with new app builds.
+/// * If Version numbers are used and a new version is introduced, a new profile will not be enabled until an AMD engineer has been able to update a previous profile, or make a new one.
+///
+/// The cases for profile selection are as follows:
+///
+/// |Case|Profile Applied|
+/// |----|---------------|
+/// | App or Engine Version has profile | The profile is used. |
+/// | App or Engine Version num < profile version num | The closest profile > the version number is used. |
+/// | App or Engine Version num > profile version num | No profile selected/The previous method is used. |
+/// | App and Engine Version have profile | The App's profile is used. |
+/// | App and Engine Version num < profile version | The closest App profile > the version number is used. |
+/// | App and Engine Version, no App profile found | The Engine profile will be used. |
+/// | App/Engine name but no Version, has profile | The latest profile is used. |
+/// | No name or version, or no profile | The previous app detection method is used. |
+///
+/// As shown above, if an App name is given, and a profile is found for that app, that will be prioritized. The Engine name and profile will be used only if no app name is given, or no viable profile is found for the app name.
+/// In the case that App nor Engine have a profile, the previous app detection methods will be used. If given a version number that is larger than any profile version number, no profile will be selected.
+/// This is specifically to prevent cases where an update to an engine or app will cause catastrophic  breaks in the profile, allowing an engineer to test the profile before clearing it for public use with the new engine/app update.
+///
 /// @}
 
 /// \defgroup dx11misc Misc Extensions
@@ -629,7 +774,7 @@ AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndir
 /// \defgroup shadercompiler Shader Compiler Controls
 /// API for controlling DirectX11 shader compilation.
 /// Check support for this feature using the AGS_DX11_EXTENSION_CREATE_SHADER_CONTROLS bit.
-/// Supported in Radeon Software Crimson Edition 16.9.2 (driver version 16.40.2311) onwards.
+/// Supported in Radeon Software Version 16.9.2 (driver version 16.40.2311) onwards.
 /// @{
 
 ///
@@ -672,7 +817,7 @@ AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_SetDiskShaderCacheEnabled( AGS
 /// \defgroup multiview Multiview
 /// API for multiview broadcasting.
 /// Check support for this feature using the AGS_DX11_EXTENSION_MULTIVIEW bit.
-/// Supported in Radeon Software Crimson ReLive Edition 16.12.1 (driver version 16.50.2001) onwards.
+/// Supported in Radeon Software Version 16.12.1 (driver version 16.50.2001) onwards.
 /// @{
 
 ///
