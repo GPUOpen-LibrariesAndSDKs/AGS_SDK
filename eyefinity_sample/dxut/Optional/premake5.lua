@@ -38,3 +38,9 @@ project "DXUTOpt"
       defines { "WIN32", "NDEBUG", "_WINDOWS", "_LIB", "_WIN32_WINNT=0x0601" }
       flags { "LinkTimeOptimization", "FatalWarnings" }
       optimize "On"
+
+   filter "action:vs2017"
+      -- VS2017 RC puts the log file in a different location than previous versions.
+      -- Seems like a bug. Still present in VS2017 release version 15.1 (26403.3).
+      -- The workaround is to explicitly specify the log file location.
+      buildlog ("$(ProjectDir)Bin\\%{_AMD_SAMPLE_DIR_LAYOUT}\\$(MSBuildProjectName).log")

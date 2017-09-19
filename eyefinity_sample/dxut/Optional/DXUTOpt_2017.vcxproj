@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
@@ -11,11 +11,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{85344B7F-5AA0-4E12-A065-D1333D11F6CA}</ProjectGuid>
+    <ProjectGuid>{61B333C2-C4F7-4CC1-A9BF-83F6D95588EB}</ProjectGuid>
     <IgnoreWarnCompileDuplicatedFilename>true</IgnoreWarnCompileDuplicatedFilename>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>DXUT</RootNamespace>
-    <ProjectName>DXUT</ProjectName>
+    <RootNamespace>DXUTOpt</RootNamespace>
+    <ProjectName>DXUTOpt</ProjectName>
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -23,13 +23,13 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -43,15 +43,15 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>Bin\Desktop_2015\x64\Debug\</OutDir>
-    <IntDir>Bin\Desktop_2015\x64\Debug\</IntDir>
-    <TargetName>DXUT</TargetName>
+    <OutDir>Bin\Desktop_2017\x64\Debug\</OutDir>
+    <IntDir>Bin\Desktop_2017\x64\Debug\</IntDir>
+    <TargetName>DXUTOpt</TargetName>
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>Bin\Desktop_2015\x64\Release\</OutDir>
-    <IntDir>Bin\Desktop_2015\x64\Release\</IntDir>
-    <TargetName>DXUT</TargetName>
+    <OutDir>Bin\Desktop_2017\x64\Release\</OutDir>
+    <IntDir>Bin\Desktop_2017\x64\Release\</IntDir>
+    <TargetName>DXUTOpt</TargetName>
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -61,6 +61,7 @@
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessorDefinitions>WIN32;_DEBUG;DEBUG;PROFILE;_WINDOWS;_LIB;_WIN32_WINNT=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\Core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -72,6 +73,9 @@
     <Lib>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
+    <BuildLog>
+      <Path>$(ProjectDir)Bin\Desktop_2017\x64\Debug\$(MSBuildProjectName).log</Path>
+    </BuildLog>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -80,6 +84,7 @@
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_LIB;_WIN32_WINNT=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\Core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -97,27 +102,33 @@
     <Lib>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
+    <BuildLog>
+      <Path>$(ProjectDir)Bin\Desktop_2017\x64\Release\$(MSBuildProjectName).log</Path>
+    </BuildLog>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="DDSTextureLoader.h" />
-    <ClInclude Include="DXUT.h" />
-    <ClInclude Include="DXUTDevice11.h" />
-    <ClInclude Include="DXUTmisc.h" />
-    <ClInclude Include="ScreenGrab.h" />
-    <ClInclude Include="WICTextureLoader.h" />
-    <ClInclude Include="dxerr.h" />
+    <ClInclude Include="DXUTLockFreePipe.h" />
+    <ClInclude Include="DXUTcamera.h" />
+    <ClInclude Include="DXUTgui.h" />
+    <ClInclude Include="DXUTguiIME.h" />
+    <ClInclude Include="DXUTres.h" />
+    <ClInclude Include="DXUTsettingsdlg.h" />
+    <ClInclude Include="ImeUi.h" />
+    <ClInclude Include="SDKmesh.h" />
+    <ClInclude Include="SDKmisc.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DDSTextureLoader.cpp" />
-    <ClCompile Include="DXUT.cpp">
+    <ClCompile Include="DXUTcamera.cpp" />
+    <ClCompile Include="DXUTgui.cpp" />
+    <ClCompile Include="DXUTguiIME.cpp" />
+    <ClCompile Include="DXUTres.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="DXUTDevice11.cpp" />
-    <ClCompile Include="DXUTmisc.cpp" />
-    <ClCompile Include="ScreenGrab.cpp" />
-    <ClCompile Include="WICTextureLoader.cpp" />
-    <ClCompile Include="dxerr.cpp" />
+    <ClCompile Include="DXUTsettingsdlg.cpp" />
+    <ClCompile Include="ImeUi.cpp" />
+    <ClCompile Include="SDKmesh.cpp" />
+    <ClCompile Include="SDKmisc.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

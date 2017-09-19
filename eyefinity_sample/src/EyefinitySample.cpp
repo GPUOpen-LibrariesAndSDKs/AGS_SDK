@@ -80,6 +80,13 @@ DirectX::XMMATRIX					g_SingleCameraProjM;
 DirectX::XMMATRIX                   g_MultiCameraProjM;
 float								g_FovX = 0.0f;
 
+struct LineVertex { float x, y; };
+ID3D11InputLayout*                  g_LinesInputLayout = nullptr;
+ID3D11VertexShader*                 g_LinesVertexShader = nullptr;
+ID3D11PixelShader*                  g_LinesPixelShader = nullptr;
+ID3D11Buffer*                       g_LinesVertexBuffer = nullptr;
+ID3D11Buffer*                       g_LinesIndexBuffer = nullptr;
+
 //--------------------------------------------------------------------------------------
 // Retrieve the main display info and place the dialog on main display 
 // whenever the resolution is changed.
@@ -218,7 +225,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
     InitApp();
     DXUTInit( true, true ); // Parse the command line, show msgboxes on error, no extra command line params
     DXUTSetCursorSettings( true, true ); // Show the cursor and clip it when in full screen
-    DXUTCreateWindow( L"Eyefinity Sample" );
+    DXUTCreateWindow( L"Eyefinity Sample v1.1" );
 
     // Find out if this display has an Eyefinity config enabled.
     int width = 768;
@@ -235,7 +242,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
         windowed = false;
     }
 
-    DXUTCreateDevice(D3D_FEATURE_LEVEL_11_0, windowed, width, height );
+    DXUTCreateDevice( D3D_FEATURE_LEVEL_11_0, windowed, width, height );
 
     DXUTMainLoop(); // Enter into the DXUT render loop	
 
@@ -419,6 +426,45 @@ HRESULT CALLBACK OnD3D11CreateDevice( ID3D11Device* pd3dDevice, const DXGI_SURFA
 	g_Camera.SetRotateButtons(true, false, false);
 	g_Camera.SetEnableYAxisMovement( false );
 
+    // Create the line rendering resources
+    hr = CompileShaderFromFile( L"..\\src\\Shaders\\Line.hlsl", "LineVS", "vs_4_0", &pBlob, 0 );
+    assert( hr == S_OK );
+    hr = pd3dDevice->CreateVertexShader( pBlob->GetBufferPointer(), pBlob->GetBufferSize(), 0, &g_LinesVertexShader );
+    assert( hr == S_OK );
+
+    D3D11_INPUT_ELEMENT_DESC layout[] =
+    {
+        { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+    };
+    hr = pd3dDevice->CreateInputLayout( layout, ARRAYSIZE( layout ), pBlob->GetBufferPointer(), pBlob->GetBufferSize(), &g_LinesInputLayout );
+    assert( hr == S_OK );
+    SAFE_RELEASE( pBlob );
+
+    hr = CompileShaderFromFile( L"..\\src\\Shaders\\Line.hlsl", "LinePS", "ps_4_0", &pBlob, 0 );
+    assert( hr == S_OK );
+    hr = pd3dDevice->CreatePixelShader( pBlob->GetBufferPointer(), pBlob->GetBufferSize(), 0, &g_LinesPixelShader );
+    assert( hr == S_OK );
+
+    // Create lines vertex buffer
+    D3D11_BUFFER_DESC desc;
+    ZeroMemory( &desc, sizeof( desc ) );
+    desc.ByteWidth = 12 * sizeof( LineVertex );
+    desc.Usage = D3D11_USAGE_DYNAMIC;
+    desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    pd3dDevice->CreateBuffer( &desc, 0, &g_LinesVertexBuffer );
+
+    const unsigned short indices[] = { 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 8, 9, 9, 10, 10, 11, 11, 8 };
+
+    desc.ByteWidth = 24 * sizeof( unsigned short );
+    desc.Usage = D3D11_USAGE_IMMUTABLE;
+    desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+    desc.CPUAccessFlags = 0;
+    D3D11_SUBRESOURCE_DATA data = {};
+    data.pSysMem = indices;
+    data.SysMemPitch = sizeof( indices );
+    pd3dDevice->CreateBuffer( &desc, &data, &g_LinesIndexBuffer );
+
     return S_OK;
 }
 //--------------------------------------------------------------------------------------
@@ -430,10 +476,11 @@ HRESULT CALLBACK OnD3D11SwapChainResized( ID3D11Device* pd3dDevice, IDXGISwapCha
     HRESULT hr = S_OK;   
 
     g_iWidth = pBackBufferSurfaceDesc->Width;
-    g_iHeight = pBackBufferSurfaceDesc->Height;		
+    g_iHeight = pBackBufferSurfaceDesc->Height;
 
     const AGSDeviceInfo& device = g_AGSGPUInfo.devices[ 0 ];
     g_EyefinityEnabled = false;
+    bool isPortraitEyefinity = false;
 
     if ( device.eyefinityEnabled )
     {
@@ -453,6 +500,50 @@ HRESULT CALLBACK OnD3D11SwapChainResized( ID3D11Device* pd3dDevice, IDXGISwapCha
                     g_MainDisplayRect.top = device.displays[ i ].visibleResolution.offsetY;
                     g_MainDisplayRect.bottom = device.displays[ i ].visibleResolution.offsetY + device.displays[ i ].visibleResolution.height;
                 }
+
+                isPortraitEyefinity |= device.displays[ i ].displayFlags & AGS_DISPLAYFLAG_EYEFINITY_IN_PORTRAIT_MODE ? 1 : 0;
+            }
+
+            if ( device.eyefinityGridWidth == 3 && device.eyefinityGridHeight == 1 )
+            {
+                D3D11_MAPPED_SUBRESOURCE res;
+                DXUTGetD3D11DeviceContext()->Map( g_LinesVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &res );
+                LineVertex* verts = (LineVertex*)res.pData;
+                for ( int i = 0; i< device.numDisplays; i++ )
+                {
+                    if ( device.displays[ i ].displayFlags & AGS_DISPLAYFLAG_EYEFINITY_IN_GROUP )
+                    {
+                        const float offset = 2.0f;
+
+                        float x0 = device.displays[ i ].visibleResolution.offsetX + offset;
+                        float x1 = device.displays[ i ].visibleResolution.offsetX + device.displays[ i ].visibleResolution.width - 2 * offset;
+
+                        float y0 = device.displays[ i ].visibleResolution.offsetY + offset;
+                        float y1 = device.displays[ i ].visibleResolution.offsetY + device.displays[ i ].visibleResolution.height - 2 * offset;
+
+                        x0 = 2.0f * ( x0 / pBackBufferSurfaceDesc->Width ) - 1.0f;
+                        x1 = 2.0f * ( x1 / pBackBufferSurfaceDesc->Width ) - 1.0f;
+
+                        y0 = 2.0f * ( y0 / pBackBufferSurfaceDesc->Height ) - 1.0f;
+                        y1 = 2.0f * ( y1 / pBackBufferSurfaceDesc->Height ) - 1.0f;
+
+                        verts[ 0 ].x = x0;
+                        verts[ 0 ].y = y0;
+
+                        verts[ 1 ].x = x1;
+                        verts[ 1 ].y = y0;
+
+                        verts[ 2 ].x = x1;
+                        verts[ 2 ].y = y1;
+
+                        verts[ 3 ].x = x0;
+                        verts[ 3 ].y = y1;
+
+                        verts += 4;
+                    }
+                }
+
+                DXUTGetD3D11DeviceContext()->Unmap( g_LinesVertexBuffer, 0 );
             }
         }
     }
@@ -469,22 +560,25 @@ HRESULT CALLBACK OnD3D11SwapChainResized( ID3D11Device* pd3dDevice, IDXGISwapCha
     V_RETURN( g_D3DSettingsDlg.OnD3D11ResizedSwapChain( pd3dDevice, pBackBufferSurfaceDesc ) );
 
 	// Using fixed vertical fov and adjust the horizontal fov according to the screen aspect ratio.
-	const float YFOV = DirectX::XM_PI/4.0f;
-	
+	float YFOV = DirectX::XM_PI/4.0f;
+    if ( isPortraitEyefinity )
+    {
+        YFOV *= (float)pBackBufferSurfaceDesc->Width / (float)pBackBufferSurfaceDesc->Height;
+    }
+
 	float fAspectRatio;
 	if ( g_EyefinityEnabled )
 	{
-		fAspectRatio = (float)(device.eyefinityResolutionX / device.eyefinityGridWidth ) / (float)( device.eyefinityResolutionY / device.eyefinityGridHeight );
-		
-		g_MultiCameraProjM = DirectX::XMMatrixPerspectiveFovLH( YFOV, fAspectRatio, 0.01f, 500.0f );
+        fAspectRatio = (float)(device.eyefinityResolutionX / device.eyefinityGridWidth ) / (float)( device.eyefinityResolutionY / device.eyefinityGridHeight );
+        g_MultiCameraProjM = DirectX::XMMatrixPerspectiveFovLH( YFOV, fAspectRatio, 0.01f, 500.0f );
 		
 		float xScale = (cos(YFOV*0.5f)/sin(YFOV*0.5f)) / fAspectRatio;
 		g_FovX = 2.0f * atan( 1.0f / xScale ); 
     }
 
-	fAspectRatio = pBackBufferSurfaceDesc->Width / ( FLOAT )pBackBufferSurfaceDesc->Height;	
+	fAspectRatio = pBackBufferSurfaceDesc->Width / ( FLOAT )pBackBufferSurfaceDesc->Height;
 	// The projection matrix for the camera of single camera mode.
-	g_SingleCameraProjM = DirectX::XMMatrixPerspectiveFovLH( YFOV, fAspectRatio, 0.01f, 500.0f );
+    g_SingleCameraProjM = DirectX::XMMatrixPerspectiveFovLH( YFOV, fAspectRatio, 0.01f, 500.0f );
     
 	// Locate the HUD and UI based on the area of main display.
 	g_HUD.SetLocation( g_MainDisplayRect.right - 170, g_MainDisplayRect.top );
@@ -492,8 +586,8 @@ HRESULT CALLBACK OnD3D11SwapChainResized( ID3D11Device* pd3dDevice, IDXGISwapCha
     g_SampleUI.SetLocation( g_MainDisplayRect.right - 170, g_MainDisplayRect.top + 300 );
     g_SampleUI.SetSize( 170, 170 );
 
-    // Only enable multi camera mode in 3x1 Eyefinity mode
-    g_HUD.GetCheckBox( IDC_USEMULTICAMERA )->SetEnabled( g_EyefinityEnabled && device.eyefinityGridWidth == 3 && device.eyefinityGridHeight == 1 );
+    // Only enable multi camera mode in 3x1 Eyefinity mode (non bezel compensated)
+    g_HUD.GetCheckBox( IDC_USEMULTICAMERA )->SetEnabled( g_EyefinityEnabled && !device.eyefinityBezelCompensated && device.eyefinityGridWidth == 3 && device.eyefinityGridHeight == 1 );
 
     return hr;
 }
@@ -576,7 +670,7 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
 				    Viewport.TopLeftY	= (FLOAT)display.currentResolution.offsetY;
 				    Viewport.Width		= (FLOAT)display.currentResolution.width;
 				    Viewport.Height		= (FLOAT)display.currentResolution.height;
-				    Viewport.MinDepth	= 0.0f;
+                    Viewport.MinDepth	= 0.0f;
 				    Viewport.MaxDepth	= 1.0f;
 				    pd3dImmediateContext->RSSetViewports(1, &Viewport);
 
@@ -610,9 +704,9 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
             }
 			Viewport.TopLeftX	= 0.0f;
 			Viewport.TopLeftY	= 0.0f;
-			Viewport.Width		= (FLOAT)device.eyefinityResolutionX;
+            Viewport.Width		= (FLOAT)device.eyefinityResolutionX;
 			Viewport.Height		= (FLOAT)device.eyefinityResolutionY;
-			Viewport.MinDepth	= 0.0f;
+            Viewport.MinDepth	= 0.0f;
 			Viewport.MaxDepth	= 1.0f;
 			pd3dImmediateContext->RSSetViewports(1, &Viewport);	
 		}
@@ -620,9 +714,11 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
 		{
 			Viewport.TopLeftX	= 0.0f;
 			Viewport.TopLeftY	= 0.0f;
-			Viewport.Width		= (FLOAT)device.eyefinityResolutionX;
+            Viewport.Width		= (FLOAT)device.eyefinityResolutionY;
+			Viewport.Height		= (FLOAT)device.eyefinityResolutionX;
+            Viewport.Width		= (FLOAT)device.eyefinityResolutionX;
 			Viewport.Height		= (FLOAT)device.eyefinityResolutionY;
-			Viewport.MinDepth	= 0.0f;
+            Viewport.MinDepth	= 0.0f;
 			Viewport.MaxDepth	= 1.0f;
 			pd3dImmediateContext->RSSetViewports(1, &Viewport);
 			VPM = g_Camera.GetViewMatrix() * g_SingleCameraProjM;
@@ -633,7 +729,33 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
 	{
 		VPM = g_Camera.GetViewMatrix() * g_SingleCameraProjM;
 		RenderScene(pd3dDevice, pd3dImmediateContext, VPM);
-	}	
+	}
+
+    if ( g_EyefinityEnabled )
+    {
+        const AGSDeviceInfo& device = g_AGSGPUInfo.devices[ 0 ];
+        if ( device.eyefinityGridWidth == 3 && device.eyefinityGridHeight == 1 )
+        {
+            Viewport.TopLeftX = 0.0f;
+            Viewport.TopLeftY = 0.0f;
+            Viewport.Width		= (FLOAT)device.eyefinityResolutionX;
+			Viewport.Height		= (FLOAT)device.eyefinityResolutionY;
+            Viewport.MinDepth = 0.0f;
+            Viewport.MaxDepth = 1.0f;
+            pd3dImmediateContext->RSSetViewports( 1, &Viewport );
+
+            pd3dImmediateContext->IASetInputLayout( g_LinesInputLayout );
+            pd3dImmediateContext->VSSetShader( g_LinesVertexShader, 0, 0 );
+            pd3dImmediateContext->PSSetShader( g_LinesPixelShader, 0, 0 );
+
+            UINT stride = sizeof( LineVertex );
+            UINT offset = 0;
+            pd3dImmediateContext->IASetVertexBuffers( 0, 1, &g_LinesVertexBuffer, &stride, &offset );
+            pd3dImmediateContext->IASetIndexBuffer( g_LinesIndexBuffer, DXGI_FORMAT_R16_UINT, 0 );
+            pd3dImmediateContext->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_LINELIST );
+            pd3dImmediateContext->DrawIndexed( 8 * 3, 0, 0 );
+        }
+    }
 
     DXUT_BeginPerfEvent( DXUT_PERFEVENTCOLOR, L"HUD / Stats" );
     RenderText();
@@ -672,6 +794,12 @@ void CALLBACK OnD3D11DestroyDevice( void* pUserContext )
     DXUTGetGlobalResourceCache().OnDestroyDevice();
 	
 	SAFE_DELETE( g_pTxtHelper );
+
+    SAFE_RELEASE( g_LinesVertexBuffer );
+    SAFE_RELEASE( g_LinesIndexBuffer );
+    SAFE_RELEASE( g_LinesPixelShader );
+    SAFE_RELEASE( g_LinesVertexShader );
+    SAFE_RELEASE( g_LinesInputLayout );
 
     SAFE_RELEASE( g_pVertexLayout );
 	SAFE_RELEASE( g_pConstantBuffer );

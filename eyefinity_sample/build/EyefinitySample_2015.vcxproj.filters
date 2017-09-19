@@ -37,6 +37,9 @@
     <None Include="..\src\Shaders\EyefinitySample.hlsl">
       <Filter>src\Shaders</Filter>
     </None>
+    <None Include="..\src\Shaders\Line.hlsl">
+      <Filter>src\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\src\ResourceFiles\EyefinitySample.rc">
