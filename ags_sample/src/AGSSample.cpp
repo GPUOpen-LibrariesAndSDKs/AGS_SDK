@@ -58,9 +58,16 @@ void PrintDisplayInfo( const AGSGPUInfo& gpuInfo )
         printf( "Device id:   0x%04X\n", device.deviceId );
         printf( "Revision id: 0x%04X\n\n", device.revisionId );
 
+        const char* architecture[] =
+        {
+            "unknown",
+            "pre-GCN",
+            "GCN"
+        };
+
         if ( device.vendorId == 0x1002 )
         {
-            printf( "Is %sGCN, %d CUs, core clock %d MHz, memory clock %d MHz, %.1f Tflops\n", device.architectureVersion == AGSDeviceInfo::ArchitectureVersion_GCN ? "" : "not ", device.numCUs, device.coreClock, device.memoryClock, device.teraFlops );
+            printf( "Architecture: %s, %d CUs, core clock %d MHz, memory clock %d MHz, %.1f Tflops\n", architecture[ device.architectureVersion ], device.numCUs, device.coreClock, device.memoryClock, device.teraFlops );
             printf( "local memory: %d MBs\n\n", (int)( device.localMemoryInBytes / ( 1024 * 1024 ) ) );
         }
 
@@ -69,12 +76,7 @@ void PrintDisplayInfo( const AGSGPUInfo& gpuInfo )
         if ( device.eyefinityEnabled )
         {
             printf( "SLS grid is %d displays wide by %d displays tall\n", device.eyefinityGridWidth, device.eyefinityGridHeight );
-            printf( "SLS resolution is %d x %d pixels\n", device.eyefinityResolutionX, device.eyefinityResolutionY );
-
-            if ( device.eyefinityBezelCompensated )
-            {
-                printf( " SLS is bezel-compensated\n" );
-            }
+            printf( "SLS resolution is %d x %d pixels%s\n", device.eyefinityResolutionX, device.eyefinityResolutionY, device.eyefinityBezelCompensated ? ", bezel-compensated" : "" );
         }
         else
         {
@@ -112,13 +114,19 @@ void PrintDisplayInfo( const AGSGPUInfo& gpuInfo )
             if ( display.displayFlags & AGS_DISPLAYFLAG_DOLBYVISION )
                 printf( "\tDolby Vision supported\n" );
 
+            if ( display.displayFlags & AGS_DISPLAYFLAG_FREESYNC )
+                printf( "\tFreesync supported\n" );
+
+            if ( display.displayFlags & AGS_DISPLAYFLAG_FREESYNC_2 )
+                printf( "\tFreesync 2 supported\n" );
+
             printf( "\n" );
 
             if ( display.displayFlags & AGS_DISPLAYFLAG_EYEFINITY_IN_GROUP )
             {
                 printf( "\tEyefinity Display [%s mode] %s\n", display.displayFlags & AGS_DISPLAYFLAG_EYEFINITY_IN_PORTRAIT_MODE ? "portrait" : "landscape", display.displayFlags & AGS_DISPLAYFLAG_EYEFINITY_PREFERRED_DISPLAY ? " (preferred display)" : "" );
 
-                printf( "\tGrid coord %d x %d\n", display.eyefinityGridCoordX, display.eyefinityGridCoordY );
+                printf( "\tGrid coord [%d, %d]\n", display.eyefinityGridCoordX, display.eyefinityGridCoordY );
             }
 
             printf( "\tlogical display index: %d\n", display.logicalDisplayIndex );
