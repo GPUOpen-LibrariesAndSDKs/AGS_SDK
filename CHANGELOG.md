@@ -2,6 +2,18 @@
 
 **Note:** See `ags_lib\CHANGELOG.md` for changes to the core AGS library.
 
+### v5.1.1 - 2017-09-19
+* Breaking API change for DX11 extensions
+  * You now call `agsDriverExtensionsDX11_CreateDevice()` at creation time to access any DX11 AMD extensions
+  * With a corresponding call to `agsDriverExtensionsDX11_DestroyDevice()` during teardown
+* App registration extension for DX11 apps
+* FreeSync 2 HDR support
+* Scan and reduce wave-level shader intrinsics
+* DX12 user markers!
+* Eyefinity configuration detection bug fixes
+* Static libs in various flavours!
+* VS2017 versions of the shipping samples
+
 ### v5.0.6 - 2016-03-28
 * Update to newer version of Premake, 5.0 alpha 10
   * Plus local changes for auto-generating props files

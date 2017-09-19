@@ -1,5 +1,15 @@
 # AMD AGS Library Changelog
 
+### v5.1.1 - 2017-09-19
+* Breaking API change for DX11 extensions
+  * You now call `agsDriverExtensionsDX11_CreateDevice()` at creation time to access any DX11 AMD extensions
+  * With a corresponding call to `agsDriverExtensionsDX11_DestroyDevice()` during teardown
+* App registration extension for DX11 apps
+* FreeSync 2 HDR support
+* Scan and reduce wave-level shader intrinsics
+* DX12 user markers!
+* Static libs in various flavours!
+
 ### v5.0.6 - 2016-03-28
 * Fix min/max/avg luminance in display info
 * Clean up documentation
