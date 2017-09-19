@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2016 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2017 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -61,7 +61,7 @@ RWByteAddressBuffer AmdExtD3DShaderIntrinsicsUAV : register(u0, AmdExtD3DShaderI
 
 /**
 ***********************************************************************************************************************
-*   Intrinsic opcodes.
+*   Wave intrinsic opcodes.
 ***********************************************************************************************************************
 */
 #define AmdExtD3DShaderIntrinsicsOpcode_Readfirstlane  0x01
@@ -78,7 +78,11 @@ RWByteAddressBuffer AmdExtD3DShaderIntrinsicsUAV : register(u0, AmdExtD3DShaderI
 #define AmdExtD3DShaderIntrinsicsOpcode_Max3F          0x0c
 #define AmdExtD3DShaderIntrinsicsOpcode_BaryCoord      0x0d
 #define AmdExtD3DShaderIntrinsicsOpcode_VtxParam       0x0e
-
+#define AmdExtD3DShaderIntrinsicsOpcode_Reserved1      0x0f
+#define AmdExtD3DShaderIntrinsicsOpcode_Reserved2      0x10
+#define AmdExtD3DShaderIntrinsicsOpcode_Reserved3      0x11
+#define AmdExtD3DShaderIntrinsicsOpcode_WaveReduce     0x12
+#define AmdExtD3DShaderIntrinsicsOpcode_WaveScan       0x13
 
 /**
 ***********************************************************************************************************************
@@ -89,6 +93,46 @@ RWByteAddressBuffer AmdExtD3DShaderIntrinsicsUAV : register(u0, AmdExtD3DShaderI
 #define AmdExtD3DShaderIntrinsicsOpcodePhase_1    0x1
 #define AmdExtD3DShaderIntrinsicsOpcodePhase_2    0x2
 #define AmdExtD3DShaderIntrinsicsOpcodePhase_3    0x3
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsicsWaveOp defines for supported operations. Can be used as the parameter for the
+*   AmdExtD3DShaderIntrinsicsOpcode_WaveOp intrinsic.
+***********************************************************************************************************************
+*/
+#define AmdExtD3DShaderIntrinsicsWaveOp_AddF 0x01
+#define AmdExtD3DShaderIntrinsicsWaveOp_AddI 0x02
+#define AmdExtD3DShaderIntrinsicsWaveOp_AddU 0x03
+#define AmdExtD3DShaderIntrinsicsWaveOp_MulF 0x04
+#define AmdExtD3DShaderIntrinsicsWaveOp_MulI 0x05
+#define AmdExtD3DShaderIntrinsicsWaveOp_MulU 0x06
+#define AmdExtD3DShaderIntrinsicsWaveOp_MinF 0x07
+#define AmdExtD3DShaderIntrinsicsWaveOp_MinI 0x08
+#define AmdExtD3DShaderIntrinsicsWaveOp_MinU 0x09
+#define AmdExtD3DShaderIntrinsicsWaveOp_MaxF 0x0a
+#define AmdExtD3DShaderIntrinsicsWaveOp_MaxI 0x0b
+#define AmdExtD3DShaderIntrinsicsWaveOp_MaxU 0x0c
+#define AmdExtD3DShaderIntrinsicsWaveOp_And  0x0d    // Reduction only
+#define AmdExtD3DShaderIntrinsicsWaveOp_Or   0x0e    // Reduction only
+#define AmdExtD3DShaderIntrinsicsWaveOp_Xor  0x0f    // Reduction only
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsicsWaveOp masks and shifts for opcode and flags
+***********************************************************************************************************************
+*/
+#define AmdExtD3DShaderIntrinsicsWaveOp_OpcodeShift 0
+#define AmdExtD3DShaderIntrinsicsWaveOp_OpcodeMask  0xff
+#define AmdExtD3DShaderIntrinsicsWaveOp_FlagShift   8
+#define AmdExtD3DShaderIntrinsicsWaveOp_FlagMask    0xff
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsicsWaveOp flags for use with AmdExtD3DShaderIntrinsicsOpcode_WaveScan.
+***********************************************************************************************************************
+*/
+#define AmdExtD3DShaderIntrinsicsWaveOp_Inclusive   0x01
+#define AmdExtD3DShaderIntrinsicsWaveOp_Exclusive   0x02
 
 /**
 ***********************************************************************************************************************
@@ -313,7 +357,6 @@ float AmdExtD3DShaderIntrinsics_SwizzleF(float src, uint operation)
     uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_Swizzle, 0, operation);
 
     uint retVal;
-    //InterlockedCompareExchange(AmdExtD3DShaderIntrinsicsUAV[instruction], asuint(src), 0, retVal);
     AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src), 0, retVal);
     return asfloat(retVal);
 }
@@ -735,4 +778,2350 @@ float AmdExtD3DShaderIntrinsics_VertexParameterComponent(uint vertexIdx, uint pa
     return asfloat(retVal);
 }
 
-#endif // AMDEXTD3DSHADERINTRINICS_HLSL
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveReduce
+*
+*   The following functions are available if CheckSupport(AmdExtD3DShaderIntrinsicsSupport_WaveReduce) returned S_OK.
+*
+*   Performs reduction operation on wavefront (thread group) data.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveReduce : float
+***********************************************************************************************************************
+*/
+float AmdExtD3DShaderIntrinsics_WaveReduce(uint waveOp, float src)
+{
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_WaveReduce,
+                                                          AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+                                                          (waveOp << AmdExtD3DShaderIntrinsicsWaveOp_OpcodeShift));
+    uint retVal;
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src), 0, retVal);
+
+    return asfloat(retVal);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveReduce : float2
+***********************************************************************************************************************
+*/
+float2 AmdExtD3DShaderIntrinsics_WaveReduce(uint waveOp, float2 src)
+{
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_WaveReduce,
+                                                          AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+                                                          (waveOp << AmdExtD3DShaderIntrinsicsWaveOp_OpcodeShift));
+
+    uint2 retVal;
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.x), 0, retVal.x);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.y), 0, retVal.y);
+
+    return float2(asfloat(retVal.x), asfloat(retVal.y));
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveReduce : float3
+***********************************************************************************************************************
+*/
+float3 AmdExtD3DShaderIntrinsics_WaveReduce(uint waveOp, float3 src)
+{
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_WaveReduce,
+                                                          AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+                                                          (waveOp << AmdExtD3DShaderIntrinsicsWaveOp_OpcodeShift));
+
+    uint3 retVal;
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.x), 0, retVal.x);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.y), 0, retVal.y);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.z), 0, retVal.z);
+
+    return float3(asfloat(retVal.x), asfloat(retVal.y), asfloat(retVal.z));
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveReduce : float4
+***********************************************************************************************************************
+*/
+float4 AmdExtD3DShaderIntrinsics_WaveReduce(uint waveOp, float4 src)
+{
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_WaveReduce,
+                                                          AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+                                                          (waveOp << AmdExtD3DShaderIntrinsicsWaveOp_OpcodeShift));
+
+    uint4 retVal;
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.x), 0, retVal.x);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.y), 0, retVal.y);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.z), 0, retVal.z);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.w), 0, retVal.w);
+
+    return float4(asfloat(retVal.x), asfloat(retVal.y), asfloat(retVal.z), asfloat(retVal.w));
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveReduce : int
+***********************************************************************************************************************
+*/
+int AmdExtD3DShaderIntrinsics_WaveReduce(uint waveOp, int src)
+{
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_WaveReduce,
+                                                          AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+                                                          (waveOp << AmdExtD3DShaderIntrinsicsWaveOp_OpcodeShift));
+
+    int retVal;
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src, 0, retVal);
+
+    return retVal;
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveReduce : int2
+***********************************************************************************************************************
+*/
+int2 AmdExtD3DShaderIntrinsics_WaveReduce(uint waveOp, int2 src)
+{
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_WaveReduce,
+                                                          AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+                                                          (waveOp << AmdExtD3DShaderIntrinsicsWaveOp_OpcodeShift));
+
+    int2 retVal;
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.x, 0, retVal.x);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.y, 0, retVal.y);
+
+    return retVal;
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveReduce : int3
+***********************************************************************************************************************
+*/
+int3 AmdExtD3DShaderIntrinsics_WaveReduce(uint waveOp, int3 src)
+{
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_WaveReduce,
+                                                          AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+                                                          (waveOp << AmdExtD3DShaderIntrinsicsWaveOp_OpcodeShift));
+
+    int3 retVal;
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.x, 0, retVal.x);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.y, 0, retVal.y);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.z, 0, retVal.z);
+
+    return retVal;
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveReduce : int4
+***********************************************************************************************************************
+*/
+int4 AmdExtD3DShaderIntrinsics_WaveReduce(uint waveOp, int4 src)
+{
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_WaveReduce,
+                                                          AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+                                                          (waveOp << AmdExtD3DShaderIntrinsicsWaveOp_OpcodeShift));
+
+    int4 retVal;
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.x, 0, retVal.x);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.y, 0, retVal.y);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.z, 0, retVal.z);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.w, 0, retVal.w);
+
+    return retVal;
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveScan
+*
+*   The following functions are available if CheckSupport(AmdExtD3DShaderIntrinsicsSupport_WaveScan) returned S_OK.
+*
+*   Performs scan operation on wavefront (thread group) data.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveScan : float
+***********************************************************************************************************************
+*/
+float AmdExtD3DShaderIntrinsics_WaveScan(uint waveOp, uint flags, float src)
+{
+    const uint waveScanOp = (waveOp << AmdExtD3DShaderIntrinsicsWaveOp_OpcodeShift) |
+                            (flags  << AmdExtD3DShaderIntrinsicsWaveOp_FlagShift);
+
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_WaveScan,
+                                                          AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+                                                          waveScanOp);
+    uint retVal;
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src), 0, retVal);
+
+    return asfloat(retVal);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveScan : float2
+***********************************************************************************************************************
+*/
+float2 AmdExtD3DShaderIntrinsics_WaveScan(uint waveOp, uint flags, float2 src)
+{
+    const uint waveScanOp = (waveOp << AmdExtD3DShaderIntrinsicsWaveOp_OpcodeShift) |
+                            (flags << AmdExtD3DShaderIntrinsicsWaveOp_FlagShift);
+
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_WaveScan,
+                                                          AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+                                                          waveScanOp);
+
+    uint2 retVal;
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.x), 0, retVal.x);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.y), 0, retVal.y);
+
+    return float2(asfloat(retVal.x), asfloat(retVal.y));
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveScan : float3
+***********************************************************************************************************************
+*/
+float3 AmdExtD3DShaderIntrinsics_WaveScan(uint waveOp, uint flags, float3 src)
+{
+    const uint waveScanOp = (waveOp << AmdExtD3DShaderIntrinsicsWaveOp_OpcodeShift) |
+                            (flags << AmdExtD3DShaderIntrinsicsWaveOp_FlagShift);
+
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_WaveScan,
+                                                          AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+                                                          waveScanOp);
+
+    uint3 retVal;
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.x), 0, retVal.x);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.y), 0, retVal.y);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.z), 0, retVal.z);
+
+    return float3(asfloat(retVal.x), asfloat(retVal.y), asfloat(retVal.z));
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveScan : float4
+***********************************************************************************************************************
+*/
+float4 AmdExtD3DShaderIntrinsics_WaveScan(uint waveOp, uint flags, float4 src)
+{
+    const uint waveScanOp = (waveOp << AmdExtD3DShaderIntrinsicsWaveOp_OpcodeShift) |
+                            (flags << AmdExtD3DShaderIntrinsicsWaveOp_FlagShift);
+
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_WaveScan,
+                                                          AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+                                                          waveScanOp);
+
+    uint4 retVal;
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.x), 0, retVal.x);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.y), 0, retVal.y);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.z), 0, retVal.z);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.w), 0, retVal.w);
+
+    return float4(asfloat(retVal.x), asfloat(retVal.y), asfloat(retVal.z), asfloat(retVal.w));
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveScan : int
+***********************************************************************************************************************
+*/
+int AmdExtD3DShaderIntrinsics_WaveScan(uint waveOp, uint flags, int src)
+{
+    const uint waveScanOp = (waveOp << AmdExtD3DShaderIntrinsicsWaveOp_OpcodeShift) |
+                            (flags << AmdExtD3DShaderIntrinsicsWaveOp_FlagShift);
+
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_WaveScan,
+                                                          AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+                                                          waveScanOp);
+
+    int retVal;
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src, 0, retVal);
+
+    return retVal;
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveScan : int2
+***********************************************************************************************************************
+*/
+int2 AmdExtD3DShaderIntrinsics_WaveScan(uint waveOp, uint flags, int2 src)
+{
+    const uint waveScanOp = (waveOp << AmdExtD3DShaderIntrinsicsWaveOp_OpcodeShift) |
+                            (flags << AmdExtD3DShaderIntrinsicsWaveOp_FlagShift);
+
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_WaveScan,
+                                                          AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+                                                          waveScanOp);
+
+    int2 retVal;
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.x, 0, retVal.x);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.y, 0, retVal.y);
+
+    return retVal;
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveScan : int3
+***********************************************************************************************************************
+*/
+int3 AmdExtD3DShaderIntrinsics_WaveScan(uint waveOp, uint flags, int3 src)
+{
+    const uint waveScanOp = (waveOp << AmdExtD3DShaderIntrinsicsWaveOp_OpcodeShift) |
+                            (flags << AmdExtD3DShaderIntrinsicsWaveOp_FlagShift);
+
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_WaveScan,
+                                                          AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+                                                          waveScanOp);
+
+    int3 retVal;
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.x, 0, retVal.x);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.y, 0, retVal.y);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.z, 0, retVal.z);
+
+    return retVal;
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveScan : int4
+***********************************************************************************************************************
+*/
+int4 AmdExtD3DShaderIntrinsics_WaveScan(uint waveOp, uint flags, int4 src)
+{
+    const uint waveScanOp = (waveOp << AmdExtD3DShaderIntrinsicsWaveOp_OpcodeShift) |
+                            (flags << AmdExtD3DShaderIntrinsicsWaveOp_FlagShift);
+
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_WaveScan,
+                                                          AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+                                                          waveScanOp);
+
+    int4 retVal;
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.x, 0, retVal.x);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.y, 0, retVal.y);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.z, 0, retVal.z);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.w, 0, retVal.w);
+
+    return retVal;
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveSum
+*
+*   Performs reduction operation across a wave and returns the result of the reduction (sum of all threads in a wave)
+*   to all participating lanes.
+*
+*   Available if CheckSupport(AmdExtD3DShaderIntrinsicsOpcode_WaveReduce) returned S_OK.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+float AmdExtD3DShaderIntrinsics_WaveActiveSum(float src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_AddF, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveSum<float2>
+***********************************************************************************************************************
+*/
+float2 AmdExtD3DShaderIntrinsics_WaveActiveSum(float2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_AddF, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveSum<float3>
+***********************************************************************************************************************
+*/
+float3 AmdExtD3DShaderIntrinsics_WaveActiveSum(float3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_AddF, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveSum<float4>
+***********************************************************************************************************************
+*/
+float4 AmdExtD3DShaderIntrinsics_WaveActiveSum(float4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_AddF, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveSum<int>
+***********************************************************************************************************************
+*/
+int AmdExtD3DShaderIntrinsics_WaveActiveSum(int src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_AddI, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveSum<int2>
+***********************************************************************************************************************
+*/
+int2 AmdExtD3DShaderIntrinsics_WaveActiveSum(int2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_AddI, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveSum<int3>
+***********************************************************************************************************************
+*/
+int3 AmdExtD3DShaderIntrinsics_WaveActiveSum(int3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_AddI, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveSum<int4>
+***********************************************************************************************************************
+*/
+int4 AmdExtD3DShaderIntrinsics_WaveActiveSum(int4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_AddI, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveSum<uint>
+***********************************************************************************************************************
+*/
+uint AmdExtD3DShaderIntrinsics_WaveActiveSum(uint src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_AddU, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveSum<uint2>
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_WaveActiveSum(uint2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_AddU, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveSum<uint3>
+***********************************************************************************************************************
+*/
+uint3 AmdExtD3DShaderIntrinsics_WaveActiveSum(uint3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_AddU, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveSum<uint4>
+***********************************************************************************************************************
+*/
+uint4 AmdExtD3DShaderIntrinsics_WaveActiveSum(uint4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_AddU, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveProduct
+*
+*   Performs reduction operation across a wave and returns the result of the reduction (product of all threads in a
+*   wave) to all participating lanes.
+*
+*   Available if CheckSupport(AmdExtD3DShaderIntrinsicsOpcode_WaveReduce) returned S_OK.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+float AmdExtD3DShaderIntrinsics_WaveActiveProduct(float src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MulF, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveProduct<float2>
+***********************************************************************************************************************
+*/
+float2 AmdExtD3DShaderIntrinsics_WaveActiveProduct(float2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MulF, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveProduct<float3>
+***********************************************************************************************************************
+*/
+float3 AmdExtD3DShaderIntrinsics_WaveActiveProduct(float3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MulF, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveProduct<float4>
+***********************************************************************************************************************
+*/
+float4 AmdExtD3DShaderIntrinsics_WaveActiveProduct(float4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MulF, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveProduct<int>
+***********************************************************************************************************************
+*/
+int AmdExtD3DShaderIntrinsics_WaveActiveProduct(int src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MulI, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveProduct<int2>
+***********************************************************************************************************************
+*/
+int2 AmdExtD3DShaderIntrinsics_WaveActiveProduct(int2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MulI, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveProduct<int3>
+***********************************************************************************************************************
+*/
+int3 AmdExtD3DShaderIntrinsics_WaveActiveProduct(int3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MulI, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveProduct<int4>
+***********************************************************************************************************************
+*/
+int4 AmdExtD3DShaderIntrinsics_WaveActiveProduct(int4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MulI, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveProduct<uint>
+***********************************************************************************************************************
+*/
+uint AmdExtD3DShaderIntrinsics_WaveActiveProduct(uint src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MulU, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveProduct<uint2>
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_WaveActiveProduct(uint2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MulU, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveProduct<uint3>
+***********************************************************************************************************************
+*/
+uint3 AmdExtD3DShaderIntrinsics_WaveActiveProduct(uint3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MulU, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveProduct<uint4>
+***********************************************************************************************************************
+*/
+uint4 AmdExtD3DShaderIntrinsics_WaveActiveProduct(uint4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MulU, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveMin
+*
+*   Performs reduction operation across a wave and returns the result of the reduction (minimum of all threads in a
+*   wave) to all participating lanes.
+*
+*   Available if CheckSupport(AmdExtD3DShaderIntrinsicsOpcode_WaveReduce) returned S_OK.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+float AmdExtD3DShaderIntrinsics_WaveActiveMin(float src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MinF, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveMin<float2>
+***********************************************************************************************************************
+*/
+float2 AmdExtD3DShaderIntrinsics_WaveActiveMin(float2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MinF, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveMin<float3>
+***********************************************************************************************************************
+*/
+float3 AmdExtD3DShaderIntrinsics_WaveActiveMin(float3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MinF, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveMin<float4>
+***********************************************************************************************************************
+*/
+float4 AmdExtD3DShaderIntrinsics_WaveActiveMin(float4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MinF, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveMin<int>
+***********************************************************************************************************************
+*/
+int AmdExtD3DShaderIntrinsics_WaveActiveMin(int src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MinI, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveMin<int2>
+***********************************************************************************************************************
+*/
+int2 AmdExtD3DShaderIntrinsics_WaveActiveMin(int2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MinI, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveMin<int3>
+***********************************************************************************************************************
+*/
+int3 AmdExtD3DShaderIntrinsics_WaveActiveMin(int3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MinI, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveMin<int4>
+***********************************************************************************************************************
+*/
+int4 AmdExtD3DShaderIntrinsics_WaveActiveMin(int4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MinI, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveMin<uint>
+***********************************************************************************************************************
+*/
+uint AmdExtD3DShaderIntrinsics_WaveActiveMin(uint src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MinU, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveMin<uint2>
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_WaveActiveMin(uint2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MinU, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveMin<uint3>
+***********************************************************************************************************************
+*/
+uint3 AmdExtD3DShaderIntrinsics_WaveActiveMin(uint3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MinU, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveMin<uint4>
+***********************************************************************************************************************
+*/
+uint4 AmdExtD3DShaderIntrinsics_WaveActiveMin(uint4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MinU, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveMax
+*
+*   Performs reduction operation across a wave and returns the result of the reduction (maximum of all threads in a
+*   wave) to all participating lanes.
+*
+*   Available if CheckSupport(AmdExtD3DShaderIntrinsicsOpcode_WaveReduce) returned S_OK.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+float AmdExtD3DShaderIntrinsics_WaveActiveMax(float src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MaxF, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveMax<float2>
+***********************************************************************************************************************
+*/
+float2 AmdExtD3DShaderIntrinsics_WaveActiveMax(float2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MaxF, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveMax<float3>
+***********************************************************************************************************************
+*/
+float3 AmdExtD3DShaderIntrinsics_WaveActiveMax(float3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MaxF, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveMax<float4>
+***********************************************************************************************************************
+*/
+float4 AmdExtD3DShaderIntrinsics_WaveActiveMax(float4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MaxF, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveMax<int>
+***********************************************************************************************************************
+*/
+int AmdExtD3DShaderIntrinsics_WaveActiveMax(int src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MaxI, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveMax<int2>
+***********************************************************************************************************************
+*/
+int2 AmdExtD3DShaderIntrinsics_WaveActiveMax(int2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MaxI, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveMax<int3>
+***********************************************************************************************************************
+*/
+int3 AmdExtD3DShaderIntrinsics_WaveActiveMax(int3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MaxI, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveMax<int4>
+***********************************************************************************************************************
+*/
+int4 AmdExtD3DShaderIntrinsics_WaveActiveMax(int4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MaxI, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveMax<uint>
+***********************************************************************************************************************
+*/
+uint AmdExtD3DShaderIntrinsics_WaveActiveMax(uint src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MaxU, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveMax<uint2>
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_WaveActiveMax(uint2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MaxU, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveMax<uint3>
+***********************************************************************************************************************
+*/
+uint3 AmdExtD3DShaderIntrinsics_WaveActiveMax(uint3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MaxU, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveMax<uint4>
+***********************************************************************************************************************
+*/
+uint4 AmdExtD3DShaderIntrinsics_WaveActiveMax(uint4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_MaxU, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitAnd
+*
+*   Performs reduction operation across a wave and returns the result of the reduction (Bitwise AND of all threads in a
+*   wave) to all participating lanes.
+*
+*   Available if CheckSupport(AmdExtD3DShaderIntrinsicsOpcode_WaveReduce) returned S_OK.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitAnd<int>
+***********************************************************************************************************************
+*/
+int AmdExtD3DShaderIntrinsics_WaveActiveBitAnd(int src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_And, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitAnd<int2>
+***********************************************************************************************************************
+*/
+int2 AmdExtD3DShaderIntrinsics_WaveActiveBitAnd(int2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_And, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitAnd<int3>
+***********************************************************************************************************************
+*/
+int3 AmdExtD3DShaderIntrinsics_WaveActiveBitAnd(int3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_And, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitAnd<int4>
+***********************************************************************************************************************
+*/
+int4 AmdExtD3DShaderIntrinsics_WaveActiveBitAnd(int4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_And, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitAnd<uint>
+***********************************************************************************************************************
+*/
+uint AmdExtD3DShaderIntrinsics_WaveActiveBitAnd(uint src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_And, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitAnd<uint2>
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_WaveActiveBitAnd(uint2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_And, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitAnd<uint3>
+***********************************************************************************************************************
+*/
+uint3 AmdExtD3DShaderIntrinsics_WaveActiveBitAnd(uint3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_And, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitAnd<uint4>
+***********************************************************************************************************************
+*/
+uint4 AmdExtD3DShaderIntrinsics_WaveActiveBitAnd(uint4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_And, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitOr
+*
+*   Performs reduction operation across a wave and returns the result of the reduction (Bitwise OR of all threads in a
+*   wave) to all participating lanes.
+*
+*   Available if CheckSupport(AmdExtD3DShaderIntrinsicsOpcode_WaveReduce) returned S_OK.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitOr<int>
+***********************************************************************************************************************
+*/
+int AmdExtD3DShaderIntrinsics_WaveActiveBitOr(int src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_Or, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitOr<int2>
+***********************************************************************************************************************
+*/
+int2 AmdExtD3DShaderIntrinsics_WaveActiveBitOr(int2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_Or, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitOr<int3>
+***********************************************************************************************************************
+*/
+int3 AmdExtD3DShaderIntrinsics_WaveActiveBitOr(int3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_Or, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitOr<int4>
+***********************************************************************************************************************
+*/
+int4 AmdExtD3DShaderIntrinsics_WaveActiveBitOr(int4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_Or, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitOr<uint>
+***********************************************************************************************************************
+*/
+uint AmdExtD3DShaderIntrinsics_WaveActiveBitOr(uint src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_Or, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitOr<uint2>
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_WaveActiveBitOr(uint2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_Or, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitOr<uint3>
+***********************************************************************************************************************
+*/
+uint3 AmdExtD3DShaderIntrinsics_WaveActiveBitOr(uint3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_Or, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitOr<uint4>
+***********************************************************************************************************************
+*/
+uint4 AmdExtD3DShaderIntrinsics_WaveActiveBitOr(uint4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_Or, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitXor
+*
+*   Performs reduction operation across a wave and returns the result of the reduction (Bitwise XOR of all threads in a
+*   wave) to all participating lanes.
+*
+*   Available if CheckSupport(AmdExtD3DShaderIntrinsicsOpcode_WaveReduce) returned S_OK.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitXor<int>
+***********************************************************************************************************************
+*/
+int AmdExtD3DShaderIntrinsics_WaveActiveBitXor(int src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_Xor, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitXor<int2>
+***********************************************************************************************************************
+*/
+int2 AmdExtD3DShaderIntrinsics_WaveActiveBitXor(int2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_Xor, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitXor<int3>
+***********************************************************************************************************************
+*/
+int3 AmdExtD3DShaderIntrinsics_WaveActiveBitXor(int3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_Xor, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitXor<int4>
+***********************************************************************************************************************
+*/
+int4 AmdExtD3DShaderIntrinsics_WaveActiveBitXor(int4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_Xor, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitXor<uint>
+***********************************************************************************************************************
+*/
+uint AmdExtD3DShaderIntrinsics_WaveActiveBitXor(uint src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_Xor, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitXor<uint2>
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_WaveActiveBitXor(uint2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_Xor, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitXor<uint3>
+***********************************************************************************************************************
+*/
+uint3 AmdExtD3DShaderIntrinsics_WaveActiveBitXor(uint3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_Xor, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WaveActiveBitXor<uint4>
+***********************************************************************************************************************
+*/
+uint4 AmdExtD3DShaderIntrinsics_WaveActiveBitXor(uint4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveReduce(AmdExtD3DShaderIntrinsicsWaveOp_Xor, src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixSum
+*
+*   Performs a prefix (exclusive) scan operation across a wave and returns the resulting sum to all participating lanes.
+*
+*   Available if CheckSupport(AmdExtD3DShaderIntrinsicsOpcode_WaveScan) returned S_OK.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+float AmdExtD3DShaderIntrinsics_WavePrefixSum(float src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_AddF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixSum<float2>
+***********************************************************************************************************************
+*/
+float2 AmdExtD3DShaderIntrinsics_WavePrefixSum(float2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_AddF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixSum<float3>
+***********************************************************************************************************************
+*/
+float3 AmdExtD3DShaderIntrinsics_WavePrefixSum(float3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_AddF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixSum<float4>
+***********************************************************************************************************************
+*/
+float4 AmdExtD3DShaderIntrinsics_WavePrefixSum(float4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_AddF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixSum<int>
+***********************************************************************************************************************
+*/
+int AmdExtD3DShaderIntrinsics_WavePrefixSum(int src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_AddI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixSum<int2>
+***********************************************************************************************************************
+*/
+int2 AmdExtD3DShaderIntrinsics_WavePrefixSum(int2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_AddI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixSum<int3>
+***********************************************************************************************************************
+*/
+int3 AmdExtD3DShaderIntrinsics_WavePrefixSum(int3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_AddI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixSum<int4>
+***********************************************************************************************************************
+*/
+int4 AmdExtD3DShaderIntrinsics_WavePrefixSum(int4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_AddI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixSum<uint>
+***********************************************************************************************************************
+*/
+uint AmdExtD3DShaderIntrinsics_WavePrefixSum(uint src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_AddU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixSum<uint2>
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_WavePrefixSum(uint2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_AddU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixSum<uint3>
+***********************************************************************************************************************
+*/
+uint3 AmdExtD3DShaderIntrinsics_WavePrefixSum(uint3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_AddU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixSum<uint4>
+***********************************************************************************************************************
+*/
+uint4 AmdExtD3DShaderIntrinsics_WavePrefixSum(uint4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_AddU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixProduct
+*
+*   Performs a prefix scan operation across a wave and returns the resulting product to all participating lanes.
+*
+*   Available if CheckSupport(AmdExtD3DShaderIntrinsicsOpcode_WaveScan) returned S_OK.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+float AmdExtD3DShaderIntrinsics_WavePrefixProduct(float src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MulF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixProduct<float2>
+***********************************************************************************************************************
+*/
+float2 AmdExtD3DShaderIntrinsics_WavePrefixProduct(float2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MulF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixProduct<float3>
+***********************************************************************************************************************
+*/
+float3 AmdExtD3DShaderIntrinsics_WavePrefixProduct(float3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MulF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixProduct<float4>
+***********************************************************************************************************************
+*/
+float4 AmdExtD3DShaderIntrinsics_WavePrefixProduct(float4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MulF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixProduct<int>
+***********************************************************************************************************************
+*/
+int AmdExtD3DShaderIntrinsics_WavePrefixProduct(int src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MulI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixProduct<int2>
+***********************************************************************************************************************
+*/
+int2 AmdExtD3DShaderIntrinsics_WavePrefixProduct(int2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MulI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixProduct<int3>
+***********************************************************************************************************************
+*/
+int3 AmdExtD3DShaderIntrinsics_WavePrefixProduct(int3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MulI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixProduct<int4>
+***********************************************************************************************************************
+*/
+int4 AmdExtD3DShaderIntrinsics_WavePrefixProduct(int4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MulI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixProduct<uint>
+***********************************************************************************************************************
+*/
+uint AmdExtD3DShaderIntrinsics_WavePrefixProduct(uint src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MulU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixProduct<uint2>
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_WavePrefixProduct(uint2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MulU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixProduct<uint3>
+***********************************************************************************************************************
+*/
+uint3 AmdExtD3DShaderIntrinsics_WavePrefixProduct(uint3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MulU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixProduct<uint4>
+***********************************************************************************************************************
+*/
+uint4 AmdExtD3DShaderIntrinsics_WavePrefixProduct(uint4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MulU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixMin
+*
+*   Performs a prefix scan operation across a wave and returns the resulting minimum value to all participating lanes.
+*
+*   Available if CheckSupport(AmdExtD3DShaderIntrinsicsOpcode_WaveScan) returned S_OK.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+float AmdExtD3DShaderIntrinsics_WavePrefixMin(float src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MinF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixMin<float2>
+***********************************************************************************************************************
+*/
+float2 AmdExtD3DShaderIntrinsics_WavePrefixMin(float2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MinF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixMin<float3>
+***********************************************************************************************************************
+*/
+float3 AmdExtD3DShaderIntrinsics_WavePrefixMin(float3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MinF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixMin<float4>
+***********************************************************************************************************************
+*/
+float4 AmdExtD3DShaderIntrinsics_WavePrefixMin(float4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MinF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixMin<int>
+***********************************************************************************************************************
+*/
+int AmdExtD3DShaderIntrinsics_WavePrefixMin(int src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MinI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixMin<int2>
+***********************************************************************************************************************
+*/
+int2 AmdExtD3DShaderIntrinsics_WavePrefixMin(int2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MinI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixMin<int3>
+***********************************************************************************************************************
+*/
+int3 AmdExtD3DShaderIntrinsics_WavePrefixMin(int3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MinI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixMin<int4>
+***********************************************************************************************************************
+*/
+int4 AmdExtD3DShaderIntrinsics_WavePrefixMin(int4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MinI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixMin<uint>
+***********************************************************************************************************************
+*/
+uint AmdExtD3DShaderIntrinsics_WavePrefixMin(uint src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MinU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixMin<uint2>
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_WavePrefixMin(uint2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MinU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixMin<uint3>
+***********************************************************************************************************************
+*/
+uint3 AmdExtD3DShaderIntrinsics_WavePrefixMin(uint3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MinU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixMin<uint4>
+***********************************************************************************************************************
+*/
+uint4 AmdExtD3DShaderIntrinsics_WavePrefixMin(uint4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MinU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixMax
+*
+*   Performs a prefix scan operation across a wave and returns the resulting maximum value to all participating lanes.
+*
+*   Available if CheckSupport(AmdExtD3DShaderIntrinsicsOpcode_WaveScan) returned S_OK.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+float AmdExtD3DShaderIntrinsics_WavePrefixMax(float src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MaxF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixMax<float2>
+***********************************************************************************************************************
+*/
+float2 AmdExtD3DShaderIntrinsics_WavePrefixMax(float2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MaxF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixMax<float3>
+***********************************************************************************************************************
+*/
+float3 AmdExtD3DShaderIntrinsics_WavePrefixMax(float3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MaxF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixMax<float4>
+***********************************************************************************************************************
+*/
+float4 AmdExtD3DShaderIntrinsics_WavePrefixMax(float4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MaxF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixMax<int>
+***********************************************************************************************************************
+*/
+int AmdExtD3DShaderIntrinsics_WavePrefixMax(int src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MaxI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixMax<int2>
+***********************************************************************************************************************
+*/
+int2 AmdExtD3DShaderIntrinsics_WavePrefixMax(int2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MaxI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixMax<int3>
+***********************************************************************************************************************
+*/
+int3 AmdExtD3DShaderIntrinsics_WavePrefixMax(int3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MaxI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixMax<int4>
+***********************************************************************************************************************
+*/
+int4 AmdExtD3DShaderIntrinsics_WavePrefixMax(int4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MaxI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixMax<uint>
+***********************************************************************************************************************
+*/
+uint AmdExtD3DShaderIntrinsics_WavePrefixMax(uint src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MaxU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixMax<uint2>
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_WavePrefixMax(uint2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MaxU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixMax<uint3>
+***********************************************************************************************************************
+*/
+uint3 AmdExtD3DShaderIntrinsics_WavePrefixMax(uint3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MaxU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePrefixMax<uint4>
+***********************************************************************************************************************
+*/
+uint4 AmdExtD3DShaderIntrinsics_WavePrefixMax(uint4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MaxU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Exclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixSum
+*
+*   Performs a Postfix (Inclusive) scan operation across a wave and returns the resulting sum to all participating lanes.
+*
+*   Available if CheckSupport(AmdExtD3DShaderIntrinsicsOpcode_WaveScan) returned S_OK.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+float AmdExtD3DShaderIntrinsics_WavePostfixSum(float src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_AddF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixSum<float2>
+***********************************************************************************************************************
+*/
+float2 AmdExtD3DShaderIntrinsics_WavePostfixSum(float2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_AddF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixSum<float3>
+***********************************************************************************************************************
+*/
+float3 AmdExtD3DShaderIntrinsics_WavePostfixSum(float3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_AddF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixSum<float4>
+***********************************************************************************************************************
+*/
+float4 AmdExtD3DShaderIntrinsics_WavePostfixSum(float4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_AddF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixSum<int>
+***********************************************************************************************************************
+*/
+int AmdExtD3DShaderIntrinsics_WavePostfixSum(int src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_AddI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixSum<int2>
+***********************************************************************************************************************
+*/
+int2 AmdExtD3DShaderIntrinsics_WavePostfixSum(int2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_AddI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixSum<int3>
+***********************************************************************************************************************
+*/
+int3 AmdExtD3DShaderIntrinsics_WavePostfixSum(int3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_AddI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixSum<int4>
+***********************************************************************************************************************
+*/
+int4 AmdExtD3DShaderIntrinsics_WavePostfixSum(int4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_AddI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixSum<uint>
+***********************************************************************************************************************
+*/
+uint AmdExtD3DShaderIntrinsics_WavePostfixSum(uint src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_AddU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixSum<uint2>
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_WavePostfixSum(uint2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_AddU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixSum<uint3>
+***********************************************************************************************************************
+*/
+uint3 AmdExtD3DShaderIntrinsics_WavePostfixSum(uint3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_AddU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixSum<uint4>
+***********************************************************************************************************************
+*/
+uint4 AmdExtD3DShaderIntrinsics_WavePostfixSum(uint4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_AddU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixProduct
+*
+*   Performs a Postfix scan operation across a wave and returns the resulting product to all participating lanes.
+*
+*   Available if CheckSupport(AmdExtD3DShaderIntrinsicsOpcode_WaveScan) returned S_OK.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+float AmdExtD3DShaderIntrinsics_WavePostfixProduct(float src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MulF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixProduct<float2>
+***********************************************************************************************************************
+*/
+float2 AmdExtD3DShaderIntrinsics_WavePostfixProduct(float2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MulF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixProduct<float3>
+***********************************************************************************************************************
+*/
+float3 AmdExtD3DShaderIntrinsics_WavePostfixProduct(float3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MulF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixProduct<float4>
+***********************************************************************************************************************
+*/
+float4 AmdExtD3DShaderIntrinsics_WavePostfixProduct(float4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MulF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixProduct<int>
+***********************************************************************************************************************
+*/
+int AmdExtD3DShaderIntrinsics_WavePostfixProduct(int src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MulI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixProduct<int2>
+***********************************************************************************************************************
+*/
+int2 AmdExtD3DShaderIntrinsics_WavePostfixProduct(int2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MulI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixProduct<int3>
+***********************************************************************************************************************
+*/
+int3 AmdExtD3DShaderIntrinsics_WavePostfixProduct(int3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MulI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixProduct<int4>
+***********************************************************************************************************************
+*/
+int4 AmdExtD3DShaderIntrinsics_WavePostfixProduct(int4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MulI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixProduct<uint>
+***********************************************************************************************************************
+*/
+uint AmdExtD3DShaderIntrinsics_WavePostfixProduct(uint src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MulU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixProduct<uint2>
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_WavePostfixProduct(uint2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MulU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixProduct<uint3>
+***********************************************************************************************************************
+*/
+uint3 AmdExtD3DShaderIntrinsics_WavePostfixProduct(uint3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MulU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixProduct<uint4>
+***********************************************************************************************************************
+*/
+uint4 AmdExtD3DShaderIntrinsics_WavePostfixProduct(uint4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MulU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixMin
+*
+*   Performs a Postfix scan operation across a wave and returns the resulting minimum value to all participating lanes.
+*
+*   Available if CheckSupport(AmdExtD3DShaderIntrinsicsOpcode_WaveScan) returned S_OK.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+float AmdExtD3DShaderIntrinsics_WavePostfixMin(float src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MinF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixMin<float2>
+***********************************************************************************************************************
+*/
+float2 AmdExtD3DShaderIntrinsics_WavePostfixMin(float2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MinF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixMin<float3>
+***********************************************************************************************************************
+*/
+float3 AmdExtD3DShaderIntrinsics_WavePostfixMin(float3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MinF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixMin<float4>
+***********************************************************************************************************************
+*/
+float4 AmdExtD3DShaderIntrinsics_WavePostfixMin(float4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MinF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixMin<int>
+***********************************************************************************************************************
+*/
+int AmdExtD3DShaderIntrinsics_WavePostfixMin(int src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MinI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixMin<int2>
+***********************************************************************************************************************
+*/
+int2 AmdExtD3DShaderIntrinsics_WavePostfixMin(int2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MinI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixMin<int3>
+***********************************************************************************************************************
+*/
+int3 AmdExtD3DShaderIntrinsics_WavePostfixMin(int3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MinI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixMin<int4>
+***********************************************************************************************************************
+*/
+int4 AmdExtD3DShaderIntrinsics_WavePostfixMin(int4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MinI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixMin<uint>
+***********************************************************************************************************************
+*/
+uint AmdExtD3DShaderIntrinsics_WavePostfixMin(uint src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MinU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixMin<uint2>
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_WavePostfixMin(uint2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MinU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixMin<uint3>
+***********************************************************************************************************************
+*/
+uint3 AmdExtD3DShaderIntrinsics_WavePostfixMin(uint3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MinU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixMin<uint4>
+***********************************************************************************************************************
+*/
+uint4 AmdExtD3DShaderIntrinsics_WavePostfixMin(uint4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MinU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixMax
+*
+*   Performs a Postfix scan operation across a wave and returns the resulting maximum value to all participating lanes.
+*
+*   Available if CheckSupport(AmdExtD3DShaderIntrinsicsOpcode_WaveScan) returned S_OK.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+float AmdExtD3DShaderIntrinsics_WavePostfixMax(float src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MaxF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixMax<float2>
+***********************************************************************************************************************
+*/
+float2 AmdExtD3DShaderIntrinsics_WavePostfixMax(float2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MaxF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixMax<float3>
+***********************************************************************************************************************
+*/
+float3 AmdExtD3DShaderIntrinsics_WavePostfixMax(float3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MaxF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixMax<float4>
+***********************************************************************************************************************
+*/
+float4 AmdExtD3DShaderIntrinsics_WavePostfixMax(float4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MaxF,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixMax<int>
+***********************************************************************************************************************
+*/
+int AmdExtD3DShaderIntrinsics_WavePostfixMax(int src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MaxI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixMax<int2>
+***********************************************************************************************************************
+*/
+int2 AmdExtD3DShaderIntrinsics_WavePostfixMax(int2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MaxI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixMax<int3>
+***********************************************************************************************************************
+*/
+int3 AmdExtD3DShaderIntrinsics_WavePostfixMax(int3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MaxI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixMax<int4>
+***********************************************************************************************************************
+*/
+int4 AmdExtD3DShaderIntrinsics_WavePostfixMax(int4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MaxI,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixMax<uint>
+***********************************************************************************************************************
+*/
+uint AmdExtD3DShaderIntrinsics_WavePostfixMax(uint src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MaxU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixMax<uint2>
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_WavePostfixMax(uint2 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MaxU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixMax<uint3>
+***********************************************************************************************************************
+*/
+uint3 AmdExtD3DShaderIntrinsics_WavePostfixMax(uint3 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MaxU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_WavePostfixMax<uint4>
+***********************************************************************************************************************
+*/
+uint4 AmdExtD3DShaderIntrinsics_WavePostfixMax(uint4 src)
+{
+    return AmdExtD3DShaderIntrinsics_WaveScan(AmdExtD3DShaderIntrinsicsWaveOp_MaxU,
+                                              AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
+                                              src);
+}
+
+#endif // _AMDEXTD3DSHADERINTRINICS_HLSL
