@@ -1,7 +1,7 @@
 # AMD AGS SDK
 ![AMD AGS SDK](http://gpuopen-librariesandsdks.github.io/media/amd_logo_black.png)
 
-The AMD GPU Services (AGS) library provides software developers with the ability to query AMD GPU software and hardware state information that is not normally available through standard operating systems or graphic APIs. AGS includes support for querying graphics driver version info, GPU performance, Crossfire&trade; (AMD's multi-GPU rendering technology) configuration info, and Eyefinity (AMD's multi-display rendering technology) configuration info. AGS also exposes the explicit Crossfire API extension, GCN shader extensions, and additional extensions supported in the AMD drivers for DirectX 11 and DirectX 12. Version 5.0 adds support for HDR displays.
+The AMD GPU Services (AGS) library provides software developers with the ability to query AMD GPU software and hardware state information that is not normally available through standard operating systems or graphic APIs. AGS includes support for querying graphics driver version info, GPU performance, Crossfire&trade; (AMD's multi-GPU rendering technology) configuration info, and Eyefinity (AMD's multi-display rendering technology) configuration info. AGS also exposes the explicit Crossfire API extension, GCN shader extensions, and additional extensions supported in the AMD drivers for DirectX 11 and DirectX 12.
 
 In addition to the library itself, the AGS SDK includes several samples to demonstrate use of the library.
 
@@ -9,7 +9,16 @@ In addition to the library itself, the AGS SDK includes several samples to demon
   <a href="https://github.com/GPUOpen-LibrariesAndSDKs/AGS_SDK/releases/latest/"><img src="http://gpuopen-librariesandsdks.github.io/media/latest-release-button.svg" alt="Latest release" title="Latest release"></a>
 </div>
 
-### What's new in AGS
+### What's new in AGS 5.1
+Version 5.1 is a partly developer-focused update to AGS 5. We've listened to feedback about how difficult it can be to integrate the binary AGS libs into your games, and while we can't open the source code to AGS to allow you to integrate it from source, we canvassed developers to figure out what pre-built binaries would be most useful to provide. So we've now added builds of the AGS binary library that are linkable with Visual Studio projects built with `/MT` and `/MD`, used to select a particular CRT.
+
+There's also a breaking change in how you get access to DX11 AMD extensions. Look at the Changelog for details on that. We've also added an application registration extension for DX11 apps. That lets you tell the driver that your game can be considered in a uniquely indentifiable way, which is particularly helpful if you build on top of popular middleware like Unity or UE4 and make rendering changes.
+
+There's also support for FreeSync 2 HDR, DX12 application user markers for [Radeon GPU Profiler](https://gpuopen.com/gaming-product/radeon-gpu-profiler-rgp/), VS2017 versions of the shipping samples, and new wave-level shader intrinsics for both DX11 and DX12.
+
+See the full Changelog for more details.
+
+### What's new in AGS 5.0
 Version 5.0 is a major overhaul of the library designed to provide a much clearer view of the GPUs in the system and the displays attached to them. It also exposes the ability to query each display for HDR capabilities and put those HDR-capable displays into various HDR modes.
 
 Highlights include the following:
