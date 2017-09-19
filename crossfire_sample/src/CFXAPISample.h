@@ -44,46 +44,46 @@ public:
 	void Run (const int frameCount);
 
 protected:
-	Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain_;
-	Microsoft::WRL::ComPtr<ID3D11Device> device_;
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext_;
-	Microsoft::WRL::ComPtr<ID3D11Texture2D> renderTarget_;
-	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView_;
+	IDXGISwapChain*                             m_swapChain = nullptr;
+	ID3D11Device*                               m_device = nullptr;
+	ID3D11DeviceContext*                        m_deviceContext = nullptr;
+	ID3D11Texture2D*                            m_renderTarget = nullptr;
+	ID3D11RenderTargetView*                     m_renderTargetView = nullptr;
 
-	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout_;
-	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader_;
-	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader_;
+	ID3D11InputLayout*                          m_inputLayout = nullptr;
+	ID3D11PixelShader*                          m_pixelShader = nullptr;
+	ID3D11VertexShader*                         m_vertexShader = nullptr;
 
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> depthStencilState_;
+	ID3D11DepthStencilState*                    m_depthStencilState = nullptr;
 
-	Microsoft::WRL::ComPtr<ID3D11Texture2D> texture_;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> textureSRV_;
-	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> textureRTV_;
+	ID3D11Texture2D*                            m_texture = nullptr;
+	ID3D11ShaderResourceView*                   m_textureSRV = nullptr;
+	ID3D11RenderTargetView*                     m_textureRTV = nullptr;
 
-	Microsoft::WRL::ComPtr<ID3D11Texture2D> uploadTexture_;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> uploadTextureSRV_;
+	ID3D11Texture2D*                            m_uploadTexture = nullptr;
+	ID3D11ShaderResourceView*                   m_uploadTextureSRV = nullptr;
 
 private:
-	void Initialize ();
-	void Shutdown ();
+	void Initialize();
+	void Shutdown();
 
-	void PrepareRender ();
-	void FinalizeRender ();
+	void PrepareRender();
+	void FinalizeRender();
 
-	void Render ();
-	void Present ();
-	void CreateDeviceAndSwapChain ();
-	void CreateMeshBuffers ();
-	void InitializeAMDAGS ();
-	void InitializeAMDCFXAPI ();
+	void Render();
+	void Present();
+	void CreateDeviceAndSwapChain();
+	void CreateMeshBuffers();
+	void InitializeAGS();
 
-	std::unique_ptr<Window> window_;
+	std::unique_ptr<Window> m_window;
 
-	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer_;
-	Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer_;
+	ID3D11Buffer*                            m_vertexBuffer = nullptr;
+	ID3D11Buffer*                            m_indexBuffer = nullptr;
 
-	AGSContext*						agsContext_;
-	bool							cfxEnabled_;
+	AGSContext*                             m_agsContext = nullptr;
+    AGSGPUInfo                              m_agsGPUInfo = {};
+	bool                                    m_cfxEnabled = false;
 };
 }
 

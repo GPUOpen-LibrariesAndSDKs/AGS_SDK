@@ -48,47 +48,46 @@ struct Vertex
 };
 }
 ///////////////////////////////////////////////////////////////////////////////
-CFXAPISample::CFXAPISample ()
-: cfxEnabled_ (false)
+CFXAPISample::CFXAPISample()
 {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-CFXAPISample::~CFXAPISample ()
+CFXAPISample::~CFXAPISample()
 {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void CFXAPISample::PrepareRender ()
+void CFXAPISample::PrepareRender()
 {
 	static const float clearColor [] = {
 		0.042f, 0.042f, 0.042f,
 		1
 	};
 
-	deviceContext_->ClearRenderTargetView (renderTargetView_.Get (), clearColor);
+	m_deviceContext->ClearRenderTargetView (m_renderTargetView, clearColor);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void CFXAPISample::Render ()
+void CFXAPISample::Render()
 {
-	PrepareRender ();
+	PrepareRender();
 
 	static int frameNumber = 0;
 	frameNumber++;
 
-	deviceContext_->OMSetDepthStencilState (depthStencilState_.Get (), 0);
-	deviceContext_->VSSetShader (vertexShader_.Get (), nullptr, 0);
-	deviceContext_->PSSetShader (pixelShader_.Get (), nullptr, 0);
-	deviceContext_->IASetIndexBuffer (indexBuffer_.Get (), DXGI_FORMAT_R32_UINT, 0);
+	m_deviceContext->OMSetDepthStencilState (m_depthStencilState, 0);
+	m_deviceContext->VSSetShader (m_vertexShader, nullptr, 0);
+	m_deviceContext->PSSetShader (m_pixelShader, nullptr, 0);
+	m_deviceContext->IASetIndexBuffer (m_indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
-	ID3D11Buffer* vertexBuffers[] = { vertexBuffer_.Get () };
+	ID3D11Buffer* vertexBuffers[] = { m_vertexBuffer };
 	UINT strides[] = { sizeof (Vertex) };
 	UINT offsets[] = { 0 };
-	deviceContext_->IASetVertexBuffers (0, 1, vertexBuffers, strides, offsets);
+	m_deviceContext->IASetVertexBuffers (0, 1, vertexBuffers, strides, offsets);
 
-	deviceContext_->IASetInputLayout (inputLayout_.Get ());
-	deviceContext_->IASetPrimitiveTopology (D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	m_deviceContext->IASetInputLayout (m_inputLayout);
+	m_deviceContext->IASetPrimitiveTopology (D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	
 	/**
 	What happens here is:
@@ -97,10 +96,10 @@ void CFXAPISample::Render ()
 	* In every frame, blit texture into the back buffer
 	*/
 
-	if (cfxEnabled_) {
+	if (m_cfxEnabled) {
 		// We're starting to use texture_, notify the API. Notice that we need
 		// to notify even if we don't actually write to it in this frame.
-		agsDriverExtensionsDX11_NotifyResourceBeginAllAccess (agsContext_, texture_.Get ());
+		agsDriverExtensionsDX11_NotifyResourceBeginAllAccess (m_agsContext, m_texture);
 	}
 	
 	if ((frameNumber & 1) == 1) {
@@ -116,27 +115,25 @@ void CFXAPISample::Render ()
 		viewports[0].MaxDepth = 1;
 		viewports[0].TopLeftX = 0;
 		viewports[0].TopLeftY = 0;
-		deviceContext_->RSSetViewports (1, viewports);
+		m_deviceContext->RSSetViewports (1, viewports);
 
 		ID3D11ShaderResourceView* psSRVs[] = {
-			uploadTextureSRV_.Get ()
+			m_uploadTextureSRV
 		};
 
 		ID3D11RenderTargetView* renderTargetViews[] = {
-			textureRTV_.Get ()
+			m_textureRTV
 		};	
-		deviceContext_->OMSetRenderTargets (1, renderTargetViews, nullptr);
+		m_deviceContext->OMSetRenderTargets (1, renderTargetViews, nullptr);
 
-		deviceContext_->PSSetShaderResources (0, 1, psSRVs);
-		deviceContext_->UpdateSubresource (uploadTexture_.Get (),
-			0, nullptr, clearColor, sizeof (float) * 4, sizeof (float) * 4);
-		deviceContext_->DrawIndexed (6, 0, 0);
+		m_deviceContext->PSSetShaderResources (0, 1, psSRVs);
+		m_deviceContext->UpdateSubresource (m_uploadTexture, 0, nullptr, clearColor, sizeof (float) * 4, sizeof (float) * 4);
+		m_deviceContext->DrawIndexed (6, 0, 0);
 
-		if (cfxEnabled_) {
+		if (m_cfxEnabled) {
 			// We're done with writes to texture_, notify the API so it can
 			// start copying
-			agsDriverExtensionsDX11_NotifyResourceEndWrites (agsContext_, texture_.Get (),
-				nullptr, nullptr, 0);
+			agsDriverExtensionsDX11_NotifyResourceEndWrites (m_agsContext, m_texture, nullptr, nullptr, 0);
 		}
 	}
 
@@ -147,29 +144,29 @@ void CFXAPISample::Render ()
 	viewports[0].MaxDepth = 1;
 	viewports[0].TopLeftX = 0;
 	viewports[0].TopLeftY = 0;
-	deviceContext_->RSSetViewports (1, viewports);
+	m_deviceContext->RSSetViewports (1, viewports);
 
 	ID3D11RenderTargetView* renderTargetViews[] = {
-		renderTargetView_.Get ()
+		m_renderTargetView
 	};
 
-	deviceContext_->OMSetRenderTargets (1, renderTargetViews, nullptr);
+	m_deviceContext->OMSetRenderTargets (1, renderTargetViews, nullptr);
 	ID3D11ShaderResourceView* psSRVs[] = {
-		textureSRV_.Get ()
+		m_textureSRV
 	};
 
-	deviceContext_->PSSetShaderResources (0, 1, psSRVs);
-	deviceContext_->DrawIndexed (6, 0, 0);
+	m_deviceContext->PSSetShaderResources (0, 1, psSRVs);
+	m_deviceContext->DrawIndexed (6, 0, 0);
 
-	if (cfxEnabled_) {
+	if (m_cfxEnabled) {
 		// We're done using texture_ for this frame, notify the API
-		agsDriverExtensionsDX11_NotifyResourceEndAllAccess (agsContext_, texture_.Get ());
+		agsDriverExtensionsDX11_NotifyResourceEndAllAccess (m_agsContext, m_texture);
 	}
 
 	ID3D11ShaderResourceView* psNullSRVs[] = {
 		nullptr
 	};
-	deviceContext_->PSSetShaderResources (0, 1, psNullSRVs);
+	m_deviceContext->PSSetShaderResources (0, 1, psNullSRVs);
 	
 	FinalizeRender ();
 }
@@ -199,49 +196,35 @@ next back buffer and also signal the fence for the current queue slot entry.
 */
 void CFXAPISample::Present ()
 {
-	swapChain_->Present (1, 0);
+	m_swapChain->Present (1, 0);
 }
 
-void CFXAPISample::InitializeAMDAGS()
+void CFXAPISample::InitializeAGS()
 {
 	// the desired Crossfire mode needs to be passed to agsInit
 	// prior to device creation
     AGSConfiguration config = {};
 	config.crossfireMode = AGS_CROSSFIRE_MODE_EXPLICIT_AFR;
-	agsInit (&agsContext_, &config, nullptr );
-}
-
-void CFXAPISample::InitializeAMDCFXAPI ()
-{
-	unsigned int supportedExtensions = 0;
-	agsDriverExtensionsDX11_Init (agsContext_, device_.Get (), 7, &supportedExtensions);
-
-	if ( supportedExtensions & AGS_DX11_EXTENSION_CROSSFIRE_API ) {
-		cfxEnabled_ = true;
-	} else {
-		cfxEnabled_ = false;
-	}
+	agsInit (&m_agsContext, &config, &m_agsGPUInfo );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void CFXAPISample::Initialize ()
 {
-	window_.reset (new Window ("AMD CFX API test", 1920, 1080));
+	m_window.reset (new Window ("AMD CFX API test", 1920, 1080));
 
 	// Call this before device creation
-	InitializeAMDAGS ();
+	InitializeAGS();
 
-	CreateDeviceAndSwapChain ();
+	CreateDeviceAndSwapChain();
 
-	InitializeAMDCFXAPI ();
-
-	CreateMeshBuffers ();
+	CreateMeshBuffers();
 
 	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
 	dsDesc.DepthEnable = false;
 	dsDesc.DepthFunc = D3D11_COMPARISON_ALWAYS;
 
-	device_->CreateDepthStencilState (&dsDesc, &depthStencilState_);
+	m_device->CreateDepthStencilState (&dsDesc, &m_depthStencilState);
 
 	ComPtr<ID3DBlob> vsCode, psCode;
 	D3DCompileFromFile (L"..\\src\\Shaders\\shaders.hlsl", nullptr, nullptr, "VS_main", "vs_5_0", 0, 0, &vsCode, nullptr);
@@ -252,9 +235,9 @@ void CFXAPISample::Initialize ()
 		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0}
 	};
 
-	device_->CreateVertexShader (vsCode->GetBufferPointer (), vsCode->GetBufferSize (), 0, &vertexShader_);
-	device_->CreatePixelShader (psCode->GetBufferPointer (), psCode->GetBufferSize (), nullptr, &pixelShader_);
-	device_->CreateInputLayout (layoutDesc, 2, vsCode->GetBufferPointer (), vsCode->GetBufferSize (), &inputLayout_);
+	m_device->CreateVertexShader (vsCode->GetBufferPointer (), vsCode->GetBufferSize (), 0, &m_vertexShader);
+	m_device->CreatePixelShader (psCode->GetBufferPointer (), psCode->GetBufferSize (), nullptr, &m_pixelShader);
+	m_device->CreateInputLayout (layoutDesc, 2, vsCode->GetBufferPointer (), vsCode->GetBufferSize (), &m_inputLayout);
 
 	D3D11_TEXTURE2D_DESC textureDesc;
 	textureDesc.ArraySize = 1;
@@ -269,38 +252,66 @@ void CFXAPISample::Initialize ()
 	textureDesc.Usage = D3D11_USAGE_DEFAULT;
 	textureDesc.Width = 1;
 
-	if (cfxEnabled_) {
+	if (m_cfxEnabled) {
 		// Our texture is also a render target and is only updated every second
 		// frame. Create it using the Crossfire API to enable transfers on it.
-		agsDriverExtensionsDX11_CreateTexture2D (agsContext_, &textureDesc, nullptr, &texture_,
+		agsDriverExtensionsDX11_CreateTexture2D (m_agsContext, &textureDesc, nullptr, &m_texture,
 			// If set to TransferDisable, flickering will be present
 			// as the updated version is not transfered to the second GPU.
 			// With TransferApp1StepP2P, the Crossfire API will copy the
 			// data to the second GPU.
 			AGS_AFR_TRANSFER_1STEP_P2P, AGS_AFR_TRANSFERENGINE_DEFAULT);
 	} else {
-		device_->CreateTexture2D (&textureDesc, nullptr, &texture_);
+		m_device->CreateTexture2D (&textureDesc, nullptr, &m_texture);
 	}
 	
-	device_->CreateShaderResourceView (texture_.Get (), nullptr, &textureSRV_);
-	device_->CreateRenderTargetView (texture_.Get (), nullptr, &textureRTV_);
+	m_device->CreateShaderResourceView (m_texture, nullptr, &m_textureSRV);
+	m_device->CreateRenderTargetView (m_texture, nullptr, &m_textureRTV);
 
 	textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	device_->CreateTexture2D (&textureDesc, nullptr, &uploadTexture_);
-	device_->CreateShaderResourceView (uploadTexture_.Get (), nullptr, &uploadTextureSRV_);
+	m_device->CreateTexture2D (&textureDesc, nullptr, &m_uploadTexture);
+	m_device->CreateShaderResourceView (m_uploadTexture, nullptr, &m_uploadTextureSRV);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void CFXAPISample::Shutdown ()
 {
-	agsDriverExtensionsDX11_DeInit (agsContext_);
-
 	// Clear things out to avoid false-positive D3D debug runtime ref-count warnings.
-	swapChain_->SetFullscreenState (FALSE, 0);
-	deviceContext_->ClearState ();
-	deviceContext_->Flush ();
+	m_swapChain->SetFullscreenState (FALSE, 0);
+	m_deviceContext->ClearState ();
+	m_deviceContext->Flush ();
 
-	agsDeInit (agsContext_);
+    m_vertexBuffer->Release();
+    m_indexBuffer->Release();
+
+	m_renderTargetView->Release();
+    m_renderTarget->Release();
+	
+	m_textureSRV->Release();
+	m_textureRTV->Release();
+    m_texture->Release();
+
+    m_uploadTextureSRV->Release();
+	m_uploadTexture->Release();
+
+	m_depthStencilState->Release();
+    m_inputLayout->Release();
+	m_pixelShader->Release();
+	m_vertexShader->Release();
+
+    m_swapChain->Release();
+    m_deviceContext->Release();
+
+    if ( m_agsGPUInfo.devices[ 0 ].vendorId == 0x1002 )
+    {
+        agsDriverExtensionsDX11_DestroyDevice( m_agsContext, m_device, nullptr );
+    }
+    else
+    {
+        m_device->Release();
+    }
+
+	agsDeInit(m_agsContext);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -312,32 +323,66 @@ void CFXAPISample::CreateDeviceAndSwapChain ()
 	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	swapChainDesc.BufferDesc.Height = 1080;
 	swapChainDesc.BufferDesc.Width = 1920;
-	swapChainDesc.OutputWindow = window_->GetHWND ();
+	swapChainDesc.OutputWindow = m_window->GetHWND ();
 	swapChainDesc.Windowed = false;
 	swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 	swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
 	swapChainDesc.SampleDesc.Count = 1;
 
-	D3D11CreateDeviceAndSwapChain (nullptr /* default adapter */,
-		D3D_DRIVER_TYPE_HARDWARE,
-		NULL, /* Module for driver, must be null if hardware*/
+    AGSDX11DeviceCreationParams creationParams = 
+    {
+        nullptr,                    /* default adapter */
+        D3D_DRIVER_TYPE_HARDWARE,
+        0,                          /* Module for driver, must be null if hardware*/
 #ifdef _DEBUG
-		D3D11_CREATE_DEVICE_DEBUG, /* debug device for debug builds */
+	    D3D11_CREATE_DEVICE_DEBUG,  /* debug device for debug builds */
 #else
-		0, /* No flags */
-#endif
-		nullptr, /* no feature levels */
-		0, /* no feature levels */
-		D3D11_SDK_VERSION,
-		&swapChainDesc,
-		&swapChain_,
-		&device_,
-		nullptr,
-		&deviceContext_);
+		0,                          /* No flags */
+#endif       
+        nullptr,                    /* no feature levels */
+        0,                          /* no feature levels */
+        D3D11_SDK_VERSION,
+        &swapChainDesc
+    };
 
-	swapChain_->GetBuffer (0, IID_PPV_ARGS (&renderTarget_));
-	device_->CreateRenderTargetView (renderTarget_.Get (), nullptr, &renderTargetView_);
+    if ( m_agsGPUInfo.devices[ 0 ].vendorId == 0x1002 )
+    {
+        AGSDX11ExtensionParams extensionParams = {};
+        extensionParams.uavSlot = 7;
+        AGSDX11ReturnedParams returnedParams = {};
+
+        if ( agsDriverExtensionsDX11_CreateDevice( m_agsContext, &creationParams, &extensionParams, &returnedParams ) == AGS_SUCCESS )
+        {
+            m_device = returnedParams.pDevice;
+            m_deviceContext = returnedParams.pImmediateContext;
+            m_swapChain = returnedParams.pSwapChain;
+
+            if ( returnedParams.extensionsSupported & AGS_DX11_EXTENSION_CROSSFIRE_API )
+            {
+                m_cfxEnabled = true;
+            }
+        }
+    }
+    else
+    {
+        D3D11CreateDeviceAndSwapChain( 
+            creationParams.pAdapter,
+            creationParams.DriverType,
+            creationParams.Software,
+            creationParams.Flags,
+            creationParams.pFeatureLevels,
+            creationParams.FeatureLevels,
+            creationParams.SDKVersion,
+		    &swapChainDesc,
+		    &m_swapChain,
+		    &m_device,
+		    nullptr,
+		    &m_deviceContext);
+    }
+
+	m_swapChain->GetBuffer (0, IID_PPV_ARGS (&m_renderTarget));
+	m_device->CreateRenderTargetView (m_renderTarget, nullptr, &m_renderTargetView);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -371,7 +416,7 @@ void CFXAPISample::CreateMeshBuffers ()
 	vbInitialData.SysMemPitch = sizeof (vertices);
 	vbInitialData.SysMemSlicePitch = sizeof (vertices);
 
-	device_->CreateBuffer (&vbDesc, &vbInitialData, &vertexBuffer_);
+	m_device->CreateBuffer (&vbDesc, &vbInitialData, &m_vertexBuffer);
 
 	D3D11_BUFFER_DESC ibDesc;
 	ibDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
@@ -386,7 +431,7 @@ void CFXAPISample::CreateMeshBuffers ()
 	ibInitialData.SysMemPitch = sizeof (indices);
 	ibInitialData.SysMemSlicePitch = sizeof (indices);
 
-	device_->CreateBuffer (&ibDesc, &ibInitialData, &indexBuffer_);
+	m_device->CreateBuffer (&ibDesc, &ibInitialData, &m_indexBuffer);
 }
 }
 
