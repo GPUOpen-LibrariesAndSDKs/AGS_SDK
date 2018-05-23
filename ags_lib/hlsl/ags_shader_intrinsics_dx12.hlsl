@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2017 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2018 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -70,12 +70,8 @@ RWByteAddressBuffer AmdExtD3DShaderIntrinsicsUAV : register(u0, AmdExtD3DShaderI
 #define AmdExtD3DShaderIntrinsicsOpcode_Swizzle        0x04
 #define AmdExtD3DShaderIntrinsicsOpcode_Ballot         0x05
 #define AmdExtD3DShaderIntrinsicsOpcode_MBCnt          0x06
-#define AmdExtD3DShaderIntrinsicsOpcode_Min3U          0x07
-#define AmdExtD3DShaderIntrinsicsOpcode_Min3F          0x08
 #define AmdExtD3DShaderIntrinsicsOpcode_Med3U          0x09
 #define AmdExtD3DShaderIntrinsicsOpcode_Med3F          0x0a
-#define AmdExtD3DShaderIntrinsicsOpcode_Max3U          0x0b
-#define AmdExtD3DShaderIntrinsicsOpcode_Max3F          0x0c
 #define AmdExtD3DShaderIntrinsicsOpcode_BaryCoord      0x0d
 #define AmdExtD3DShaderIntrinsicsOpcode_VtxParam       0x0e
 #define AmdExtD3DShaderIntrinsicsOpcode_Reserved1      0x0f
@@ -472,60 +468,6 @@ uint AmdExtD3DShaderIntrinsics_MBCnt(uint2 src)
 
 /**
 ***********************************************************************************************************************
-*   AmdExtD3DShaderIntrinsics_Min3F
-*
-*   Returns the minimum value of the three floating point source arguments.
-*
-*   Available if CheckSupport(AmdExtD3DShaderIntrinsicsSupport_Compare3) returned S_OK.
-*
-***********************************************************************************************************************
-*/
-float AmdExtD3DShaderIntrinsics_Min3F(float src0, float src1, float src2)
-{
-    uint minimum;
-
-    uint instruction1 = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_Min3F,
-                                                           AmdExtD3DShaderIntrinsicsOpcodePhase_0,
-                                                           0);
-    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction1, asuint(src0), asuint(src1), minimum);
-
-    uint instruction2 = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_Min3F,
-                                                           AmdExtD3DShaderIntrinsicsOpcodePhase_1,
-                                                           0);
-    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction2, asuint(src2), minimum, minimum);
-
-    return asfloat(minimum);
-}
-
-/**
-***********************************************************************************************************************
-*   AmdExtD3DShaderIntrinsics_Min3U
-*
-*   Returns the minimum value of the three unsigned integer source arguments.
-*
-*   Available if CheckSupport(AmdExtD3DShaderIntrinsicsSupport_Compare3) returned S_OK.
-*
-***********************************************************************************************************************
-*/
-uint AmdExtD3DShaderIntrinsics_Min3U(uint src0, uint src1, uint src2)
-{
-    uint minimum;
-
-    uint instruction1 = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_Min3U,
-                                                           AmdExtD3DShaderIntrinsicsOpcodePhase_0,
-                                                           0);
-    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction1, src0, src1, minimum);
-
-    uint instruction2 = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_Min3U,
-                                                           AmdExtD3DShaderIntrinsicsOpcodePhase_1,
-                                                           0);
-    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction2, src2, minimum, minimum);
-
-    return minimum;
-}
-
-/**
-***********************************************************************************************************************
 *   AmdExtD3DShaderIntrinsics_Med3F
 *
 *   Returns the median value of the three floating point source arguments.
@@ -576,60 +518,6 @@ uint AmdExtD3DShaderIntrinsics_Med3U(uint src0, uint src1, uint src2)
     AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction2, src2, median, median);
 
     return median;
-}
-
-/**
-***********************************************************************************************************************
-*   AmdExtD3DShaderIntrinsics_Max3F
-*
-*   Returns the maximum value of the three floating point source arguments.
-*
-*   Available if CheckSupport(AmdExtD3DShaderIntrinsicsSupport_Compare3) returned S_OK.
-*
-***********************************************************************************************************************
-*/
-float AmdExtD3DShaderIntrinsics_Max3F(float src0, float src1, float src2)
-{
-    uint maximum;
-
-    uint instruction1 = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_Max3F,
-                                                           AmdExtD3DShaderIntrinsicsOpcodePhase_0,
-                                                           0);
-    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction1, asuint(src0), asuint(src1), maximum);
-
-    uint instruction2 = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_Max3F,
-                                                           AmdExtD3DShaderIntrinsicsOpcodePhase_1,
-                                                           0);
-    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction2, asuint(src2), maximum, maximum);
-
-    return asfloat(maximum);
-}
-
-/**
-***********************************************************************************************************************
-*   AmdExtD3DShaderIntrinsics_Max3U
-*
-*   Returns the maximum value of the three unsigned integer source arguments.
-*
-*   Available if CheckSupport(AmdExtD3DShaderIntrinsicsSupport_Compare3) returned S_OK.
-*
-***********************************************************************************************************************
-*/
-uint AmdExtD3DShaderIntrinsics_Max3U(uint src0, uint src1, uint src2)
-{
-    uint maximum;
-
-    uint instruction1 = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_Max3U,
-                                                           AmdExtD3DShaderIntrinsicsOpcodePhase_0,
-                                                           0);
-    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction1, src0, src1, maximum);
-
-    uint instruction2 = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_Max3U,
-                                                           AmdExtD3DShaderIntrinsicsOpcodePhase_1,
-                                                           0);
-    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction2, src2, maximum, maximum);
-
-    return maximum;
 }
 
 /**

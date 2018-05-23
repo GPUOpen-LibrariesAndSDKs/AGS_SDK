@@ -74,7 +74,6 @@ private:
 	void Present();
 	void CreateDeviceAndSwapChain();
 	void CreateMeshBuffers();
-	void InitializeAGS();
 
 	std::unique_ptr<Window> m_window;
 

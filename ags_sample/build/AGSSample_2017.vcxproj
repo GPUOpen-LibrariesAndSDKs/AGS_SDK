@@ -95,7 +95,6 @@ xcopy "..\..\ags_lib\lib\amd_ags_x64.dll"  "..\bin" /H /R /Y &gt; nul</Command>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

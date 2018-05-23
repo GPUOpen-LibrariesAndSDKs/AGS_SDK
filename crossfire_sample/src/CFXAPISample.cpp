@@ -199,14 +199,6 @@ void CFXAPISample::Present ()
 	m_swapChain->Present (1, 0);
 }
 
-void CFXAPISample::InitializeAGS()
-{
-	// the desired Crossfire mode needs to be passed to agsInit
-	// prior to device creation
-    AGSConfiguration config = {};
-	config.crossfireMode = AGS_CROSSFIRE_MODE_EXPLICIT_AFR;
-	agsInit (&m_agsContext, &config, &m_agsGPUInfo );
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 void CFXAPISample::Initialize ()
@@ -214,7 +206,7 @@ void CFXAPISample::Initialize ()
 	m_window.reset (new Window ("AMD CFX API test", 1920, 1080));
 
 	// Call this before device creation
-	InitializeAGS();
+	agsInit( &m_agsContext, nullptr, &m_agsGPUInfo );
 
 	CreateDeviceAndSwapChain();
 
@@ -300,14 +292,14 @@ void CFXAPISample::Shutdown ()
 	m_vertexShader->Release();
 
     m_swapChain->Release();
-    m_deviceContext->Release();
 
     if ( m_agsGPUInfo.devices[ 0 ].vendorId == 0x1002 )
     {
-        agsDriverExtensionsDX11_DestroyDevice( m_agsContext, m_device, nullptr );
+        agsDriverExtensionsDX11_DestroyDevice( m_agsContext, m_device, nullptr, m_deviceContext, nullptr );
     }
     else
     {
+        m_deviceContext->Release();
         m_device->Release();
     }
 
@@ -324,7 +316,7 @@ void CFXAPISample::CreateDeviceAndSwapChain ()
 	swapChainDesc.BufferDesc.Height = 1080;
 	swapChainDesc.BufferDesc.Width = 1920;
 	swapChainDesc.OutputWindow = m_window->GetHWND ();
-	swapChainDesc.Windowed = false;
+	swapChainDesc.Windowed = true;
 	swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 	swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
@@ -349,6 +341,7 @@ void CFXAPISample::CreateDeviceAndSwapChain ()
     if ( m_agsGPUInfo.devices[ 0 ].vendorId == 0x1002 )
     {
         AGSDX11ExtensionParams extensionParams = {};
+        extensionParams.crossfireMode = AGS_CROSSFIRE_MODE_EXPLICIT_AFR; // Enable AFR without requiring a driver profile
         extensionParams.uavSlot = 7;
         AGSDX11ReturnedParams returnedParams = {};
 

@@ -67,8 +67,10 @@ void PrintDisplayInfo( const AGSGPUInfo& gpuInfo )
 
         if ( device.vendorId == 0x1002 )
         {
-            printf( "Architecture: %s, %d CUs, core clock %d MHz, memory clock %d MHz, %.1f Tflops\n", architecture[ device.architectureVersion ], device.numCUs, device.coreClock, device.memoryClock, device.teraFlops );
-            printf( "local memory: %d MBs\n\n", (int)( device.localMemoryInBytes / ( 1024 * 1024 ) ) );
+            printf( "Architecture: %s, %d CUs, %d ROPs\n", architecture[ device.architectureVersion ], device.numCUs, device.numROPs );
+            printf( "    core clock %d MHz, memory clock %d MHz\n", device.coreClock, device.memoryClock );
+            printf( "    %.1f Tflops\n", device.teraFlops );
+            printf( "local memory: %d MBs (%.1f GB/s)\n\n", (int)( device.localMemoryInBytes / ( 1024 * 1024 ) ), (float)device.memoryBandwidth / 1024.0f );
         }
 
         printf( "\n" );
@@ -169,18 +171,6 @@ int main(int , char**)
         printf( "Radeon Software Version:   %s\n", gpuInfo.radeonSoftwareVersion );
         printf( "Driver Version:            %s\n", gpuInfo.driverVersion );
         printf( "-----------------------------------------------------------------\n" );
-
-        int numCrossfireGPUs = 0;
-        if ( agsGetCrossfireGPUCount( agsContext, &numCrossfireGPUs ) == AGS_SUCCESS )
-        {
-            printf( "Crossfire GPU count = %d\n", numCrossfireGPUs );
-            printf( "-----------------------------------------------------------------\n" );
-        }
-        else
-        {
-            printf( "Failed to get Crossfire GPU count\n" );
-        }
-
         PrintDisplayInfo( gpuInfo );
         printf( "-----------------------------------------------------------------\n" );
 
