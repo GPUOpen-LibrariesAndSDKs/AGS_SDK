@@ -9,6 +9,13 @@ In addition to the library itself, the AGS SDK includes several samples to demon
   <a href="https://github.com/GPUOpen-LibrariesAndSDKs/AGS_SDK/releases/latest/"><img src="http://gpuopen-librariesandsdks.github.io/media/latest-release-button.svg" alt="Latest release" title="Latest release"></a>
 </div>
 
+### What's new in AGS 5.2
+Version 5.2 adds support for app registration in DirectX 12. App registration lets you give more information about your game or application to our driver, which can then use that (ideally unique) information to better support the game or app if we need to make driver-side changes to help things run as efficiently and correctly as possible.
+
+We also changed how you get access to extensions under DX12, requiring you to create your GPU device using `agsDriverExtensionsDX12_CreateDevice()` , instead of the normal `D3D12CreateDevice()` call you’d make to D3D.
+
+Lastly, we’ve also added support for breadcrumb markers in D3D11. Using the `agsDriverExtensionsDX11_WriteBreadcrumb()` API, you can put in place a strategy for debugging driver issues more easily. Sometimes your game or app can interact with the driver in a way that causes it to crash or TDR. The new API gives you the ability to leave markers around your D3D11 API calls, helping you narrow down exactly what interaction with the driver caused the problem.
+
 ### What's new in AGS 5.1
 Version 5.1 is a partly developer-focused update to AGS 5. We've listened to feedback about how difficult it can be to integrate the binary AGS libs into your games, and while we can't open the source code to AGS to allow you to integrate it from source, we canvassed developers to figure out what pre-built binaries would be most useful to provide. So we've now added builds of the AGS binary library that are linkable with Visual Studio projects built with `/MT` and `/MD`, used to select a particular CRT.
 
