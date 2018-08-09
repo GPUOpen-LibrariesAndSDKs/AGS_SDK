@@ -33,6 +33,12 @@
 /// Online documentation is publicly hosted here: http://gpuopen-librariesandsdks.github.io/ags/
 /// \endinternal
 ///
+/// What's new in AGS 5.2.1 since version 5.2.0
+/// ---------------------------------------
+/// * Fix for crash when using Eyefinity
+/// * Fix for DX12 app registration in the UWP version
+///
+///
 /// What's new in AGS 5.2.0 since version 5.1
 /// ---------------------------------------
 /// AGS 5.2 includes the following updates:
@@ -41,7 +47,6 @@
 /// * DX12 extensions now require the creation of the device via \ref agsDriverExtensionsDX12_CreateDevice
 /// * agsGetCrossfireGPUCount has been removed in favor of retrieving the value from \ref agsDriverExtensionsDX11_CreateDevice
 /// * API change that fixes a reference leak in \ref agsDriverExtensionsDX11_DestroyDevice
-
 ///
 /// What's new in AGS 5.x since version 4.x
 /// ---------------------------------------
@@ -84,7 +89,7 @@
 
 #define AMD_AGS_VERSION_MAJOR 5             ///< AGS major version
 #define AMD_AGS_VERSION_MINOR 2             ///< AGS minor version
-#define AMD_AGS_VERSION_PATCH 0             ///< AGS patch version
+#define AMD_AGS_VERSION_PATCH 1             ///< AGS patch version
 
 #ifdef __cplusplus
 extern "C" {

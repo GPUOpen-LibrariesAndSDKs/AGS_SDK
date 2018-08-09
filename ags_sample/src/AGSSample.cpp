@@ -160,8 +160,6 @@ int main(int , char**)
     AGSGPUInfo gpuInfo;
 
     AGSConfiguration config = {};
-    config.crossfireMode = AGS_CROSSFIRE_MODE_EXPLICIT_AFR;
-
     if ( agsInit( &agsContext, &config, &gpuInfo ) == AGS_SUCCESS )
     {
         printf( "\nAGS Library initialized: v%d.%d.%d\n", gpuInfo.agsVersionMajor, gpuInfo.agsVersionMinor, gpuInfo.agsVersionPatch );
