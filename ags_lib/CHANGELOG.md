@@ -1,5 +1,8 @@
 # AMD AGS Library Changelog
 
+### v5.2.1 - 2018-08-09
+* Fix for app registration for DX12 UWP apps
+
 ### v5.2.0 - 2018-05-31
 * App registration for DX12 apps
 * Breaking API change for DX12 extensions
