@@ -2,6 +2,14 @@
 
 **Note:** See `ags_lib\CHANGELOG.md` for changes to the core AGS library.
 
+### v5.2.0 - 2018-05-31
+* App registration for DX12 apps
+* Breaking API change for DX12 extensions
+  * You now call `agsDriverExtensionsDX12_CreateDevice()`
+  * With a corresponsding call to `agsDriverExtensionsDX12_DestroyDevice()` during teardown
+* DX11 breadcrumb markers
+  * `agsDriverExtensionsDX11_WriteBreadcrumb()`
+
 ### v5.1.1 - 2017-09-19
 * Breaking API change for DX11 extensions
   * You now call `agsDriverExtensionsDX11_CreateDevice()` at creation time to access any DX11 AMD extensions
