@@ -534,7 +534,7 @@ AMD_AGS_API AGSReturnCode agsDriverExtensionsDX12_SetMarker( AGSContext* context
 /// The different modes to control Crossfire behavior.
 enum AGSCrossfireMode
 {
-    AGS_CROSSFIRE_MODE_DRIVER_AFR = 0,                      ///< Use the default driver-based AFR rendering
+    AGS_CROSSFIRE_MODE_DRIVER_AFR = 0,                      ///< Use the default driver-based AFR rendering. If this mode is specified, do NOT use the agsDriverExtensionsDX11_Create*() APIs to create resources
     AGS_CROSSFIRE_MODE_EXPLICIT_AFR,                        ///< Use the AGS Crossfire API functions to perform explicit AFR rendering without requiring a CF driver profile
     AGS_CROSSFIRE_MODE_DISABLE                              ///< Completely disable AFR rendering
 };
