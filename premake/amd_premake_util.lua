@@ -18,7 +18,7 @@ _AMD_AGS_BUILD_SUBDIRS = "%{_AMD_ACTION_ALL_CAPS}/%{cfg.platform}/%{cfg.buildcfg
 _AMD_AGS_BUILD_SUBDIRS_BACKSLASH = "%{_AMD_ACTION_ALL_CAPS}\\%{cfg.platform}\\%{cfg.buildcfg}"
 
 -- Specify WindowsTargetPlatformVersion here for VS2015
-_AMD_WIN_SDK_VERSION = "10.0.15063.0"
+_AMD_WIN_SDK_VERSION = "10.0.17763.0"
 
 -- command lines for Visual Studio build events
 _AMD_COPY_WIN_8_1_SDK_REDIST_TO_BIN = "if not exist \"..\\bin\\d3dcompiler_47.dll\" if exist \"$(ProgramFiles)\\Windows Kits\\8.1\\Redist\\D3D\\x64\\d3dcompiler_47.dll\" xcopy \"$(ProgramFiles)\\Windows Kits\\8.1\\Redist\\D3D\\x64\\d3dcompiler_47.dll\" \"..\\bin\" /H /R /Y > nul"

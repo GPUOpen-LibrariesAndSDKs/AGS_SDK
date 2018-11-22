@@ -9,6 +9,12 @@ In addition to the library itself, the AGS SDK includes several samples to demon
   <a href="https://github.com/GPUOpen-LibrariesAndSDKs/AGS_SDK/releases/latest/"><img src="http://gpuopen-librariesandsdks.github.io/media/latest-release-button.svg" alt="Latest release" title="Latest release"></a>
 </div>
 
+### What's new in AGS 5.3
+
+Version 5.3 adds DirectX 11 deferred context support for our MultiDrawIndirect and UAV overlap extensions, along with a helper function to let your app determine if the installed driver meets your game's minimum driver version requirements. If you're a Vulkan user, you can pair that with our machine readable [AMD Vulkan versions](https://github.com/GPUOpen-Drivers/amd-vulkan-versions) database, to get more information about the Vulkan implementation in our client driver.
+
+Lastly, there's a new FreeSync 2 gamma 2.2 mode. It uses a 10-bit (per RGB component, 2-bit alpha) swapchain, as opposed to the 16-bit (per RGB component, 16-bit alpha) swapchain needed for FreeSync 2 scRGB.
+
 ### What's new in AGS 5.2
 Version 5.2 adds support for app registration in DirectX 12. App registration lets you give more information about your game or application to our driver, which can then use that (ideally unique) information to better support the game or app if we need to make driver-side changes to help things run as efficiently and correctly as possible.
 

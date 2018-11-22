@@ -140,6 +140,24 @@ void PrintDisplayInfo( const AGSGPUInfo& gpuInfo )
 }
 
 
+void testDriver( const char* driver, unsigned int driverToCompareAgainst )
+{
+    AGSDriverVersionResult result = agsCheckDriverVersion( driver, driverToCompareAgainst );
+
+    int major = (driverToCompareAgainst & 0xFFC00000) >> 22;
+    int minor = (driverToCompareAgainst & 0x003FF000) >> 12;
+    int patch = (driverToCompareAgainst & 0x00000FFF);
+
+    if ( result == AGS_SOFTWAREVERSIONCHECK_UNDEFINED )
+    {
+        printf( "Driver check could not determine the driver version for %s\n", driver );
+    }
+    else
+    {
+        printf( "Driver check shows the installed %s driver is %s the %d.%d.%d required version\n", driver, result == AGS_SOFTWAREVERSIONCHECK_OK ? "newer or the same as" : "older than", major, minor, patch );
+    }
+}
+
 int main(int , char**)
 {
     // Enable run-time memory check for debug builds.
@@ -155,6 +173,17 @@ int main(int , char**)
     {
         printf( "Display Device: %d: %s, %s %s%s\n", displayIndex, displayDevice.DeviceString, displayDevice.DeviceName, displayDevice.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE ? "(primary)" : "", displayDevice.StateFlags & DISPLAY_DEVICE_ACTIVE ? "" : " [disabled]" );
         displayIndex++;
+    }
+
+    {
+        printf( "\n" );
+        testDriver( "18.8.randombetadriver", AGS_MAKE_VERSION( 18, 8, 2 ) );
+        testDriver( "18.8.123randomdriver", AGS_MAKE_VERSION( 18, 8, 2 ) );
+        testDriver( "18.9.randomdriver", AGS_MAKE_VERSION( 18, 8, 2 ) );
+        testDriver( "18.8.2", AGS_MAKE_VERSION( 18, 8, 2 ) );
+        testDriver( "18.8.2", AGS_MAKE_VERSION( 18, 8, 1 ) );
+        testDriver( "18.8.2", AGS_MAKE_VERSION( 18, 8, 3 ) );
+        printf( "\n" );
     }
 
     AGSGPUInfo gpuInfo;

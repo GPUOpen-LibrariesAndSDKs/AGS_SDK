@@ -33,35 +33,13 @@
 /// Online documentation is publicly hosted here: http://gpuopen-librariesandsdks.github.io/ags/
 /// \endinternal
 ///
-/// What's new in AGS 5.2.1 since version 5.2.0
 /// ---------------------------------------
-/// * Fix for crash when using Eyefinity
-/// * Fix for DX12 app registration in the UWP version
-///
-///
-/// What's new in AGS 5.2.0 since version 5.1
+/// What's new in AGS 5.3 since version 5.2
 /// ---------------------------------------
-/// AGS 5.2 includes the following updates:
-/// * DX12 app registration API
-/// * DX11 breadcrumb marker API for tracking down GPU hangs:\ref agsDriverExtensionsDX11_WriteBreadcrumb
-/// * DX12 extensions now require the creation of the device via \ref agsDriverExtensionsDX12_CreateDevice
-/// * agsGetCrossfireGPUCount has been removed in favor of retrieving the value from \ref agsDriverExtensionsDX11_CreateDevice
-/// * API change that fixes a reference leak in \ref agsDriverExtensionsDX11_DestroyDevice
-///
-/// What's new in AGS 5.x since version 4.x
-/// ---------------------------------------
-/// Version 5.x is a major overhaul of the library designed to provide a much clearer view of the GPUs in the system and the displays attached to them. 
-/// It also exposes the ability to query each display for HDR capabilities and put those HDR capable displays into various HDR modes.
-/// Some functions such as agsGetGPUMemorySize and agsGetEyefinityConfigInfo have been removed in favor of including this information in the device & display enumeration.
-/// Features include:
-/// * Full GPU enumeration with adapter string, device id, revision id and vendor id.
-/// * Per GPU display enumeration including information on display name, resolution and HDR capabilities.
-/// * Optional user supplied memory allocator.
-/// * Function to set displays into HDR mode.
-/// * A Microsoft WACK compliant version of the library.
-/// * DirectX11 shader compiler controls.
-/// * DirectX11 multiview extension enabling MultiView and MultiRes rendering.
-/// * DirectX11 Crossfire API now supports using the API without needing a driver profile. Can also specify the transfer engine.
+/// AGS 5.3 includes the following updates:
+/// * DX11 deferred context support for Multi Draw Indirect and UAV Overlap extensions.
+/// * A Radeon Software Version helper to determine whether the installed driver meets your game's minimum driver version requirements.
+/// * Freesync2 Gamma 2.2 mode which uses a 1010102 swapchain and can be considered as an alternative to using the 64 bit swapchain required for Freesync2 scRGB.
 ///
 /// Using the AGS library
 /// ---------------------
@@ -88,14 +66,17 @@
 #define AMD_AGS_H
 
 #define AMD_AGS_VERSION_MAJOR 5             ///< AGS major version
-#define AMD_AGS_VERSION_MINOR 2             ///< AGS minor version
-#define AMD_AGS_VERSION_PATCH 1             ///< AGS patch version
+#define AMD_AGS_VERSION_MINOR 3             ///< AGS minor version
+#define AMD_AGS_VERSION_PATCH 0             ///< AGS patch version
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define AMD_AGS_API __declspec(dllexport)   ///< AGS exported functions
+
+#define AGS_MAKE_VERSION( major, minor, patch ) ( ( major << 22 ) | ( minor << 12 ) | patch ) ///< Macro to create the app and engine versions for the fields in \ref AGSDX12ExtensionParams and \ref AGSDX11ExtensionParams and the Radeon Software Version
+#define AGS_UNSPECIFIED_VERSION 0xFFFFAD00                                                    ///< Use this to specify no version
 
 // Forward declaration of D3D11 types
 struct IDXGIAdapter;
@@ -134,6 +115,7 @@ enum AGSReturnCode
     AGS_ERROR_LEGACY_DRIVER,        ///< Returned if a feature is not present in the installed driver
     AGS_EXTENSION_NOT_SUPPORTED,    ///< Returned if the driver does not support the requested driver extension
     AGS_ADL_FAILURE,                ///< Failure in ADL (the AMD Display Library)
+    AGS_DX_FAILURE                  ///< Failure from DirectX runtime
 };
 
 /// The DirectX11 extension support bits
@@ -160,6 +142,9 @@ enum AGSDriverExtensionDX11
     AGS_DX11_EXTENSION_MULTIVIEW                            = 1 << 18,   ///< Supported in Radeon Software Version 16.12.1 onwards.
     AGS_DX11_EXTENSION_APP_REGISTRATION                     = 1 << 19,   ///< Supported in Radeon Software Version 17.9.1 onwards.
     AGS_DX11_EXTENSION_BREADCRUMB_MARKERS                   = 1 << 20,   ///< Supported in Radeon Software Version 17.11.1 onwards.
+    AGS_DX11_EXTENSION_MDI_DEFERRED_CONTEXTS                = 1 << 21,   ///< Supported in Radeon Software Version XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX onwards.
+    AGS_DX11_EXTENSION_UAV_OVERLAP_DEFERRED_CONTEXTS        = 1 << 22,   ///< Supported in Radeon Software Version XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX onwards.
+    AGS_DX11_EXTENSION_DEPTH_BOUNDS_DEFERRED_CONTEXTS       = 1 << 23    ///< Supported in Radeon Software Version XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX onwards.
 };
 
 /// The DirectX12 extension support bits
@@ -355,7 +340,8 @@ struct AGSDisplaySettings
         Mode_SDR,                                           ///< SDR mode
         Mode_HDR10_PQ,                                      ///< HDR10 PQ encoding, requiring a 1010102 UNORM swapchain and PQ encoding in the output shader.
         Mode_HDR10_scRGB,                                   ///< HDR10 scRGB, requiring an FP16 swapchain. Values of 1.0 == 80 nits, 125.0 == 10000 nits.
-        Mode_Freesync2_scRGB,                               ///< Freesync2 scRGB, requiring an FP16 swapchain. 1.0 == 80 nits. Tonemap your scene to the range of 0.0 to AGSDisplayInfo::maxLuminance.
+        Mode_Freesync2_scRGB,                               ///< Freesync2 scRGB, requiring an FP16 swapchain. A value of 1.0 == 80 nits.
+        Mode_Freesync2_Gamma22,                             ///< Freesync2 Gamma 2.2, requiring a 1010102 UNORM swapchain.  The output needs to be encoded to gamma 2.2.
         Mode_DolbyVision                                    ///< Dolby Vision, requiring an 8888 UNORM swapchain
     };
 
@@ -381,6 +367,25 @@ struct AGSDisplaySettings
 
     int                     flags;                          ///< Bitfield of ::AGSDisplaySettingsFlags
 };
+
+
+/// The result returned from \ref agsCheckDriverVersion
+enum AGSDriverVersionResult
+{
+    AGS_SOFTWAREVERSIONCHECK_OK,                              ///< The reported Radeon Software Version is newer or the same as the required version
+    AGS_SOFTWAREVERSIONCHECK_OLDER,                           ///< The reported Radeon Software Version is older than the required version
+    AGS_SOFTWAREVERSIONCHECK_UNDEFINED                        ///< The check could not determine as result.  This could be because it is a private or custom driver or just invalid arguments.
+};
+
+///
+/// Helper function to check the installed software version against the required software version.
+///
+/// \param [in] radeonSoftwareVersionReported       The Radeon Software Version returned from \ref AGSGPUInfo::radeonSoftwareVersion.
+/// \param [in] radeonSoftwareVersionRequired       The Radeon Software Version to check against.  This is specificed using \ref AGS_MAKE_VERSION.
+/// \return                                         The result of the check.
+///
+AMD_AGS_API AGSDriverVersionResult agsCheckDriverVersion( const char* radeonSoftwareVersionReported, unsigned int radeonSoftwareVersionRequired );
+
 
 ///
 /// Function used to initialize the AGS library.
@@ -424,7 +429,7 @@ AMD_AGS_API AGSReturnCode agsSetDisplayMode( AGSContext* context, int deviceInde
 /// DirectX12 driver extensions
 /// @{
 
-/// \defgroup dx12init Device creation and cleanup
+/// \defgroup dx12init Device and device object creation and cleanup
 /// It is now mandatory to call \ref agsDriverExtensionsDX12_CreateDevice when creating a device if the user wants to access any future DX12 AMD extensions.
 /// The corresponding \ref agsDriverExtensionsDX12_DestroyDevice call must be called to release the device and free up the internal resources allocated by the create call.
 /// @{
@@ -436,9 +441,6 @@ struct AGSDX12DeviceCreationParams
     IID                         iid;                        ///< The interface ID for the type of device to be created.
     D3D_FEATURE_LEVEL           FeatureLevel;               ///< The minimum feature level to create the device with.
 };
-
-#define AGS_MAKE_VERSION( major, minor, patch ) ( ( major << 22 ) | ( minor << 12 ) | patch ) ///< Macro to create the app and engine versions for the fields in \ref AGSDX12ExtensionParams and \ref AGSDX11ExtensionParams
-#define AGS_UNSPECIFIED_VERSION 0xFFFFAD00                                                    ///< Use this to specify no version
 
 /// The struct to specify DX12 additional device creation parameters
 struct AGSDX12ExtensionParams
@@ -534,7 +536,7 @@ AMD_AGS_API AGSReturnCode agsDriverExtensionsDX12_SetMarker( AGSContext* context
 /// The different modes to control Crossfire behavior.
 enum AGSCrossfireMode
 {
-    AGS_CROSSFIRE_MODE_DRIVER_AFR = 0,                      ///< Use the default driver-based AFR rendering. If this mode is specified, do NOT use the agsDriverExtensionsDX11_Create*() APIs to create resources
+    AGS_CROSSFIRE_MODE_DRIVER_AFR = 0,                      ///< Use the default driver-based AFR rendering.  If this mode is specified, do NOT use the agsDriverExtensionsDX11_Create*() APIs to create resources
     AGS_CROSSFIRE_MODE_EXPLICIT_AFR,                        ///< Use the AGS Crossfire API functions to perform explicit AFR rendering without requiring a CF driver profile
     AGS_CROSSFIRE_MODE_DISABLE                              ///< Completely disable AFR rendering
 };
@@ -845,8 +847,8 @@ AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_WriteBreadcrumb( AGSContext* c
 
 /// @}
 
-/// \defgroup dx11misc Misc Extensions
-/// API for depth bounds test, UAV overlap and prim topologies
+/// \defgroup dx11Topology Extended Topology
+/// API for primitive topologies
 /// @{
 
 ///
@@ -867,6 +869,12 @@ AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_WriteBreadcrumb( AGSContext* c
 ///                                                 NB. the AGS-defined types will require casting to a D3D_PRIMITIVE_TOPOLOGY type.
 ///
 AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_IASetPrimitiveTopology( AGSContext* context, enum D3D_PRIMITIVE_TOPOLOGY topology );
+
+/// @}
+
+/// \defgroup dx11UAVOverlap UAV Overlap
+/// API for enabling overlapping UAV writes
+/// @{
 
 ///
 /// Function used indicate to the driver that it doesn't need to sync the UAVs bound for the subsequent set of back-to-back dispatches.
@@ -890,25 +898,36 @@ AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_IASetPrimitiveTopology( AGSCon
 /// \endcode
 ///
 /// \param [in] context                             Pointer to a context.
+/// \param [in] dxContext                           Pointer to the DirectX device context.  If this is to work using the non-immediate context, then you need to check support.  If nullptr is specified, then the immediate context is assumed.
+///                                                 with the AGS_DX11_EXTENSION_DEFERRED_CONTEXTS bit.
 ///
-AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_BeginUAVOverlap( AGSContext* context );
+AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_BeginUAVOverlap( AGSContext* context, ID3D11DeviceContext* dxContext );
 
 ///
 /// Function used indicate to the driver it can no longer overlap the batch of back-to-back dispatches that has been submitted.
 ///
 /// \param [in] context                             Pointer to a context.
+/// \param [in] dxContext                           Pointer to the DirectX device context.  If this is to work using the non-immediate context, then you need to check support.  If nullptr is specified, then the immediate context is assumed.
+///                                                 with the AGS_DX11_EXTENSION_DEFERRED_CONTEXTS bit.
 ///
-AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_EndUAVOverlap( AGSContext* context );
+AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_EndUAVOverlap( AGSContext* context, ID3D11DeviceContext* dxContext );
+
+/// @}
+
+/// \defgroup dx11DepthBoundsTest Depth Bounds Test
+/// API for enabling depth bounds testing
+/// @{
 
 ///
 /// Function used to set the depth bounds test extension
 ///
-/// \param [in] context                             Pointer to a context.
+/// \param [in] context                             Pointer to a context
+/// \param [in] dxContext                           Pointer to the DirectX device context.  If this is to work using the non-immediate context, then you need to check support.  If nullptr is specified, then the immediate context is assumed.
 /// \param [in] enabled                             Whether to enable or disable the depth bounds testing. If disabled, the next two args are ignored.
 /// \param [in] minDepth                            The near depth range to clip against.
 /// \param [in] maxDepth                            The far depth range to clip against.
 ///
-AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_SetDepthBounds( AGSContext* context, bool enabled, float minDepth, float maxDepth );
+AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_SetDepthBounds( AGSContext* context, ID3D11DeviceContext* dxContext, bool enabled, float minDepth, float maxDepth );
 
 /// @}
 
@@ -921,12 +940,12 @@ AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_SetDepthBounds( AGSContext* co
 /// \code{.cpp}
 ///     // Submit n batches of DrawIndirect calls
 ///     for ( int i = 0; i < n; i++ )
-///         DrawIndexedInstancedIndirect( buffer, i * sizeof( cmd ) );
+///         deviceContext->DrawIndexedInstancedIndirect( buffer, i * sizeof( cmd ) );
 /// \endcode
 /// To be replaced by the following call:
 /// \code{.cpp}
 ///     // Submit all n batches in one call
-///     agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect( m_agsContext, n, buffer, 0, sizeof( cmd ) );
+///     agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect( m_agsContext, deviceContext, n, buffer, 0, sizeof( cmd ) );
 /// \endcode
 ///
 /// The buffer used for the indirect args must be of the following formats:
@@ -959,47 +978,51 @@ AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_SetDepthBounds( AGSContext* co
 /// Function used to submit a batch of draws via MultiDrawIndirect
 ///
 /// \param [in] context                             Pointer to a context.
+/// \param [in] dxContext                           Pointer to the DirectX device context.  If this is to work using the non-immediate context, then you need to check support.  If nullptr is specified, then the immediate context is assumed.
 /// \param [in] drawCount                           The number of draws.
 /// \param [in] pBufferForArgs                      The args buffer.
 /// \param [in] alignedByteOffsetForArgs            The offset into the args buffer.
 /// \param [in] byteStrideForArgs                   The per element stride of the args buffer.
 ///
-AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_MultiDrawInstancedIndirect( AGSContext* context, unsigned int drawCount, ID3D11Buffer* pBufferForArgs, unsigned int alignedByteOffsetForArgs, unsigned int byteStrideForArgs );
+AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_MultiDrawInstancedIndirect( AGSContext* context, ID3D11DeviceContext* dxContext, unsigned int drawCount, ID3D11Buffer* pBufferForArgs, unsigned int alignedByteOffsetForArgs, unsigned int byteStrideForArgs );
 
 ///
 /// Function used to submit a batch of draws via MultiDrawIndirect
 ///
 /// \param [in] context                             Pointer to a context.
+/// \param [in] dxContext                           Pointer to the DirectX device context.  If this is to work using the non-immediate context, then you need to check support.  If nullptr is specified, then the immediate context is assumed.
 /// \param [in] drawCount                           The number of draws.
 /// \param [in] pBufferForArgs                      The args buffer.
 /// \param [in] alignedByteOffsetForArgs            The offset into the args buffer.
 /// \param [in] byteStrideForArgs                   The per element stride of the args buffer.
 ///
-AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect( AGSContext* context, unsigned int drawCount, ID3D11Buffer* pBufferForArgs, unsigned int alignedByteOffsetForArgs, unsigned int byteStrideForArgs );
+AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirect( AGSContext* context, ID3D11DeviceContext* dxContext, unsigned int drawCount, ID3D11Buffer* pBufferForArgs, unsigned int alignedByteOffsetForArgs, unsigned int byteStrideForArgs );
 
 ///
 /// Function used to submit a batch of draws via MultiDrawIndirect
 ///
 /// \param [in] context                             Pointer to a context.
+/// \param [in] dxContext                           Pointer to the DirectX device context.  If this is to work using the non-immediate context, then you need to check support.  If nullptr is specified, then the immediate context is assumed.
 /// \param [in] pBufferForDrawCount                 The draw count buffer.
 /// \param [in] alignedByteOffsetForDrawCount       The offset into the draw count buffer.
 /// \param [in] pBufferForArgs                      The args buffer.
 /// \param [in] alignedByteOffsetForArgs            The offset into the args buffer.
 /// \param [in] byteStrideForArgs                   The per element stride of the args buffer.
 ///
-AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_MultiDrawInstancedIndirectCountIndirect( AGSContext* context, ID3D11Buffer* pBufferForDrawCount, unsigned int alignedByteOffsetForDrawCount, ID3D11Buffer* pBufferForArgs, unsigned int alignedByteOffsetForArgs, unsigned int byteStrideForArgs );
+AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_MultiDrawInstancedIndirectCountIndirect( AGSContext* context, ID3D11DeviceContext* dxContext, ID3D11Buffer* pBufferForDrawCount, unsigned int alignedByteOffsetForDrawCount, ID3D11Buffer* pBufferForArgs, unsigned int alignedByteOffsetForArgs, unsigned int byteStrideForArgs );
 
 ///
 /// Function used to submit a batch of draws via MultiDrawIndirect
 ///
 /// \param [in] context                             Pointer to a context.
+/// \param [in] dxContext                           Pointer to the DirectX device context.  If this is to work using the non-immediate context, then you need to check support.  If nullptr is specified, then the immediate context is assumed.
 /// \param [in] pBufferForDrawCount                 The draw count buffer.
 /// \param [in] alignedByteOffsetForDrawCount       The offset into the draw count buffer.
 /// \param [in] pBufferForArgs                      The args buffer.
 /// \param [in] alignedByteOffsetForArgs            The offset into the args buffer.
 /// \param [in] byteStrideForArgs                   The per element stride of the args buffer.
 ///
-AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirectCountIndirect( AGSContext* context, ID3D11Buffer* pBufferForDrawCount, unsigned int alignedByteOffsetForDrawCount, ID3D11Buffer* pBufferForArgs, unsigned int alignedByteOffsetForArgs, unsigned int byteStrideForArgs );
+AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_MultiDrawIndexedInstancedIndirectCountIndirect( AGSContext* context, ID3D11DeviceContext* dxContext, ID3D11Buffer* pBufferForDrawCount, unsigned int alignedByteOffsetForDrawCount, ID3D11Buffer* pBufferForArgs, unsigned int alignedByteOffsetForArgs, unsigned int byteStrideForArgs );
 
 /// @}
 

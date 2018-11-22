@@ -1,5 +1,9 @@
 # AMD AGS Library Changelog
 
+### v5.3.0 - 2018-11-22
+* DirectX 11 deferred context support for our Multi Draw Indirect and UAV overlap extensions
+* New helper function to better work with `radeonSoftwareVersion` data
+
 ### v5.2.1 - 2018-08-09
 * Fix for app registration for DX12 UWP apps
 

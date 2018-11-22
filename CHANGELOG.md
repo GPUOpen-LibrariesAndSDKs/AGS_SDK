@@ -2,6 +2,11 @@
 
 **Note:** See `ags_lib\CHANGELOG.md` for changes to the core AGS library.
 
+### v5.3.0 - 2018-11-22
+* DirectX 11 deferred context support for our Multi Draw Indirect and UAV overlap extensions
+* New helper function to better work with Radeon Software Version data
+* New FreeSync 2 gamma 2.2 mode, using a smaller swapchain format compared to FreeSync 2 scRGB
+
 ### v5.2.1 - 2018-08-09
 * Fix for app registration for DX12 UWP apps
 

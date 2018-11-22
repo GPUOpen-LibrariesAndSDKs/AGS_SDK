@@ -16,7 +16,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>AGSSample</RootNamespace>
     <ProjectName>AGSSample</ProjectName>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -114,6 +114,7 @@ xcopy "..\..\ags_lib\lib\amd_ags_x64.dll"  "..\bin" /H /R /Y &gt; nul</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\ags_lib\inc\amd_ags.h" />
+    <ClInclude Include="..\..\ags_lib\inc\amd_ags_ruyi.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\AGSSample.cpp" />
