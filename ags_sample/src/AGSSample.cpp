@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2016 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2019 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -58,19 +58,30 @@ void PrintDisplayInfo( const AGSGPUInfo& gpuInfo )
         printf( "Device id:   0x%04X\n", device.deviceId );
         printf( "Revision id: 0x%04X\n\n", device.revisionId );
 
-        const char* architecture[] =
+        const char* asicFamily[] =
         {
             "unknown",
-            "pre-GCN",
-            "GCN"
+            "Pre GCN",
+            "GCN Gen1",
+            "GCN Gen2",
+            "GCN Gen3",
+            "GCN Gen4",
+            "Vega",
+            "RDNA"
         };
 
         if ( device.vendorId == 0x1002 )
         {
-            printf( "Architecture: %s, %d CUs, %d ROPs\n", architecture[ device.architectureVersion ], device.numCUs, device.numROPs );
+            char wgpInfo[ 256 ] = {};
+            if ( device.asicFamily >= AGSDeviceInfo::AsicFamily_RDNA )
+            {
+                sprintf_s( wgpInfo, ", %d WGPs", device.numWGPs );
+            }
+
+            printf( "Architecture: %s, %s%d CUs%s, %d ROPs\n", asicFamily[ device.asicFamily ], device.isAPU ? "(APU), " : "", device.numCUs, wgpInfo, device.numROPs );
             printf( "    core clock %d MHz, memory clock %d MHz\n", device.coreClock, device.memoryClock );
             printf( "    %.1f Tflops\n", device.teraFlops );
-            printf( "local memory: %d MBs (%.1f GB/s)\n\n", (int)( device.localMemoryInBytes / ( 1024 * 1024 ) ), (float)device.memoryBandwidth / 1024.0f );
+            printf( "local memory: %d MBs (%.1f GB/s), shared memory: %d MBs\n\n", (int)( device.localMemoryInBytes / ( 1024 * 1024 ) ), (float)device.memoryBandwidth / 1024.0f, (int)( device.sharedMemoryInBytes / ( 1024 * 1024 ) ) );
         }
 
         printf( "\n" );

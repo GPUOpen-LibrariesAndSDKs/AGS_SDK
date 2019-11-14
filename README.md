@@ -9,6 +9,14 @@ In addition to the library itself, the AGS SDK includes several samples to demon
   <a href="https://github.com/GPUOpen-LibrariesAndSDKs/AGS_SDK/releases/latest/"><img src="http://gpuopen-librariesandsdks.github.io/media/latest-release-button.svg" alt="Latest release" title="Latest release"></a>
 </div>
 
+
+### What's new in AGS 5.4
+Version 5.4 adds a better description of the GPU architecture for those wishing to fine tune their games for specific code paths.  You can also check if the GPU is an APU or not.  This may be useful when budgeting for memory since the local memory reported will only be a small amount compared to the system memory the GPU has access to.  In addition, there are now shader intrinsics for getting the draw index for execute indirect calls as well as support for atomic U64 ops.
+
+Radeon 7 and RDNA GPU core and memory speeds are now returned.
+
+For those using the static lib version of AGS, we now ship the debug versions of these libs too.
+
 ### What's new in AGS 5.3
 
 Version 5.3 adds DirectX 11 deferred context support for our MultiDrawIndirect and UAV overlap extensions, along with a helper function to let your app determine if the installed driver meets your game's minimum driver version requirements. If you're a Vulkan user, you can pair that with our machine readable [AMD Vulkan versions](https://github.com/GPUOpen-Drivers/amd-vulkan-versions) database, to get more information about the Vulkan implementation in our client driver.

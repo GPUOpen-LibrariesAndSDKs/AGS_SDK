@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2019 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,13 +34,19 @@
 
 #ifndef _AMDEXTD3DSHADERINTRINICS_HLSL
 #define _AMDEXTD3DSHADERINTRINICS_HLSL
-// AMD shader intrinsics designated SpaceId.  Denotes Texture3D resource and static sampler used in conjuction with
-// instrinsic instructions.
+
+// Default AMD shader intrinsics designated SpaceId.
 #define AmdExtD3DShaderIntrinsicsSpaceId space2147420894
-// Texture3D and SamplerState used to access AMD shader instrinsics instruction set.
-// Applications need to add descriptor table entries for these when creating root descriptor table.
-///@note Requires SM 5.1 RWBuffer<uint>
+
+// Dummy UAV used to access shader intrinsics. Applications need to add a root signature entry for this resource in
+// order to use shader extensions. Applications may specify an alternate UAV binding by defining
+// AMD_EXT_SHADER_INTRINSIC_UAV_OVERRIDE. The application must also call IAmdExtD3DShaderIntrinsics1::SetExtensionUavBinding()
+// in order to use an alternate binding. This must be done before creating the root signature and pipeline.
+#ifdef AMD_EXT_SHADER_INTRINSIC_UAV_OVERRIDE
+RWByteAddressBuffer AmdExtD3DShaderIntrinsicsUAV : register(AMD_EXT_SHADER_INTRINSIC_UAV_OVERRIDE);
+#else
 RWByteAddressBuffer AmdExtD3DShaderIntrinsicsUAV : register(u0, AmdExtD3DShaderIntrinsicsSpaceId);
+#endif
 
 /**
 ***********************************************************************************************************************
@@ -61,24 +67,32 @@ RWByteAddressBuffer AmdExtD3DShaderIntrinsicsUAV : register(u0, AmdExtD3DShaderI
 
 /**
 ***********************************************************************************************************************
-*   Wave intrinsic opcodes.
+*   Intrinsic opcodes.
 ***********************************************************************************************************************
 */
-#define AmdExtD3DShaderIntrinsicsOpcode_Readfirstlane  0x01
-#define AmdExtD3DShaderIntrinsicsOpcode_Readlane       0x02
-#define AmdExtD3DShaderIntrinsicsOpcode_LaneId         0x03
-#define AmdExtD3DShaderIntrinsicsOpcode_Swizzle        0x04
-#define AmdExtD3DShaderIntrinsicsOpcode_Ballot         0x05
-#define AmdExtD3DShaderIntrinsicsOpcode_MBCnt          0x06
-#define AmdExtD3DShaderIntrinsicsOpcode_Med3U          0x09
-#define AmdExtD3DShaderIntrinsicsOpcode_Med3F          0x0a
-#define AmdExtD3DShaderIntrinsicsOpcode_BaryCoord      0x0d
-#define AmdExtD3DShaderIntrinsicsOpcode_VtxParam       0x0e
-#define AmdExtD3DShaderIntrinsicsOpcode_Reserved1      0x0f
-#define AmdExtD3DShaderIntrinsicsOpcode_Reserved2      0x10
-#define AmdExtD3DShaderIntrinsicsOpcode_Reserved3      0x11
-#define AmdExtD3DShaderIntrinsicsOpcode_WaveReduce     0x12
-#define AmdExtD3DShaderIntrinsicsOpcode_WaveScan       0x13
+#define AmdExtD3DShaderIntrinsicsOpcode_Readfirstlane     0x01
+#define AmdExtD3DShaderIntrinsicsOpcode_Readlane          0x02
+#define AmdExtD3DShaderIntrinsicsOpcode_LaneId            0x03
+#define AmdExtD3DShaderIntrinsicsOpcode_Swizzle           0x04
+#define AmdExtD3DShaderIntrinsicsOpcode_Ballot            0x05
+#define AmdExtD3DShaderIntrinsicsOpcode_MBCnt             0x06
+#define AmdExtD3DShaderIntrinsicsOpcode_Min3U             0x07
+#define AmdExtD3DShaderIntrinsicsOpcode_Min3F             0x08
+#define AmdExtD3DShaderIntrinsicsOpcode_Med3U             0x09
+#define AmdExtD3DShaderIntrinsicsOpcode_Med3F             0x0a
+#define AmdExtD3DShaderIntrinsicsOpcode_Max3U             0x0b
+#define AmdExtD3DShaderIntrinsicsOpcode_Max3F             0x0c
+#define AmdExtD3DShaderIntrinsicsOpcode_BaryCoord         0x0d
+#define AmdExtD3DShaderIntrinsicsOpcode_VtxParam          0x0e
+#define AmdExtD3DShaderIntrinsicsOpcode_Reserved1         0x0f
+#define AmdExtD3DShaderIntrinsicsOpcode_Reserved2         0x10
+#define AmdExtD3DShaderIntrinsicsOpcode_Reserved3         0x11
+#define AmdExtD3DShaderIntrinsicsOpcode_WaveReduce        0x12
+#define AmdExtD3DShaderIntrinsicsOpcode_WaveScan          0x13
+#define AmdExtD3DShaderIntrinsicsOpcode_LoadDwAtAddr      0x14
+
+#define AmdExtD3DShaderIntrinsicsOpcode_DrawIndex         0x17
+#define AmdExtD3DShaderIntrinsicsOpcode_AtomicU64         0x18
 
 /**
 ***********************************************************************************************************************
@@ -222,6 +236,20 @@ RWByteAddressBuffer AmdExtD3DShaderIntrinsicsUAV : register(u0, AmdExtD3DShaderI
 #define AmdExtD3DShaderIntrinsicsBarycentric_ComponentShift 0x7
 #define AmdExtD3DShaderIntrinsicsBarycentric_ComponentMask  0x3
 
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsicsAtomic defines for supported operations. Can be used as the parameter for the
+*   AmdExtD3DShaderIntrinsicsOpcode_AtomicU64 intrinsic.
+***********************************************************************************************************************
+*/
+#define AmdExtD3DShaderIntrinsicsAtomicOp_MinU64     0x01
+#define AmdExtD3DShaderIntrinsicsAtomicOp_MaxU64     0x02
+#define AmdExtD3DShaderIntrinsicsAtomicOp_AndU64     0x03
+#define AmdExtD3DShaderIntrinsicsAtomicOp_OrU64      0x04
+#define AmdExtD3DShaderIntrinsicsAtomicOp_XorU64     0x05
+#define AmdExtD3DShaderIntrinsicsAtomicOp_AddU64     0x06
+#define AmdExtD3DShaderIntrinsicsAtomicOp_XchgU64    0x07
+#define AmdExtD3DShaderIntrinsicsAtomicOp_CmpXchgU64 0x08
 
 /**
 ***********************************************************************************************************************
@@ -353,6 +381,7 @@ float AmdExtD3DShaderIntrinsics_SwizzleF(float src, uint operation)
     uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_Swizzle, 0, operation);
 
     uint retVal;
+    //InterlockedCompareExchange(AmdExtD3DShaderIntrinsicsUAV[instruction], asuint(src), 0, retVal);
     AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src), 0, retVal);
     return asfloat(retVal);
 }
@@ -468,6 +497,60 @@ uint AmdExtD3DShaderIntrinsics_MBCnt(uint2 src)
 
 /**
 ***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_Min3F
+*
+*   Returns the minimum value of the three floating point source arguments.
+*
+*   Available if CheckSupport(AmdExtD3DShaderIntrinsicsSupport_Compare3) returned S_OK.
+*
+***********************************************************************************************************************
+*/
+float AmdExtD3DShaderIntrinsics_Min3F(float src0, float src1, float src2)
+{
+    uint minimum;
+
+    uint instruction1 = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_Min3F,
+                                                           AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+                                                           0);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction1, asuint(src0), asuint(src1), minimum);
+
+    uint instruction2 = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_Min3F,
+                                                           AmdExtD3DShaderIntrinsicsOpcodePhase_1,
+                                                           0);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction2, asuint(src2), minimum, minimum);
+
+    return asfloat(minimum);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_Min3U
+*
+*   Returns the minimum value of the three unsigned integer source arguments.
+*
+*   Available if CheckSupport(AmdExtD3DShaderIntrinsicsSupport_Compare3) returned S_OK.
+*
+***********************************************************************************************************************
+*/
+uint AmdExtD3DShaderIntrinsics_Min3U(uint src0, uint src1, uint src2)
+{
+    uint minimum;
+
+    uint instruction1 = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_Min3U,
+                                                           AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+                                                           0);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction1, src0, src1, minimum);
+
+    uint instruction2 = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_Min3U,
+                                                           AmdExtD3DShaderIntrinsicsOpcodePhase_1,
+                                                           0);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction2, src2, minimum, minimum);
+
+    return minimum;
+}
+
+/**
+***********************************************************************************************************************
 *   AmdExtD3DShaderIntrinsics_Med3F
 *
 *   Returns the median value of the three floating point source arguments.
@@ -518,6 +601,60 @@ uint AmdExtD3DShaderIntrinsics_Med3U(uint src0, uint src1, uint src2)
     AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction2, src2, median, median);
 
     return median;
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_Max3F
+*
+*   Returns the maximum value of the three floating point source arguments.
+*
+*   Available if CheckSupport(AmdExtD3DShaderIntrinsicsSupport_Compare3) returned S_OK.
+*
+***********************************************************************************************************************
+*/
+float AmdExtD3DShaderIntrinsics_Max3F(float src0, float src1, float src2)
+{
+    uint maximum;
+
+    uint instruction1 = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_Max3F,
+                                                           AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+                                                           0);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction1, asuint(src0), asuint(src1), maximum);
+
+    uint instruction2 = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_Max3F,
+                                                           AmdExtD3DShaderIntrinsicsOpcodePhase_1,
+                                                           0);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction2, asuint(src2), maximum, maximum);
+
+    return asfloat(maximum);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_Max3U
+*
+*   Returns the maximum value of the three unsigned integer source arguments.
+*
+*   Available if CheckSupport(AmdExtD3DShaderIntrinsicsSupport_Compare3) returned S_OK.
+*
+***********************************************************************************************************************
+*/
+uint AmdExtD3DShaderIntrinsics_Max3U(uint src0, uint src1, uint src2)
+{
+    uint maximum;
+
+    uint instruction1 = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_Max3U,
+                                                           AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+                                                           0);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction1, src0, src1, maximum);
+
+    uint instruction2 = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_Max3U,
+                                                           AmdExtD3DShaderIntrinsicsOpcodePhase_1,
+                                                           0);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction2, src2, maximum, maximum);
+
+    return maximum;
 }
 
 /**
@@ -605,7 +742,7 @@ float4 AmdExtD3DShaderIntrinsics_VertexParameter(uint vertexIdx, uint parameterI
     uint4 instruction;
 
     instruction.x = MakeAmdShaderIntrinsicsInstruction(
-		     AmdExtD3DShaderIntrinsicsOpcode_VtxParam,
+             AmdExtD3DShaderIntrinsicsOpcode_VtxParam,
              AmdExtD3DShaderIntrinsicsOpcodePhase_0,
            ((vertexIdx << AmdExtD3DShaderIntrinsicsBarycentric_VtxShift) |
             (parameterIdx << AmdExtD3DShaderIntrinsicsBarycentric_ParamShift) |
@@ -613,7 +750,7 @@ float4 AmdExtD3DShaderIntrinsics_VertexParameter(uint vertexIdx, uint parameterI
     AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction.x, 0, 0, retVal.x);
 
     instruction.y = MakeAmdShaderIntrinsicsInstruction(
-		     AmdExtD3DShaderIntrinsicsOpcode_VtxParam,
+             AmdExtD3DShaderIntrinsicsOpcode_VtxParam,
              AmdExtD3DShaderIntrinsicsOpcodePhase_0,
            ((vertexIdx << AmdExtD3DShaderIntrinsicsBarycentric_VtxShift) |
             (parameterIdx << AmdExtD3DShaderIntrinsicsBarycentric_ParamShift) |
@@ -621,7 +758,7 @@ float4 AmdExtD3DShaderIntrinsics_VertexParameter(uint vertexIdx, uint parameterI
     AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction.y, 0, 0, retVal.y);
 
     instruction.z = MakeAmdShaderIntrinsicsInstruction(
-		     AmdExtD3DShaderIntrinsicsOpcode_VtxParam,
+             AmdExtD3DShaderIntrinsicsOpcode_VtxParam,
              AmdExtD3DShaderIntrinsicsOpcodePhase_0,
            ((vertexIdx << AmdExtD3DShaderIntrinsicsBarycentric_VtxShift) |
             (parameterIdx << AmdExtD3DShaderIntrinsicsBarycentric_ParamShift) |
@@ -629,7 +766,7 @@ float4 AmdExtD3DShaderIntrinsics_VertexParameter(uint vertexIdx, uint parameterI
     AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction.z, 0, 0, retVal.z);
 
     instruction.w = MakeAmdShaderIntrinsicsInstruction(
-		     AmdExtD3DShaderIntrinsicsOpcode_VtxParam,
+             AmdExtD3DShaderIntrinsicsOpcode_VtxParam,
              AmdExtD3DShaderIntrinsicsOpcodePhase_0,
            ((vertexIdx << AmdExtD3DShaderIntrinsicsBarycentric_VtxShift) |
             (parameterIdx << AmdExtD3DShaderIntrinsicsBarycentric_ParamShift) |
@@ -656,7 +793,7 @@ float AmdExtD3DShaderIntrinsics_VertexParameterComponent(uint vertexIdx, uint pa
 {
     uint retVal;
     uint instruction =
-		MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_VtxParam,
+        MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_VtxParam,
                                            AmdExtD3DShaderIntrinsicsOpcodePhase_0,
                                           ((vertexIdx << AmdExtD3DShaderIntrinsicsBarycentric_VtxShift) |
                                            (parameterIdx << AmdExtD3DShaderIntrinsicsBarycentric_ParamShift) |
@@ -1009,6 +1146,539 @@ int4 AmdExtD3DShaderIntrinsics_WaveScan(uint waveOp, uint flags, int4 src)
 
     return retVal;
 }
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_LoadDwordAtAddr
+*
+*   The following functions are available if CheckSupport(AmdExtD3DShaderIntrinsicsSupport_LoadDwAtAddr) returned S_OK.
+*
+*   Loads a DWORD from GPU memory from a given 64-bit GPU VA and 32-bit offset.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_LoadDwordAtAddr
+***********************************************************************************************************************
+*/
+uint AmdExtD3DShaderIntrinsics_LoadDwordAtAddr(uint gpuVaLoBits, uint gpuVaHiBits, uint offset)
+{
+    uint retVal;
+
+    uint instruction;
+    instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_LoadDwAtAddr,
+                                                     AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+                                                     0);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, gpuVaLoBits, gpuVaHiBits, retVal);
+
+    instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_LoadDwAtAddr,
+                                                     AmdExtD3DShaderIntrinsicsOpcodePhase_1,
+                                                     0);
+
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, offset, 0, retVal);
+
+    return retVal;
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_LoadDwordAtAddrx2
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_LoadDwordAtAddrx2(uint gpuVaLoBits, uint gpuVaHiBits, uint offset)
+{
+    uint2 retVal;
+
+    retVal.x = AmdExtD3DShaderIntrinsics_LoadDwordAtAddr(gpuVaLoBits, gpuVaHiBits, offset);
+    retVal.y = AmdExtD3DShaderIntrinsics_LoadDwordAtAddr(gpuVaLoBits, gpuVaHiBits, offset + 0x4);
+
+    return retVal;
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_LoadDwordAtAddrx4
+***********************************************************************************************************************
+*/
+uint4 AmdExtD3DShaderIntrinsics_LoadDwordAtAddrx4(uint gpuVaLoBits, uint gpuVaHiBits, uint offset)
+{
+    uint4 retVal;
+
+    retVal.x = AmdExtD3DShaderIntrinsics_LoadDwordAtAddr(gpuVaLoBits, gpuVaHiBits, offset);
+    retVal.y = AmdExtD3DShaderIntrinsics_LoadDwordAtAddr(gpuVaLoBits, gpuVaHiBits, offset + 0x4);
+    retVal.z = AmdExtD3DShaderIntrinsics_LoadDwordAtAddr(gpuVaLoBits, gpuVaHiBits, offset + 0x8);
+    retVal.w = AmdExtD3DShaderIntrinsics_LoadDwordAtAddr(gpuVaLoBits, gpuVaHiBits, offset + 0xC);
+
+    return retVal;
+}
+
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_GetDrawIndex
+*
+*   The following function is available if CheckSupport(AmdExtD3DShaderIntrinsicsSupport_GetDrawIndex) returned S_OK.
+*
+*   Returns the 0-based draw index in an indirect draw. Always returns 0 for direct draws.
+*
+*   Available in vertex shader stage only.
+*
+***********************************************************************************************************************
+*/
+uint AmdExtD3DShaderIntrinsics_GetDrawIndex()
+{
+    uint retVal;
+
+    uint instruction;
+    instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_DrawIndex,
+                                                     AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+                                                     0);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, 0, 0, retVal);
+
+    return retVal;
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_MakeAtomicInstructions
+*
+*   Creates uint4 with x/y/z/w components containing phase 0/1/2/3 for atomic instructions.
+*   NOTE: This is an internal function and should not be called by the source HLSL shader directly.
+*
+***********************************************************************************************************************
+*/
+uint4 AmdExtD3DShaderIntrinsics_MakeAtomicInstructions(uint op)
+{
+    uint4 instructions;
+    instructions.x = MakeAmdShaderIntrinsicsInstruction(
+        AmdExtD3DShaderIntrinsicsOpcode_AtomicU64, AmdExtD3DShaderIntrinsicsOpcodePhase_0, op);
+    instructions.y = MakeAmdShaderIntrinsicsInstruction(
+        AmdExtD3DShaderIntrinsicsOpcode_AtomicU64, AmdExtD3DShaderIntrinsicsOpcodePhase_1, op);
+    instructions.z = MakeAmdShaderIntrinsicsInstruction(
+        AmdExtD3DShaderIntrinsicsOpcode_AtomicU64, AmdExtD3DShaderIntrinsicsOpcodePhase_2, op);
+    instructions.w = MakeAmdShaderIntrinsicsInstruction(
+        AmdExtD3DShaderIntrinsicsOpcode_AtomicU64, AmdExtD3DShaderIntrinsicsOpcodePhase_3, op);
+    return instructions;
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_AtomicOp
+*
+*   Creates intrinstic instructions for the specified atomic op.
+*   NOTE: These are internal functions and should not be called by the source HLSL shader directly.
+*
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_AtomicOp(RWByteAddressBuffer uav, uint3 address, uint2 value, uint op)
+{
+    uint2 retVal;
+
+    const uint4 instructions = AmdExtD3DShaderIntrinsics_MakeAtomicInstructions(op);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.x, address.x, address.y, retVal.x);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.y, address.z, value.x,   retVal.y);
+    uav.Store(retVal.x, retVal.y);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.z, value.y,   retVal.y,  retVal.y);
+
+    return retVal;
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicOp(RWTexture1D<uint2> uav, uint3 address, uint2 value, uint op)
+{
+    uint2 retVal;
+
+    const uint4 instructions = AmdExtD3DShaderIntrinsics_MakeAtomicInstructions(op);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.x, address.x, address.y, retVal.x);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.y, address.z, value.x,   retVal.y);
+    uav[retVal.x] = retVal.y;
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.z, value.y,   retVal.y,  retVal.y);
+
+    return retVal;
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicOp(RWTexture2D<uint2> uav, uint3 address, uint2 value, uint op)
+{
+    uint2 retVal;
+
+    const uint4 instructions = AmdExtD3DShaderIntrinsics_MakeAtomicInstructions(op);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.x, address.x, address.y, retVal.x);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.y, address.z, value.x,   retVal.y);
+    uav[uint2(retVal.x, retVal.x)] = retVal.y;
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.z, value.y,   retVal.y,  retVal.y);
+
+    return retVal;
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicOp(RWTexture3D<uint2> uav, uint3 address, uint2 value, uint op)
+{
+    uint2 retVal;
+
+    const uint4 instructions = AmdExtD3DShaderIntrinsics_MakeAtomicInstructions(op);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.x, address.x, address.y, retVal.x);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.y, address.z, value.x,   retVal.y);
+    uav[uint3(retVal.x, retVal.x, retVal.x)] = retVal.y;
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.z, value.y,   retVal.y,  retVal.y);
+
+    return retVal;
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicOp(
+    RWByteAddressBuffer uav, uint3 address, uint2 compare_value, uint2 value, uint op)
+{
+    uint2 retVal;
+
+    const uint4 instructions = AmdExtD3DShaderIntrinsics_MakeAtomicInstructions(op);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.x, address.x,       address.y,       retVal.x);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.y, address.z,       value.x,         retVal.y);
+    uav.Store(retVal.x, retVal.y);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.z, value.y,         compare_value.x, retVal.y);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.w, compare_value.y, retVal.y,        retVal.y);
+
+    return retVal;
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicOp(
+    RWTexture1D<uint2> uav, uint3 address, uint2 compare_value, uint2 value, uint op)
+{
+    uint2 retVal;
+
+    const uint4 instructions = AmdExtD3DShaderIntrinsics_MakeAtomicInstructions(op);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.x, address.x,       address.y,       retVal.x);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.y, address.z,       value.x,         retVal.y);
+    uav[retVal.x] = retVal.y;
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.z, value.y,         compare_value.x, retVal.y);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.w, compare_value.y, retVal.y,        retVal.y);
+
+    return retVal;
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicOp(
+    RWTexture2D<uint2> uav, uint3 address, uint2 compare_value, uint2 value, uint op)
+{
+    uint2 retVal;
+
+    const uint4 instructions = AmdExtD3DShaderIntrinsics_MakeAtomicInstructions(op);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.x, address.x,       address.y,       retVal.x);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.y, address.z,       value.x,         retVal.y);
+    uav[uint2(retVal.x, retVal.x)] = retVal.y;
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.z, value.y,         compare_value.x, retVal.y);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.w, compare_value.y, retVal.y,        retVal.y);
+
+    return retVal;
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicOp(
+    RWTexture3D<uint2> uav, uint3 address, uint2 compare_value, uint2 value, uint op)
+{
+    uint2 retVal;
+
+    const uint4 instructions = AmdExtD3DShaderIntrinsics_MakeAtomicInstructions(op);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.x, address.x,       address.y,       retVal.x);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.y, address.z,       value.x,         retVal.y);
+    uav[uint3(retVal.x, retVal.x, retVal.x)] = retVal.y;
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.z, value.y,         compare_value.x, retVal.y);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instructions.w, compare_value.y, retVal.y,        retVal.y);
+
+    return retVal;
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_AtomicMinU64
+*
+*   The following functions are available if CheckSupport(AmdExtD3DShaderIntrinsicsOpcode_AtomicU64) returned S_OK.
+*
+*   Performs 64-bit atomic minimum of value with the UAV at address, returns the original value.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_AtomicMinU64(RWByteAddressBuffer uav, uint address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_MinU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address, 0, 0), value, op);
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicMinU64(RWTexture1D<uint2> uav, uint address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_MinU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address, 0, 0), value, op);
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicMinU64(RWTexture2D<uint2> uav, uint2 address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_MinU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address.x, address.y, 0), value, op);
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicMinU64(RWTexture3D<uint2> uav, uint3 address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_MinU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address.x, address.y, address.z), value, op);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_AtomicMaxU64
+*
+*   The following functions are available if CheckSupport(AmdExtD3DShaderIntrinsicsOpcode_AtomicU64) returned S_OK.
+*
+*   Performs 64-bit atomic maximum of value with the UAV at address, returns the original value.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_AtomicMaxU64(RWByteAddressBuffer uav, uint address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_MaxU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address, 0, 0), value, op);
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicMaxU64(RWTexture1D<uint2> uav, uint address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_MaxU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address, 0, 0), value, op);
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicMaxU64(RWTexture2D<uint2> uav, uint2 address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_MaxU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address.x, address.y, 0), value, op);
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicMaxU64(RWTexture3D<uint2> uav, uint3 address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_MaxU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address.x, address.y, address.z), value, op);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_AtomicAndU64
+*
+*   The following functions are available if CheckSupport(AmdExtD3DShaderIntrinsicsOpcode_AtomicU64) returned S_OK.
+*
+*   Performs 64-bit atomic AND of value with the UAV at address, returns the original value.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_AtomicAndU64(RWByteAddressBuffer uav, uint address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_AndU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address, 0, 0), value, op);
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicAndU64(RWTexture1D<uint2> uav, uint address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_AndU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address, 0, 0), value, op);
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicAndU64(RWTexture2D<uint2> uav, uint2 address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_AndU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address.x, address.y, 0), value, op);
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicAndU64(RWTexture3D<uint2> uav, uint3 address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_AndU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address.x, address.y, address.z), value, op);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_AtomicOrU64
+*
+*   The following functions are available if CheckSupport(AmdExtD3DShaderIntrinsicsOpcode_AtomicU64) returned S_OK.
+*
+*   Performs 64-bit atomic OR of value with the UAV at address, returns the original value.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_AtomicOrU64(RWByteAddressBuffer uav, uint address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_OrU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address, 0, 0), value, op);
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicOrU64(RWTexture1D<uint2> uav, uint address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_OrU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address, 0, 0), value, op);
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicOrU64(RWTexture2D<uint2> uav, uint2 address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_OrU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address.x, address.y, 0), value, op);
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicOrU64(RWTexture3D<uint2> uav, uint3 address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_OrU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address.x, address.y, address.z), value, op);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_AtomicXorU64
+*
+*   The following functions are available if CheckSupport(AmdExtD3DShaderIntrinsicsOpcode_AtomicU64) returned S_OK.
+*
+*   Performs 64-bit atomic XOR of value with the UAV at address, returns the original value.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_AtomicXorU64(RWByteAddressBuffer uav, uint address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_XorU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address, 0, 0), value, op);
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicXorU64(RWTexture1D<uint2> uav, uint address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_XorU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address, 0, 0), value, op);
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicXorU64(RWTexture2D<uint2> uav, uint2 address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_XorU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address.x, address.y, 0), value, op);
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicXorU64(RWTexture3D<uint2> uav, uint3 address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_XorU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address.x, address.y, address.z), value, op);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_AtomicAddU64
+*
+*   The following functions are available if CheckSupport(AmdExtD3DShaderIntrinsicsOpcode_AtomicU64) returned S_OK.
+*
+*   Performs 64-bit atomic add of value with the UAV at address, returns the original value.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_AtomicAddU64(RWByteAddressBuffer uav, uint address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_AddU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address, 0, 0), value, op);
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicAddU64(RWTexture1D<uint2> uav, uint address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_AddU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address, 0, 0), value, op);
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicAddU64(RWTexture2D<uint2> uav, uint2 address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_AddU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address.x, address.y, 0), value, op);
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicAddU64(RWTexture3D<uint2> uav, uint3 address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_AddU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address.x, address.y, address.z), value, op);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_AtomicXchgU64
+*
+*   The following functions are available if CheckSupport(AmdExtD3DShaderIntrinsicsOpcode_AtomicU64) returned S_OK.
+*
+*   Performs 64-bit atomic exchange of value with the UAV at address, returns the original value.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_AtomicXchgU64(RWByteAddressBuffer uav, uint address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_XchgU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address, 0, 0), value, op);
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicXchgU64(RWTexture1D<uint2> uav, uint address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_XchgU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address, 0, 0), value, op);
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicXchgU64(RWTexture2D<uint2> uav, uint2 address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_XchgU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address.x, address.y, 0), value, op);
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicXchgU64(RWTexture3D<uint2> uav, uint3 address, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_XchgU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address.x, address.y, address.z), value, op);
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_AtomicCmpXchgU64
+*
+*   The following functions are available if CheckSupport(AmdExtD3DShaderIntrinsicsOpcode_AtomicU64) returned S_OK.
+*
+*   Performs 64-bit atomic compare of comparison value with UAV at address, stores value if values match,
+*   returns the original value.
+*
+*   Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_AtomicCmpXchgU64(
+    RWByteAddressBuffer uav, uint address, uint2 compare_value, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_CmpXchgU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address, 0, 0), compare_value, value, op);
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicCmpXchgU64(
+    RWTexture1D<uint2> uav, uint address, uint2 compare_value, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_CmpXchgU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address, 0, 0), compare_value, value, op);
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicCmpXchgU64(
+    RWTexture2D<uint2> uav, uint2 address, uint2 compare_value, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_CmpXchgU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address.x, address.y, 0), compare_value, value, op);
+}
+
+uint2 AmdExtD3DShaderIntrinsics_AtomicCmpXchgU64(
+    RWTexture3D<uint2> uav, uint3 address, uint2 compare_value, uint2 value)
+{
+    const uint op = AmdExtD3DShaderIntrinsicsAtomicOp_CmpXchgU64;
+    return AmdExtD3DShaderIntrinsics_AtomicOp(uav, uint3(address.x, address.y, address.z), compare_value, value, op);
+}
+
 
 /**
 ***********************************************************************************************************************
@@ -3011,5 +3681,6 @@ uint4 AmdExtD3DShaderIntrinsics_WavePostfixMax(uint4 src)
                                               AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
                                               src);
 }
+
 
 #endif // _AMDEXTD3DSHADERINTRINICS_HLSL

@@ -1,6 +1,10 @@
 # AMD AGS SDK Changelog
 
-**Note:** See `ags_lib\CHANGELOG.md` for changes to the core AGS library.
+### v5.4.0 - 2019-11-13
+* Better description of the GPU architecture including ASIC family and whether or not its an APU.
+* Shader intrinsics for draw index for execute indirect calls and atomic U64 ops.
+* Radeon 7 and RDNA GPU core and memory speeds.
+* Debug static libs.
 
 ### v5.3.0 - 2018-11-22
 * DirectX 11 deferred context support for our Multi Draw Indirect and UAV overlap extensions
