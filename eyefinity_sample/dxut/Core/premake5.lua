@@ -5,10 +5,9 @@ workspace "DXUT"
    platforms { "x64" }
    filename ("DXUT" .. _AMD_VS_SUFFIX)
    startproject "DXUT"
-
-   filter "platforms:x64"
-      system "Windows"
-      architecture "x64"
+   systemversion "latest"
+   system "Windows"
+   architecture "x64"
 
 project "DXUT"
    kind "StaticLib"
@@ -23,9 +22,6 @@ project "DXUT"
    symbols "On"
    pchheader "DXUT.h"
    pchsource "DXUT.cpp"
-
-   -- Specify WindowsTargetPlatformVersion here for VS2015
-   systemversion (_AMD_WIN_SDK_VERSION)
 
    files { "*.h", "*.cpp" }
 

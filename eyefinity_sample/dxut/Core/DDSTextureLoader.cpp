@@ -26,7 +26,7 @@
 #include "DDSTextureLoader.h"
 
 #if defined(_DEBUG) || defined(PROFILE)
-#pragma comment(lib,"dxguid.lib")
+//#pragma comment(lib,"dxguid.lib")
 #endif
 
 using namespace DirectX;

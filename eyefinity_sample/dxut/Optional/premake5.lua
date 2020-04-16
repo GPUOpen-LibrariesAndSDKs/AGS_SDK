@@ -5,10 +5,9 @@ workspace "DXUTOpt"
    platforms { "x64" }
    filename ("DXUTOpt" .. _AMD_VS_SUFFIX)
    startproject "DXUTOpt"
-
-   filter "platforms:x64"
-      system "Windows"
-      architecture "x64"
+   systemversion "latest"
+   system "Windows"
+   architecture "x64"
 
 project "DXUTOpt"
    kind "StaticLib"
@@ -23,9 +22,6 @@ project "DXUTOpt"
    symbols "On"
    pchheader "DXUT.h"
    pchsource "DXUTres.cpp"
-
-   -- Specify WindowsTargetPlatformVersion here for VS2015
-   systemversion (_AMD_WIN_SDK_VERSION)
 
    files { "*.h", "*.cpp" }
    includedirs { "../Core" }

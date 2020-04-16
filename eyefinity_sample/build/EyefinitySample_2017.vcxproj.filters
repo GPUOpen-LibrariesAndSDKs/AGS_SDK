@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="ags_lib">
@@ -34,14 +34,16 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="..\src\Shaders\EyefinitySample.hlsl">
+      <Filter>src\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\src\Shaders\Line.hlsl">
+      <Filter>src\Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
     <None Include="..\src\ResourceFiles\dpiaware.manifest">
       <Filter>src\ResourceFiles</Filter>
-    </None>
-    <None Include="..\src\Shaders\EyefinitySample.hlsl">
-      <Filter>src\Shaders</Filter>
-    </None>
-    <None Include="..\src\Shaders\Line.hlsl">
-      <Filter>src\Shaders</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

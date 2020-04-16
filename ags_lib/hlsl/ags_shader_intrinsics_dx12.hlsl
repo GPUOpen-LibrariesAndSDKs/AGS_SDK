@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2019 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2020 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -93,6 +93,8 @@ RWByteAddressBuffer AmdExtD3DShaderIntrinsicsUAV : register(u0, AmdExtD3DShaderI
 
 #define AmdExtD3DShaderIntrinsicsOpcode_DrawIndex         0x17
 #define AmdExtD3DShaderIntrinsicsOpcode_AtomicU64         0x18
+#define AmdExtD3DShaderIntrinsicsOpcode_BaseInstance      0x1a
+#define AmdExtD3DShaderIntrinsicsOpcode_BaseVertex        0x1b
 
 /**
 ***********************************************************************************************************************
@@ -326,6 +328,7 @@ float AmdExtD3DShaderIntrinsics_ReadlaneF(float src, uint laneId)
     AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src), 0, retVal);
     return asfloat(retVal);
 }
+
 
 /**
 ***********************************************************************************************************************
@@ -1237,6 +1240,57 @@ uint AmdExtD3DShaderIntrinsics_GetDrawIndex()
     instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_DrawIndex,
                                                      AmdExtD3DShaderIntrinsicsOpcodePhase_0,
                                                      0);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, 0, 0, retVal);
+
+    return retVal;
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_GetBaseInstance
+*
+*   The following function is available if CheckSupport(AmdExtD3DShaderIntrinsicsSupport_BaseInstance) returned S_OK.
+*
+*   Returns the StartInstanceLocation parameter passed to direct or indirect drawing commands.
+*
+*   Available in vertex shader stage only.
+*
+***********************************************************************************************************************
+*/
+uint AmdExtD3DShaderIntrinsics_GetBaseInstance()
+{
+    uint retVal;
+
+    uint instruction;
+    instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_BaseInstance,
+        AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+        0);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, 0, 0, retVal);
+
+    return retVal;
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_GetBaseVertex
+*
+*   The following function is available if CheckSupport(AmdExtD3DShaderIntrinsicsSupport_BaseVertex) returned S_OK.
+*
+*   For non-indexed draw commands, returns the StartVertexLocation parameter. For indexed draw commands, returns the
+*   BaseVertexLocation parameter.
+*
+*   Available in vertex shader stage only.
+*
+***********************************************************************************************************************
+*/
+uint AmdExtD3DShaderIntrinsics_GetBaseVertex()
+{
+    uint retVal;
+
+    uint instruction;
+    instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_BaseVertex,
+        AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+        0);
     AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, 0, 0, retVal);
 
     return retVal;

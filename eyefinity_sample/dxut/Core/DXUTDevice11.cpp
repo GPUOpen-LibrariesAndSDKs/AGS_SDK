@@ -1122,7 +1122,7 @@ float DXUTRankD3D11DeviceCombo( CD3D11EnumDeviceSettingsCombo* pDeviceSettingsCo
             {
                 auto displayMode = pDeviceSettingsCombo->pOutputInfo->displayModeList[ idm ];
 
-                float refreshDiff = fabs( ( float( displayMode.RefreshRate.Numerator ) / float( displayMode.RefreshRate.Denominator ) ) -
+                float refreshDiff = fabsf( ( float( displayMode.RefreshRate.Numerator ) / float( displayMode.RefreshRate.Denominator ) ) -
                                           ( float( pOptimalDeviceSettings->sd.BufferDesc.RefreshRate.Numerator ) / float( pOptimalDeviceSettings->sd.BufferDesc.RefreshRate.Denominator ) ) );
 
                 if( displayMode.Width == pOptimalDeviceSettings->sd.BufferDesc.Width
@@ -1135,8 +1135,8 @@ float DXUTRankD3D11DeviceCombo( CD3D11EnumDeviceSettingsCombo* pDeviceSettingsCo
                 }
 
                 float current = refreshDiff
-                                + fabs( float( displayMode.Width ) - float ( pOptimalDeviceSettings->sd.BufferDesc.Width ) ) 
-                                + fabs( float( displayMode.Height ) - float ( pOptimalDeviceSettings->sd.BufferDesc.Height ) );
+                                + fabsf( float( displayMode.Width ) - float ( pOptimalDeviceSettings->sd.BufferDesc.Width ) ) 
+                                + fabsf( float( displayMode.Height ) - float ( pOptimalDeviceSettings->sd.BufferDesc.Height ) );
 
                 if( current < best )
                 {
@@ -1160,8 +1160,8 @@ float DXUTRankD3D11DeviceCombo( CD3D11EnumDeviceSettingsCombo* pDeviceSettingsCo
                     break;
                 }
 
-                float current = fabs( float( displayMode.Width ) - float ( pOptimalDeviceSettings->sd.BufferDesc.Width ) ) 
-                                + fabs( float( displayMode.Height ) - float ( pOptimalDeviceSettings->sd.BufferDesc.Height ) );
+                float current = fabsf( float( displayMode.Width ) - float ( pOptimalDeviceSettings->sd.BufferDesc.Width ) ) 
+                                + fabsf( float( displayMode.Height ) - float ( pOptimalDeviceSettings->sd.BufferDesc.Height ) );
 
                 if( current < best )
                 {

@@ -1,7 +1,9 @@
 # AMD AGS SDK
 ![AMD AGS SDK](http://gpuopen-librariesandsdks.github.io/media/amd_logo_black.png)
 
-The AMD GPU Services (AGS) library provides software developers with the ability to query AMD GPU software and hardware state information that is not normally available through standard operating systems or graphic APIs. AGS includes support for querying graphics driver version info, GPU performance, Crossfire&trade; (AMD's multi-GPU rendering technology) configuration info, and Eyefinity (AMD's multi-display rendering technology) configuration info. AGS also exposes the explicit Crossfire API extension, GCN shader extensions, and additional extensions supported in the AMD drivers for DirectX 11 and DirectX 12.
+The AMD GPU Services (AGS) library provides software developers with the ability to query AMD GPU software and hardware state information that is not normally available through standard operating systems or graphics APIs.  If you are serious about getting the most from your AMD GPU, then AGS can help you harness that power.
+
+AGS includes support for querying graphics driver version info, GPU hardware info, performance metrics, shader extensions and additional extensions supported in the AMD drivers for DirectX 11 and DirectX 12.  AGS also provides Crossfire&trade; (AMD's multi-GPU rendering technology) support and Eyefinity (AMD's multi-display rendering technology) configuration info.
 
 In addition to the library itself, the AGS SDK includes several samples to demonstrate use of the library.
 
@@ -9,17 +11,16 @@ In addition to the library itself, the AGS SDK includes several samples to demon
   <a href="https://github.com/GPUOpen-LibrariesAndSDKs/AGS_SDK/releases/latest/"><img src="http://gpuopen-librariesandsdks.github.io/media/latest-release-button.svg" alt="Latest release" title="Latest release"></a>
 </div>
 
+### What's new in AGS 5.4.1
+Version 5.4.1 is a minor update to include x86 libs and Visual Studio 2019 support.  There is also support for base vertex and base instance intrinsics.
 
 ### What's new in AGS 5.4
-Version 5.4 adds a better description of the GPU architecture for those wishing to fine tune their games for specific code paths.  You can also check if the GPU is an APU or not.  This may be useful when budgeting for memory since the local memory reported will only be a small amount compared to the system memory the GPU has access to.  In addition, there are now shader intrinsics for getting the draw index for execute indirect calls as well as support for atomic U64 ops.
+Version 5.4 adds a better description of the GPU architecture for those wishing to fine tune their games for specific code paths.  In addition, there are now shader intrinsics for getting the draw index for execute indirect calls as well as support for atomic U64 ops.
 
 Radeon 7 and RDNA GPU core and memory speeds are now returned.
 
-For those using the static lib version of AGS, we now ship the debug versions of these libs too.
-
 ### What's new in AGS 5.3
-
-Version 5.3 adds DirectX 11 deferred context support for our MultiDrawIndirect and UAV overlap extensions, along with a helper function to let your app determine if the installed driver meets your game's minimum driver version requirements. If you're a Vulkan user, you can pair that with our machine readable [AMD Vulkan versions](https://github.com/GPUOpen-Drivers/amd-vulkan-versions) database, to get more information about the Vulkan implementation in our client driver.
+Version 5.3 adds DirectX 11 deferred context support for our MultiDrawIndirect and UAV overlap extensions, along with a helper function to let your app determine if the installed driver meets your game's minimum driver version requirements. If you're a Vulkan user, you can pair that with our machine readable AMD Vulkan versions database, to get more information about the Vulkan implementation in our client driver.
 
 Lastly, there's a new FreeSync 2 gamma 2.2 mode. It uses a 10-bit (per RGB component, 2-bit alpha) swapchain, as opposed to the 16-bit (per RGB component, 16-bit alpha) swapchain needed for FreeSync 2 scRGB.
 

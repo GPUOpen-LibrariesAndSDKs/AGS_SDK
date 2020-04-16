@@ -8,10 +8,9 @@ workspace (_AMD_SAMPLE_NAME)
    location "../build"
    filename (_AMD_SAMPLE_NAME .. _AMD_VS_SUFFIX)
    startproject (_AMD_SAMPLE_NAME)
-
-   filter "platforms:x64"
-      system "Windows"
-      architecture "x64"
+   systemversion "latest"
+   system "Windows"
+   architecture "x64"
 
 project (_AMD_SAMPLE_NAME)
    kind "ConsoleApp"
@@ -25,9 +24,6 @@ project (_AMD_SAMPLE_NAME)
    warnings "Extra"
    floatingpoint "Fast"
    symbols "On"
-
-   -- Specify WindowsTargetPlatformVersion here for VS2015
-   systemversion (_AMD_WIN_SDK_VERSION)
 
    -- Copy DLLs to the local bin directory
    postbuildcommands { amdAgsSamplePostbuildCommands(true) }

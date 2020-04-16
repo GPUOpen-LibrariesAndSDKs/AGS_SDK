@@ -78,10 +78,10 @@ void PrintDisplayInfo( const AGSGPUInfo& gpuInfo )
                 sprintf_s( wgpInfo, ", %d WGPs", device.numWGPs );
             }
 
-            printf( "Architecture: %s, %s%d CUs%s, %d ROPs\n", asicFamily[ device.asicFamily ], device.isAPU ? "(APU), " : "", device.numCUs, wgpInfo, device.numROPs );
+            printf( "Architecture: %s, %d CUs%s, %d ROPs\n", asicFamily[ device.asicFamily ], device.numCUs, wgpInfo, device.numROPs );
             printf( "    core clock %d MHz, memory clock %d MHz\n", device.coreClock, device.memoryClock );
             printf( "    %.1f Tflops\n", device.teraFlops );
-            printf( "local memory: %d MBs (%.1f GB/s), shared memory: %d MBs\n\n", (int)( device.localMemoryInBytes / ( 1024 * 1024 ) ), (float)device.memoryBandwidth / 1024.0f, (int)( device.sharedMemoryInBytes / ( 1024 * 1024 ) ) );
+            printf( "local memory: %d MBs (%.1f GB/s)\n\n", (int)( device.localMemoryInBytes / ( 1024 * 1024 ) ), (float)device.memoryBandwidth / 1024.0f );
         }
 
         printf( "\n" );
@@ -130,8 +130,8 @@ void PrintDisplayInfo( const AGSGPUInfo& gpuInfo )
             if ( display.displayFlags & AGS_DISPLAYFLAG_FREESYNC )
                 printf( "\tFreesync supported\n" );
 
-            if ( display.displayFlags & AGS_DISPLAYFLAG_FREESYNC_2 )
-                printf( "\tFreesync 2 supported\n" );
+            if ( display.displayFlags & AGS_DISPLAYFLAG_FREESYNC_HDR )
+                printf( "\tFreesync HDR supported\n" );
 
             printf( "\n" );
 

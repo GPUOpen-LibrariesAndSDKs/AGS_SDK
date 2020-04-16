@@ -8,10 +8,9 @@ workspace (_AMD_SAMPLE_NAME)
    location "../build"
    filename (_AMD_SAMPLE_NAME .. _AMD_VS_SUFFIX)
    startproject (_AMD_SAMPLE_NAME)
-
-   filter "platforms:x64"
-      system "Windows"
-      architecture "x64"
+   systemversion "latest"
+   system "Windows"
+   architecture "x64"
 
 project (_AMD_SAMPLE_NAME)
    kind "ConsoleApp"
@@ -26,9 +25,6 @@ project (_AMD_SAMPLE_NAME)
    floatingpoint "Fast"
    symbols "On"
 
-   -- Specify WindowsTargetPlatformVersion here for VS2015
-   systemversion (_AMD_WIN_SDK_VERSION)
-
    -- Copy DLLs to the local bin directory
    postbuildcommands { amdAgsSamplePostbuildCommands(true) }
    postbuildmessage "Copying dependencies..."
@@ -37,6 +33,9 @@ project (_AMD_SAMPLE_NAME)
    includedirs { "../../%{_AMD_AGS_DIRECTORY_NAME}/inc" }
    libdirs { "../../%{_AMD_AGS_DIRECTORY_NAME}/lib" }
    links { "amd_ags_x64", "d3dcompiler", "d3d11" }
+
+   filter { "files:**.hlsl" }
+      flags {"ExcludeFromBuild"}
 
    filter "configurations:Debug"
       defines { "WIN32", "_DEBUG", "_CONSOLE", "_WIN32_WINNT=0x0601" }

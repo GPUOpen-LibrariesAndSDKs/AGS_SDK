@@ -195,15 +195,15 @@ HRESULT CompileShaderFromFile( WCHAR* szFileName, LPCSTR szEntryPoint,
 // Entry point to the program. Initializes everything and goes into a message processing 
 // loop. Idle time is used to render the scene.
 //--------------------------------------------------------------------------------------
-int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow )
+int WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nShowCmd )
 {
     // Enable run-time memory check for debug builds.
 #if defined(DEBUG) | defined(_DEBUG)
-    _CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+   _CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 #endif
 
 	// Initialise AGS lib
-    agsInit( &g_AGSContext, nullptr, &g_AGSGPUInfo );
+    //agsInit( &g_AGSContext, nullptr, &g_AGSGPUInfo );
 
     // DXUT will create and use the best device 
     // that is available on the system depending on which D3D callbacks are set below
@@ -572,8 +572,8 @@ HRESULT CALLBACK OnD3D11SwapChainResized( ID3D11Device* pd3dDevice, IDXGISwapCha
         fAspectRatio = (float)(device.eyefinityResolutionX / device.eyefinityGridWidth ) / (float)( device.eyefinityResolutionY / device.eyefinityGridHeight );
         g_MultiCameraProjM = DirectX::XMMatrixPerspectiveFovLH( YFOV, fAspectRatio, 0.01f, 500.0f );
 		
-		float xScale = (cos(YFOV*0.5f)/sin(YFOV*0.5f)) / fAspectRatio;
-		g_FovX = 2.0f * atan( 1.0f / xScale ); 
+		float xScale = (cosf(YFOV*0.5f)/sinf(YFOV*0.5f)) / fAspectRatio;
+		g_FovX = 2.0f * atanf( 1.0f / xScale ); 
     }
 
 	fAspectRatio = pBackBufferSurfaceDesc->Width / ( FLOAT )pBackBufferSurfaceDesc->Height;
