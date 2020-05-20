@@ -203,7 +203,7 @@ int WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 #endif
 
 	// Initialise AGS lib
-    //agsInit( &g_AGSContext, nullptr, &g_AGSGPUInfo );
+    agsInit( &g_AGSContext, nullptr, &g_AGSGPUInfo );
 
     // DXUT will create and use the best device 
     // that is available on the system depending on which D3D callbacks are set below
@@ -232,14 +232,16 @@ int WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     int height = 480;
     bool windowed = true;
 
-    const AGSDeviceInfo& device = g_AGSGPUInfo.devices[ 0 ];
-
-    if ( device.eyefinityEnabled )
+    if ( g_AGSGPUInfo.numDevices > 0 )
     {
-        // Use full screen mode if Eyefinity is enabled.
-        width = device.eyefinityResolutionX;
-        height = device.eyefinityResolutionY;
-        windowed = false;
+        const AGSDeviceInfo& device = g_AGSGPUInfo.devices[ 0 ];
+        if ( device.eyefinityEnabled )
+        {
+            // Use full screen mode if Eyefinity is enabled.
+            width = device.eyefinityResolutionX;
+            height = device.eyefinityResolutionY;
+            windowed = false;
+        }
     }
 
     DXUTCreateDevice( D3D_FEATURE_LEVEL_11_0, windowed, width, height );

@@ -219,8 +219,8 @@ void CFXAPISample::Initialize ()
 	m_device->CreateDepthStencilState (&dsDesc, &m_depthStencilState);
 
 	ComPtr<ID3DBlob> vsCode, psCode;
-	D3DCompileFromFile (L"..\\src\\Shaders\\shaders.hlsl", nullptr, nullptr, "VS_main", "vs_5_0", 0, 0, &vsCode, nullptr);
-	D3DCompileFromFile (L"..\\src\\Shaders\\shaders.hlsl", nullptr, nullptr, "PS_main", "ps_5_0", 0, 0, &psCode, nullptr);
+	D3DCompileFromFile (L"..\\..\\src\\Shaders\\shaders.hlsl", nullptr, nullptr, "VS_main", "vs_5_0", 0, 0, &vsCode, nullptr);
+	D3DCompileFromFile (L"..\\..\\src\\Shaders\\shaders.hlsl", nullptr, nullptr, "PS_main", "ps_5_0", 0, 0, &psCode, nullptr);
 
 	D3D11_INPUT_ELEMENT_DESC layoutDesc[] = {
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},

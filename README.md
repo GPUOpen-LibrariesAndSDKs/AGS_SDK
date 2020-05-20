@@ -12,7 +12,7 @@ In addition to the library itself, the AGS SDK includes several samples to demon
 </div>
 
 ### What's new in AGS 5.4.1
-Version 5.4.1 is a minor update to include x86 libs and Visual Studio 2019 support.  There is also support for base vertex and base instance intrinsics.
+Version 5.4.1 includes x86 libs and Visual Studio 2019 support.  There is also support for base vertex and base instance intrinsics as well as GetWaveSize intrinsics.  The samples have been ported from premake to cmake.
 
 ### What's new in AGS 5.4
 Version 5.4 adds a better description of the GPU architecture for those wishing to fine tune their games for specific code paths.  In addition, there are now shader intrinsics for getting the draw index for execute indirect calls as well as support for atomic U64 ops.

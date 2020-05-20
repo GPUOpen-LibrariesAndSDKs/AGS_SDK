@@ -90,9 +90,9 @@ RWByteAddressBuffer AmdExtD3DShaderIntrinsicsUAV : register(u0, AmdExtD3DShaderI
 #define AmdExtD3DShaderIntrinsicsOpcode_WaveReduce        0x12
 #define AmdExtD3DShaderIntrinsicsOpcode_WaveScan          0x13
 #define AmdExtD3DShaderIntrinsicsOpcode_LoadDwAtAddr      0x14
-
 #define AmdExtD3DShaderIntrinsicsOpcode_DrawIndex         0x17
 #define AmdExtD3DShaderIntrinsicsOpcode_AtomicU64         0x18
+#define AmdExtD3DShaderIntrinsicsOpcode_GetWaveSize       0x19
 #define AmdExtD3DShaderIntrinsicsOpcode_BaseInstance      0x1a
 #define AmdExtD3DShaderIntrinsicsOpcode_BaseVertex        0x1b
 
@@ -362,6 +362,25 @@ uint AmdExtD3DShaderIntrinsics_ReadlaneU(uint src, uint laneId)
 uint AmdExtD3DShaderIntrinsics_LaneId()
 {
     uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_LaneId, 0, 0);
+
+    uint retVal;
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, 0, 0, retVal);
+    return retVal;
+}
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_GetWaveSize
+*
+*   Returns the wave size for the current shader, including active, inactive and helper lanes.
+*
+*   Available if CheckSupport(AmdExtD3DShaderIntrinsicsSupport_GetWaveSize) returned S_OK.
+*
+***********************************************************************************************************************
+*/
+uint AmdExtD3DShaderIntrinsics_GetWaveSize()
+{
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_GetWaveSize, 0, 0);
 
     uint retVal;
     AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, 0, 0, retVal);

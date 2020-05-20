@@ -40,8 +40,8 @@
 /// * AsicFamily_Count to help with code maintenance.
 /// * Visual Studio 2019 support.
 /// * x86 support
-/// * BaseInstance and BaseVertex intrinsics along with corresponding DX11 and DX12 caps bits.
-/// * GetWaveSize intrinsic along with corresponding DX11 caps bits.
+/// * BaseInstance and BaseVertex intrinsics along with corresponding caps bits.
+/// * GetWaveSize intrinsic along with corresponding caps bits.
 ///
 /// ---------------------------------------
 /// What's new in AGS 5.4 since version 5.3
@@ -197,7 +197,8 @@ enum AGSDriverExtensionDX12
     AGS_DX12_EXTENSION_INTRINSIC_DRAW_INDEX                 = 1 << 13,  ///< Supported in Radeon Software Version 19.12.2 onwards.
     AGS_DX12_EXTENSION_INTRINSIC_ATOMIC_U64                 = 1 << 14,  ///< Supported in Radeon Software Version 19.12.2 onwards.
     AGS_DX12_EXTENSION_INTRINSIC_BASE_VERTEX                = 1 << 15,  ///< Supported in Radeon Software Version 20.2.1 onwards.
-    AGS_DX12_EXTENSION_INTRINSIC_BASE_INSTANCE              = 1 << 16   ///< Supported in Radeon Software Version 20.2.1 onwards.
+    AGS_DX12_EXTENSION_INTRINSIC_BASE_INSTANCE              = 1 << 16,  ///< Supported in Radeon Software Version 20.2.1 onwards.
+    AGS_DX12_EXTENSION_INTRINSIC_GET_WAVE_SIZE              = 1 << 17   ///< Supported in Radeon Software Version 20.5.1 onwards.
 };
 
 /// The space id for DirectX12 intrinsic support

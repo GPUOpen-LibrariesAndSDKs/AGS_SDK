@@ -1,0 +1,32 @@
+cmake_minimum_required(VERSION 3.15)
+set(CMAKE_GENERATOR_PLATFORM x64)
+set(CMAKE_CONFIGURATION_TYPES Debug Release)
+
+project(crossfire_sample VERSION 5.4.1)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../ags_lib/inc)
+
+file( GLOB AGS_SOURCES
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/*.h"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+)
+set(AGS_PUBLIC_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/../ags_lib/inc/amd_ags.h)
+
+add_library(amd_ags SHARED IMPORTED GLOBAL)
+set_property(TARGET amd_ags PROPERTY IMPORTED_IMPLIB ${CMAKE_CURRENT_SOURCE_DIR}/../ags_lib/lib/amd_ags_x64.lib)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/../ags_lib/lib/amd_ags_x64.dll DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+
+add_executable(${PROJECT_NAME} ${AGS_SOURCES} ${AGS_PUBLIC_HEADER})
+target_link_libraries(${PROJECT_NAME} LINK_PUBLIC amd_ags D3D11 d3dcompiler)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX d)
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
+
+source_group("Source"                           FILES ${AGS_SOURCES}) 
+source_group("Inc"              				FILES ${AGS_PUBLIC_HEADER})
+
