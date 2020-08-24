@@ -34,6 +34,13 @@
 /// \endinternal
 ///
 /// ---------------------------------------
+/// What's new in AGS 5.4.2 since version 5.4.1
+/// ---------------------------------------
+/// AGS 5.4.2 includes the following updates:
+/// * sharedMemoryInBytes has been reinstated.
+/// * Clock speed returned for APUs.
+///
+/// ---------------------------------------
 /// What's new in AGS 5.4.1 since version 5.4.0
 /// ---------------------------------------
 /// AGS 5.4.1 includes the following updates:
@@ -85,7 +92,7 @@
 
 #define AMD_AGS_VERSION_MAJOR 5             ///< AGS major version
 #define AMD_AGS_VERSION_MINOR 4             ///< AGS minor version
-#define AMD_AGS_VERSION_PATCH 1             ///< AGS patch version
+#define AMD_AGS_VERSION_PATCH 2             ///< AGS patch version
 
 #ifdef __cplusplus
 extern "C" {
@@ -336,7 +343,9 @@ struct AGSDeviceInfo
     float                           teraFlops;                      ///< Teraflops of GPU. Zero if not GCN onwards. Calculated from iCoreClock * iNumCUs * 64 Pixels/clk * 2 instructions/MAD
 
     int                             isPrimaryDevice;                ///< Whether or not this is the primary adapter in the system. Not set on the WACK version.
-    long long                       localMemoryInBytes;             ///< The size of local memory in bytes. 0 for non AMD hardware.
+    unsigned long long              localMemoryInBytes;             ///< The size of local memory in bytes. 0 for non AMD hardware.
+    unsigned long long              sharedMemoryInBytes;            ///< The size of system memory available to the GPU in bytes.  It is important to factor this into your VRAM budget for APUs
+                                                                    ///< as the reported local memory will only be a small fraction of the total memory available to the GPU.
 
     int                             numDisplays;                    ///< The number of active displays found to be attached to this adapter.
     AGSDisplayInfo*                 displays;                       ///< List of displays allocated by AGS to be numDisplays in length.

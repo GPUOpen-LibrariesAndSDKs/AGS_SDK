@@ -11,6 +11,9 @@ In addition to the library itself, the AGS SDK includes several samples to demon
   <a href="https://github.com/GPUOpen-LibrariesAndSDKs/AGS_SDK/releases/latest/"><img src="http://gpuopen-librariesandsdks.github.io/media/latest-release-button.svg" alt="Latest release" title="Latest release"></a>
 </div>
 
+### What's new in AGS 5.4.2
+Version 5.4.2 reinstates the sharedMemoryInBytes field which is required when calculating the memory available on APUs.
+
 ### What's new in AGS 5.4.1
 Version 5.4.1 includes x86 libs and Visual Studio 2019 support.  There is also support for base vertex and base instance intrinsics as well as GetWaveSize intrinsics.  The samples have been ported from premake to cmake.
 
