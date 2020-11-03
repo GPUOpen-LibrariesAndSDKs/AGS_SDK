@@ -202,8 +202,8 @@ int WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
    _CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 #endif
 
-	// Initialise AGS lib
-    agsInit( &g_AGSContext, nullptr, &g_AGSGPUInfo );
+    // Initialise AGS lib
+    agsInitialize( AGS_MAKE_VERSION( AMD_AGS_VERSION_MAJOR, AMD_AGS_VERSION_MINOR, AMD_AGS_VERSION_PATCH ), nullptr, &g_AGSContext, &g_AGSGPUInfo );
 
     // DXUT will create and use the best device 
     // that is available on the system depending on which D3D callbacks are set below
@@ -249,7 +249,7 @@ int WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     DXUTMainLoop(); // Enter into the DXUT render loop	
 
     // Clean up AGS lib
-    agsDeInit( g_AGSContext );
+    agsDeInitialize( g_AGSContext );
 
     return DXUTGetExitCode();
 }
@@ -494,7 +494,7 @@ HRESULT CALLBACK OnD3D11SwapChainResized( ID3D11Device* pd3dDevice, IDXGISwapCha
             g_EyefinityEnabled = true;
             for ( int i = 0; i< device.numDisplays; i++ )
             {
-                if ( device.displays[ i ].displayFlags & AGS_DISPLAYFLAG_EYEFINITY_PREFERRED_DISPLAY )
+                if ( device.displays[ i ].eyefinityPreferredDisplay )
                 {
                     // Get the view rect of visibleResolution instead of currentResolution so the UI wouldn't be occluded by the bezels.
                     g_MainDisplayRect.left = device.displays[ i ].visibleResolution.offsetX;
@@ -503,7 +503,7 @@ HRESULT CALLBACK OnD3D11SwapChainResized( ID3D11Device* pd3dDevice, IDXGISwapCha
                     g_MainDisplayRect.bottom = device.displays[ i ].visibleResolution.offsetY + device.displays[ i ].visibleResolution.height;
                 }
 
-                isPortraitEyefinity |= device.displays[ i ].displayFlags & AGS_DISPLAYFLAG_EYEFINITY_IN_PORTRAIT_MODE ? 1 : 0;
+                isPortraitEyefinity |= device.displays[ i ].eyefinityInPortraitMode;
             }
 
             if ( device.eyefinityGridWidth == 3 && device.eyefinityGridHeight == 1 )
@@ -513,7 +513,7 @@ HRESULT CALLBACK OnD3D11SwapChainResized( ID3D11Device* pd3dDevice, IDXGISwapCha
                 LineVertex* verts = (LineVertex*)res.pData;
                 for ( int i = 0; i< device.numDisplays; i++ )
                 {
-                    if ( device.displays[ i ].displayFlags & AGS_DISPLAYFLAG_EYEFINITY_IN_GROUP )
+                    if ( device.displays[ i ].eyefinityInGroup )
                     {
                         const float offset = 2.0f;
 
@@ -666,7 +666,7 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
 			{
                 const AGSDisplayInfo& display = device.displays[ i ];
 
-                if ( display.displayFlags & AGS_DISPLAYFLAG_EYEFINITY_IN_GROUP )
+                if ( display.eyefinityInGroup )
                 {
                     Viewport.TopLeftX	= (FLOAT)display.currentResolution.offsetX;
 				    Viewport.TopLeftY	= (FLOAT)display.currentResolution.offsetY;
@@ -710,7 +710,7 @@ void CALLBACK OnD3D11FrameRender( ID3D11Device* pd3dDevice, ID3D11DeviceContext*
 			Viewport.Height		= (FLOAT)device.eyefinityResolutionY;
             Viewport.MinDepth	= 0.0f;
 			Viewport.MaxDepth	= 1.0f;
-			pd3dImmediateContext->RSSetViewports(1, &Viewport);	
+			pd3dImmediateContext->RSSetViewports(1, &Viewport);
 		}
 		else  //Single camera mode
 		{

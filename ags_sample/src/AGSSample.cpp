@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2019 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2020 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +25,10 @@
 //-----------------------------------------------------------------------------
 
 #define WIN32_LEAN_AND_MEAN
+// normally you would have already included d3d header files so forward declaring the DX types is not necessary
+#define AGS_FORWARD_DECLARE_DIRECTX_TYPES
+
 #include <windows.h>
-#include <conio.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <crtdbg.h>
@@ -67,8 +69,11 @@ void PrintDisplayInfo( const AGSGPUInfo& gpuInfo )
             "GCN Gen3",
             "GCN Gen4",
             "Vega",
-            "RDNA"
+            "RDNA",
+            "RDNA2"
         };
+
+        static_assert( _countof( asicFamily ) == AGSDeviceInfo::AsicFamily_Count, "asic family table out of date" );
 
         if ( device.vendorId == 0x1002 )
         {
@@ -78,7 +83,7 @@ void PrintDisplayInfo( const AGSGPUInfo& gpuInfo )
                 sprintf_s( wgpInfo, ", %d WGPs", device.numWGPs );
             }
 
-            printf( "Architecture: %s, %s%d CUs%s, %d ROPs\n", asicFamily[ device.asicFamily ], device.isAPU ? "(APU), " : "", device.numCUs, wgpInfo, device.numROPs );
+            printf( "Architecture: %s, %s%s%d CUs%s, %d ROPs\n", asicFamily[ device.asicFamily ], device.isAPU ? "(APU), " : "", device.isExternal ? "(External), " : "", device.numCUs, wgpInfo, device.numROPs );
             printf( "    core clock %d MHz, memory clock %d MHz\n", device.coreClock, device.memoryClock );
             printf( "    %.1f Tflops\n", device.teraFlops );
             printf( "local memory: %d MBs (%.1f GB/s), shared memory: %d MBs\n\n", (int)( device.localMemoryInBytes / ( 1024 * 1024 ) ), (float)device.memoryBandwidth / 1024.0f, (int)( device.sharedMemoryInBytes / ( 1024 * 1024 ) ) );
@@ -102,7 +107,7 @@ void PrintDisplayInfo( const AGSGPUInfo& gpuInfo )
         {
             const AGSDisplayInfo& display = device.displays[ i ];
 
-            printf( "\t---------- Display %d %s----------------------------------------\n", i, display.displayFlags & AGS_DISPLAYFLAG_PRIMARY_DISPLAY ? "[primary]" : "---------" );
+            printf( "\t---------- Display %d %s----------------------------------------\n", i, display.isPrimaryDisplay ? "[primary]" : "---------" );
 
             printf( "\tdevice name: %s\n", display.displayDeviceName );
             printf( "\tmonitor name: %s\n\n", display.name );
@@ -121,23 +126,23 @@ void PrintDisplayInfo( const AGSGPUInfo& gpuInfo )
             printf( "\tscreen reflectance diffuse  %f\n", display.screenDiffuseReflectance );
             printf( "\tscreen reflectance specular %f\n\n", display.screenSpecularReflectance );
 
-            if ( display.displayFlags & AGS_DISPLAYFLAG_HDR10 )
+            if ( display.HDR10 )
                 printf( "\tHDR10 supported\n" );
 
-            if ( display.displayFlags & AGS_DISPLAYFLAG_DOLBYVISION )
+            if ( display.dolbyVision )
                 printf( "\tDolby Vision supported\n" );
 
-            if ( display.displayFlags & AGS_DISPLAYFLAG_FREESYNC )
+            if ( display.freesync )
                 printf( "\tFreesync supported\n" );
 
-            if ( display.displayFlags & AGS_DISPLAYFLAG_FREESYNC_HDR )
+            if ( display.freesyncHDR )
                 printf( "\tFreesync HDR supported\n" );
 
             printf( "\n" );
 
-            if ( display.displayFlags & AGS_DISPLAYFLAG_EYEFINITY_IN_GROUP )
+            if ( display.eyefinityInGroup )
             {
-                printf( "\tEyefinity Display [%s mode] %s\n", display.displayFlags & AGS_DISPLAYFLAG_EYEFINITY_IN_PORTRAIT_MODE ? "portrait" : "landscape", display.displayFlags & AGS_DISPLAYFLAG_EYEFINITY_PREFERRED_DISPLAY ? " (preferred display)" : "" );
+                printf( "\tEyefinity Display [%s mode] %s\n", display.eyefinityInPortraitMode ? "portrait" : "landscape", display.eyefinityPreferredDisplay ? " (preferred display)" : "" );
 
                 printf( "\tGrid coord [%d, %d]\n", display.eyefinityGridCoordX, display.eyefinityGridCoordY );
             }
@@ -175,10 +180,8 @@ int main(int , char**)
     // (When _DEBUG is not defined, calls to _CrtSetDbgFlag are removed during preprocessing.)
     _CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
-    AGSContext* agsContext = nullptr;
-
     int displayIndex = 0;
-    DISPLAY_DEVICEA displayDevice;
+    DISPLAY_DEVICEA displayDevice = {};
     displayDevice.cb = sizeof( displayDevice );
     while ( EnumDisplayDevicesA( 0, displayIndex, &displayDevice, 0 ) )
     {
@@ -186,24 +189,12 @@ int main(int , char**)
         displayIndex++;
     }
 
-    {
-        printf( "\n" );
-        testDriver( "18.8.randombetadriver", AGS_MAKE_VERSION( 18, 8, 2 ) );
-        testDriver( "18.8.123randomdriver", AGS_MAKE_VERSION( 18, 8, 2 ) );
-        testDriver( "18.9.randomdriver", AGS_MAKE_VERSION( 18, 8, 2 ) );
-        testDriver( "18.8.2", AGS_MAKE_VERSION( 18, 8, 2 ) );
-        testDriver( "18.8.2", AGS_MAKE_VERSION( 18, 8, 1 ) );
-        testDriver( "18.8.2", AGS_MAKE_VERSION( 18, 8, 3 ) );
-        printf( "\n" );
-    }
-
-    AGSGPUInfo gpuInfo;
-
+    AGSContext* agsContext = nullptr;
+    AGSGPUInfo gpuInfo = {};
     AGSConfiguration config = {};
-    if ( agsInit( &agsContext, &config, &gpuInfo ) == AGS_SUCCESS )
+    if ( agsInitialize( AGS_MAKE_VERSION( AMD_AGS_VERSION_MAJOR, AMD_AGS_VERSION_MINOR, AMD_AGS_VERSION_PATCH ), &config, &agsContext, &gpuInfo ) == AGS_SUCCESS )
     {
-        printf( "\nAGS Library initialized: v%d.%d.%d\n", gpuInfo.agsVersionMajor, gpuInfo.agsVersionMinor, gpuInfo.agsVersionPatch );
-        printf( "Is%s WACK compliant for use in UWP apps\n", gpuInfo.isWACKCompliant ? "" : " *not*" );
+        printf( "\nAGS Library initialized: v%d.%d.%d\n", AMD_AGS_VERSION_MAJOR, AMD_AGS_VERSION_MINOR, AMD_AGS_VERSION_PATCH );
         printf( "-----------------------------------------------------------------\n" );
 
         printf( "Radeon Software Version:   %s\n", gpuInfo.radeonSoftwareVersion );
@@ -212,7 +203,20 @@ int main(int , char**)
         PrintDisplayInfo( gpuInfo );
         printf( "-----------------------------------------------------------------\n" );
 
-        if ( agsDeInit( agsContext ) != AGS_SUCCESS )
+        if(  0 )
+        {
+            printf( "\n" );
+            testDriver( gpuInfo.radeonSoftwareVersion, AGS_MAKE_VERSION( 20, 1, 0 ) );
+            testDriver( "18.8.randombetadriver", AGS_MAKE_VERSION( 18, 8, 2 ) );
+            testDriver( "18.8.123randomdriver", AGS_MAKE_VERSION( 18, 8, 2 ) );
+            testDriver( "18.9.randomdriver", AGS_MAKE_VERSION( 18, 8, 2 ) );
+            testDriver( "18.8.2", AGS_MAKE_VERSION( 18, 8, 2 ) );
+            testDriver( "18.8.2", AGS_MAKE_VERSION( 18, 8, 1 ) );
+            testDriver( "18.8.2", AGS_MAKE_VERSION( 18, 8, 3 ) );
+            printf( "\n" );
+        }
+
+        if ( agsDeInitialize( agsContext ) != AGS_SUCCESS )
         {
             printf( "Failed to cleanup AGS Library\n" );
         }
@@ -223,8 +227,6 @@ int main(int , char**)
     }
 
     printf( "\ndone\n" );
-
-    _getch();
 
     return 0;
 }

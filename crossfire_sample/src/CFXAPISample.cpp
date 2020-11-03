@@ -206,7 +206,7 @@ void CFXAPISample::Initialize ()
 	m_window.reset (new Window ("AMD CFX API test", 1920, 1080));
 
 	// Call this before device creation
-	agsInit( &m_agsContext, nullptr, &m_agsGPUInfo );
+    agsInitialize( AGS_MAKE_VERSION( AMD_AGS_VERSION_MAJOR, AMD_AGS_VERSION_MINOR, AMD_AGS_VERSION_PATCH ), nullptr, &m_agsContext, &m_agsGPUInfo );
 
 	CreateDeviceAndSwapChain();
 
@@ -303,7 +303,7 @@ void CFXAPISample::Shutdown ()
         m_device->Release();
     }
 
-	agsDeInit(m_agsContext);
+	agsDeInitialize(m_agsContext);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -351,7 +351,7 @@ void CFXAPISample::CreateDeviceAndSwapChain ()
             m_deviceContext = returnedParams.pImmediateContext;
             m_swapChain = returnedParams.pSwapChain;
 
-            if ( returnedParams.extensionsSupported & AGS_DX11_EXTENSION_CROSSFIRE_API )
+            if ( returnedParams.extensionsSupported.crossfireAPI )
             {
                 m_cfxEnabled = true;
             }
