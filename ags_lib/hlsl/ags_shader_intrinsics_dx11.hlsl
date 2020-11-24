@@ -73,15 +73,15 @@
 #define AmdDxExtShaderIntrinsicsOpcode_Max3F          0x0d
 #define AmdDxExtShaderIntrinsicsOpcode_BaryCoord      0x0e
 #define AmdDxExtShaderIntrinsicsOpcode_VtxParam       0x0f
-#define AmdDxExtShaderIntrinsicsOpCode_ViewportIndex  0x10
-#define AmdDxExtShaderIntrinsicsOpCode_RtArraySlice   0x11
-#define AmdDxExtShaderIntrinsicsOpCode_WaveReduce     0x12
-#define AmdDxExtShaderIntrinsicsOpCode_WaveScan       0x13
-#define AmdDxExtShaderIntrinsicsOpCode_Reserved1      0x14
-#define AmdDxExtShaderIntrinsicsOpCode_Reserved2      0x15
-#define AmdDxExtShaderIntrinsicsOpCode_Reserved3      0x16
-#define AmdDxExtShaderIntrinsicsOpCode_DrawIndex      0x17
-#define AmdDxExtShaderIntrinsicsOpCode_AtomicU64      0x18
+#define AmdDxExtShaderIntrinsicsOpcode_ViewportIndex  0x10
+#define AmdDxExtShaderIntrinsicsOpcode_RtArraySlice   0x11
+#define AmdDxExtShaderIntrinsicsOpcode_WaveReduce     0x12
+#define AmdDxExtShaderIntrinsicsOpcode_WaveScan       0x13
+#define AmdDxExtShaderIntrinsicsOpcode_Reserved1      0x14
+#define AmdDxExtShaderIntrinsicsOpcode_Reserved2      0x15
+#define AmdDxExtShaderIntrinsicsOpcode_Reserved3      0x16
+#define AmdDxExtShaderIntrinsicsOpcode_DrawIndex      0x17
+#define AmdDxExtShaderIntrinsicsOpcode_AtomicU64      0x18
 #define AmdDxExtShaderIntrinsicsOpcode_GetWaveSize    0x19
 #define AmdDxExtShaderIntrinsicsOpcode_BaseInstance   0x1a
 #define AmdDxExtShaderIntrinsicsOpcode_BaseVertex     0x1b
@@ -864,7 +864,7 @@ float AmdDxExtShaderIntrinsics_VertexParameterComponent(uint vertexIdx, uint par
 uint AmdDxExtShaderIntrinsics_GetViewportIndex()
 {
     uint retVal;
-    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_ViewportIndex, 0, 0);
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpcode_ViewportIndex, 0, 0);
 
     retVal = asuint(AmdDxExtShaderIntrinsicsResource.SampleLevel(AmdDxExtShaderIntrinsicsSamplerState,
                                                                  float3(0, 0, 0),
@@ -888,7 +888,7 @@ uint AmdDxExtShaderIntrinsics_GetViewportIndex()
 uint AmdDxExtShaderIntrinsics_GetViewportIndexPsOnly()
 {
     uint retVal;
-    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_ViewportIndex, 0, 0);
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpcode_ViewportIndex, 0, 0);
 
     AmdDxExtShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, 0, 0, retVal);
 
@@ -911,7 +911,7 @@ uint AmdDxExtShaderIntrinsics_GetViewportIndexPsOnly()
 uint AmdDxExtShaderIntrinsics_GetRTArraySlice()
 {
     uint retVal;
-    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_RtArraySlice, 0, 0);
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpcode_RtArraySlice, 0, 0);
 
     retVal = asuint(AmdDxExtShaderIntrinsicsResource.SampleLevel(AmdDxExtShaderIntrinsicsSamplerState,
                                                                  float3(0, 0, 0),
@@ -935,7 +935,7 @@ uint AmdDxExtShaderIntrinsics_GetRTArraySlice()
 uint AmdDxExtShaderIntrinsics_GetRTArraySlicePsOnly()
 {
     uint retVal;
-    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_RtArraySlice, 0, 0);
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpcode_RtArraySlice, 0, 0);
 
     AmdDxExtShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, 0, 0, retVal);
 
@@ -962,7 +962,7 @@ uint AmdDxExtShaderIntrinsics_GetRTArraySlicePsOnly()
 */
 float AmdDxExtShaderIntrinsics_WaveReduce(uint waveOp, float src)
 {
-    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_WaveReduce,
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpcode_WaveReduce,
                                 AmdDxExtShaderIntrinsicsOpcodePhase_0,
                                 (waveOp << AmdDxExtShaderIntrinsicsWaveOp_OpcodeShift));
     uint retVal;
@@ -979,7 +979,7 @@ float AmdDxExtShaderIntrinsics_WaveReduce(uint waveOp, float src)
 */
 float2 AmdDxExtShaderIntrinsics_WaveReduce(uint waveOp, float2 src)
 {
-    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_WaveReduce,
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpcode_WaveReduce,
                                 AmdDxExtShaderIntrinsicsOpcodePhase_0,
                                 (waveOp << AmdDxExtShaderIntrinsicsWaveOp_OpcodeShift));
     uint2 retVal;
@@ -997,7 +997,7 @@ float2 AmdDxExtShaderIntrinsics_WaveReduce(uint waveOp, float2 src)
 */
 float3 AmdDxExtShaderIntrinsics_WaveReduce(uint waveOp, float3 src)
 {
-    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_WaveReduce,
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpcode_WaveReduce,
                                 AmdDxExtShaderIntrinsicsOpcodePhase_0,
                                 (waveOp << AmdDxExtShaderIntrinsicsWaveOp_OpcodeShift));
     uint3 retVal;
@@ -1016,7 +1016,7 @@ float3 AmdDxExtShaderIntrinsics_WaveReduce(uint waveOp, float3 src)
 */
 float4 AmdDxExtShaderIntrinsics_WaveReduce(uint waveOp, float4 src)
 {
-    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_WaveReduce,
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpcode_WaveReduce,
                                 AmdDxExtShaderIntrinsicsOpcodePhase_0,
                                 (waveOp << AmdDxExtShaderIntrinsicsWaveOp_OpcodeShift));
     uint4 retVal;
@@ -1036,7 +1036,7 @@ float4 AmdDxExtShaderIntrinsics_WaveReduce(uint waveOp, float4 src)
 */
 int AmdDxExtShaderIntrinsics_WaveReduce(uint waveOp, int src)
 {
-    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_WaveReduce,
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpcode_WaveReduce,
                                 AmdDxExtShaderIntrinsicsOpcodePhase_0,
                                 (waveOp << AmdDxExtShaderIntrinsicsWaveOp_OpcodeShift));
     uint retVal;
@@ -1053,7 +1053,7 @@ int AmdDxExtShaderIntrinsics_WaveReduce(uint waveOp, int src)
 */
 int2 AmdDxExtShaderIntrinsics_WaveReduce(uint waveOp, int2 src)
 {
-    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_WaveReduce,
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpcode_WaveReduce,
                                 AmdDxExtShaderIntrinsicsOpcodePhase_0,
                                 (waveOp << AmdDxExtShaderIntrinsicsWaveOp_OpcodeShift));
     uint2 retVal;
@@ -1071,7 +1071,7 @@ int2 AmdDxExtShaderIntrinsics_WaveReduce(uint waveOp, int2 src)
 */
 int3 AmdDxExtShaderIntrinsics_WaveReduce(uint waveOp, int3 src)
 {
-    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_WaveReduce,
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpcode_WaveReduce,
                                 AmdDxExtShaderIntrinsicsOpcodePhase_0,
                                 (waveOp << AmdDxExtShaderIntrinsicsWaveOp_OpcodeShift));
     uint3 retVal;
@@ -1090,7 +1090,7 @@ int3 AmdDxExtShaderIntrinsics_WaveReduce(uint waveOp, int3 src)
 */
 int4 AmdDxExtShaderIntrinsics_WaveReduce(uint waveOp, int4 src)
 {
-    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_WaveReduce,
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpcode_WaveReduce,
                                 AmdDxExtShaderIntrinsicsOpcodePhase_0,
                                 (waveOp << AmdDxExtShaderIntrinsicsWaveOp_OpcodeShift));
     uint4 retVal;
@@ -1125,7 +1125,7 @@ int4 AmdDxExtShaderIntrinsics_WaveReduce(uint waveOp, int4 src)
 */
 float AmdDxExtShaderIntrinsics_WaveScan(uint waveOp, uint flags, float src)
 {
-    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_WaveScan,
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpcode_WaveScan,
                                 AmdDxExtShaderIntrinsicsOpcodePhase_0,
                                 (waveOp << AmdDxExtShaderIntrinsicsWaveOp_OpcodeShift) |
                                 (flags  << AmdDxExtShaderIntrinsicsWaveOp_FlagShift));
@@ -1142,7 +1142,7 @@ float AmdDxExtShaderIntrinsics_WaveScan(uint waveOp, uint flags, float src)
 */
 float2 AmdDxExtShaderIntrinsics_WaveScan(uint waveOp, uint flags, float2 src)
 {
-    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_WaveScan,
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpcode_WaveScan,
                                 AmdDxExtShaderIntrinsicsOpcodePhase_0,
                                 (waveOp << AmdDxExtShaderIntrinsicsWaveOp_OpcodeShift) |
                                 (flags  << AmdDxExtShaderIntrinsicsWaveOp_FlagShift));
@@ -1160,7 +1160,7 @@ float2 AmdDxExtShaderIntrinsics_WaveScan(uint waveOp, uint flags, float2 src)
 */
 float3 AmdDxExtShaderIntrinsics_WaveScan(uint waveOp, uint flags, float3 src)
 {
-    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_WaveScan,
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpcode_WaveScan,
                                 AmdDxExtShaderIntrinsicsOpcodePhase_0,
                                 (waveOp << AmdDxExtShaderIntrinsicsWaveOp_OpcodeShift) |
                                 (flags  << AmdDxExtShaderIntrinsicsWaveOp_FlagShift));
@@ -1179,7 +1179,7 @@ float3 AmdDxExtShaderIntrinsics_WaveScan(uint waveOp, uint flags, float3 src)
 */
 float4 AmdDxExtShaderIntrinsics_WaveScan(uint waveOp, uint flags, float4 src)
 {
-    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_WaveScan,
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpcode_WaveScan,
                                 AmdDxExtShaderIntrinsicsOpcodePhase_0,
                                 (waveOp << AmdDxExtShaderIntrinsicsWaveOp_OpcodeShift) |
                                 (flags  << AmdDxExtShaderIntrinsicsWaveOp_FlagShift));
@@ -1207,7 +1207,7 @@ float4 AmdDxExtShaderIntrinsics_WaveScan(uint waveOp, uint flags, float4 src)
 uint AmdDxExtShaderIntrinsics_GetDrawIndex()
 {
     uint retVal;
-    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_DrawIndex,
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpcode_DrawIndex,
                                                           AmdDxExtShaderIntrinsicsOpcodePhase_0,
                                                           0);
     AmdDxExtShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, 0, 0, retVal);
@@ -1230,7 +1230,7 @@ uint AmdDxExtShaderIntrinsics_GetDrawIndex()
 uint AmdDxExtShaderIntrinsics_GetBaseInstance()
 {
     uint retVal;
-    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_BaseInstance,
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpcode_BaseInstance,
         AmdDxExtShaderIntrinsicsOpcodePhase_0,
         0);
     AmdDxExtShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, 0, 0, retVal);
@@ -1254,7 +1254,7 @@ uint AmdDxExtShaderIntrinsics_GetBaseInstance()
 uint AmdDxExtShaderIntrinsics_GetBaseVertex()
 {
     uint retVal;
-    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_BaseVertex,
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpcode_BaseVertex,
         AmdDxExtShaderIntrinsicsOpcodePhase_0,
         0);
     AmdDxExtShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, 0, 0, retVal);
@@ -1275,13 +1275,13 @@ uint4 AmdDxExtShaderIntrinsics_MakeAtomicInstructions(uint op)
 {
     uint4 instructions;
     instructions.x = MakeAmdShaderIntrinsicsInstruction(
-        AmdDxExtShaderIntrinsicsOpCode_AtomicU64, AmdDxExtShaderIntrinsicsOpcodePhase_0, op);
+        AmdDxExtShaderIntrinsicsOpcode_AtomicU64, AmdDxExtShaderIntrinsicsOpcodePhase_0, op);
     instructions.y = MakeAmdShaderIntrinsicsInstruction(
-        AmdDxExtShaderIntrinsicsOpCode_AtomicU64, AmdDxExtShaderIntrinsicsOpcodePhase_1, op);
+        AmdDxExtShaderIntrinsicsOpcode_AtomicU64, AmdDxExtShaderIntrinsicsOpcodePhase_1, op);
     instructions.z = MakeAmdShaderIntrinsicsInstruction(
-        AmdDxExtShaderIntrinsicsOpCode_AtomicU64, AmdDxExtShaderIntrinsicsOpcodePhase_2, op);
+        AmdDxExtShaderIntrinsicsOpcode_AtomicU64, AmdDxExtShaderIntrinsicsOpcodePhase_2, op);
     instructions.w = MakeAmdShaderIntrinsicsInstruction(
-        AmdDxExtShaderIntrinsicsOpCode_AtomicU64, AmdDxExtShaderIntrinsicsOpcodePhase_3, op);
+        AmdDxExtShaderIntrinsicsOpcode_AtomicU64, AmdDxExtShaderIntrinsicsOpcodePhase_3, op);
     return instructions;
 }
 
@@ -1410,7 +1410,7 @@ uint2 AmdDxExtShaderIntrinsics_AtomicOp(
 ***********************************************************************************************************************
 *   AmdDxExtShaderIntrinsics_AtomicMinU64
 *
-*   The following functions are available if CheckSupport(AmdDxExtShaderIntrinsicsOpCode_AtomicU64) returned S_OK.
+*   The following functions are available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_AtomicU64) returned S_OK.
 *
 *   Performs 64-bit atomic minimum of value with the UAV at address, returns the original value.
 *
@@ -1446,7 +1446,7 @@ uint2 AmdDxExtShaderIntrinsics_AtomicMinU64(RWTexture3D<uint2> uav, uint3 addres
 ***********************************************************************************************************************
 *   AmdDxExtShaderIntrinsics_AtomicMaxU64
 *
-*   The following functions are available if CheckSupport(AmdDxExtShaderIntrinsicsOpCode_AtomicU64) returned S_OK.
+*   The following functions are available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_AtomicU64) returned S_OK.
 *
 *   Performs 64-bit atomic maximum of value with the UAV at address, returns the original value.
 *
@@ -1482,7 +1482,7 @@ uint2 AmdDxExtShaderIntrinsics_AtomicMaxU64(RWTexture3D<uint2> uav, uint3 addres
 ***********************************************************************************************************************
 *   AmdDxExtShaderIntrinsics_AtomicAndU64
 *
-*   The following functions are available if CheckSupport(AmdDxExtShaderIntrinsicsOpCode_AtomicU64) returned S_OK.
+*   The following functions are available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_AtomicU64) returned S_OK.
 *
 *   Performs 64-bit atomic AND of value with the UAV at address, returns the original value.
 *
@@ -1518,7 +1518,7 @@ uint2 AmdDxExtShaderIntrinsics_AtomicAndU64(RWTexture3D<uint2> uav, uint3 addres
 ***********************************************************************************************************************
 *   AmdDxExtShaderIntrinsics_AtomicOrU64
 *
-*   The following functions are available if CheckSupport(AmdDxExtShaderIntrinsicsOpCode_AtomicU64) returned S_OK.
+*   The following functions are available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_AtomicU64) returned S_OK.
 *
 *   Performs 64-bit atomic OR of value with the UAV at address, returns the original value.
 *
@@ -1554,7 +1554,7 @@ uint2 AmdDxExtShaderIntrinsics_AtomicOrU64(RWTexture3D<uint2> uav, uint3 address
 ***********************************************************************************************************************
 *   AmdDxExtShaderIntrinsics_AtomicXorU64
 *
-*   The following functions are available if CheckSupport(AmdDxExtShaderIntrinsicsOpCode_AtomicU64) returned S_OK.
+*   The following functions are available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_AtomicU64) returned S_OK.
 *
 *   Performs 64-bit atomic XOR of value with the UAV at address, returns the original value.
 *
@@ -1590,7 +1590,7 @@ uint2 AmdDxExtShaderIntrinsics_AtomicXorU64(RWTexture3D<uint2> uav, uint3 addres
 ***********************************************************************************************************************
 *   AmdDxExtShaderIntrinsics_AtomicAddU64
 *
-*   The following functions are available if CheckSupport(AmdDxExtShaderIntrinsicsOpCode_AtomicU64) returned S_OK.
+*   The following functions are available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_AtomicU64) returned S_OK.
 *
 *   Performs 64-bit atomic add of value with the UAV at address, returns the original value.
 *
@@ -1626,7 +1626,7 @@ uint2 AmdDxExtShaderIntrinsics_AtomicAddU64(RWTexture3D<uint2> uav, uint3 addres
 ***********************************************************************************************************************
 *   AmdDxExtShaderIntrinsics_AtomicXchgU64
 *
-*   The following functions are available if CheckSupport(AmdDxExtShaderIntrinsicsOpCode_AtomicU64) returned S_OK.
+*   The following functions are available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_AtomicU64) returned S_OK.
 *
 *   Performs 64-bit atomic exchange of value with the UAV at address, returns the original value.
 *
@@ -1662,7 +1662,7 @@ uint2 AmdDxExtShaderIntrinsics_AtomicXchgU64(RWTexture3D<uint2> uav, uint3 addre
 ***********************************************************************************************************************
 *   AmdDxExtShaderIntrinsics_AtomicCmpXchgU64
 *
-*   The following functions are available if CheckSupport(AmdDxExtShaderIntrinsicsOpCode_AtomicU64) returned S_OK.
+*   The following functions are available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_AtomicU64) returned S_OK.
 *
 *   Performs 64-bit atomic compare of comparison value with UAV at address, stores value if values match,
 *   returns the original value.

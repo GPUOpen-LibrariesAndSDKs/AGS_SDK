@@ -11,6 +11,9 @@ In addition to the library itself, the AGS SDK includes several samples to demon
   <a href="https://github.com/GPUOpen-LibrariesAndSDKs/AGS_SDK/releases/latest/"><img src="http://gpuopen-librariesandsdks.github.io/media/latest-release-button.svg" alt="Latest release" title="Latest release"></a>
 </div>
 
+### What's new in AGS 6.0.1
+Version 6.0.1 is a bugfix release that corrects symbols for some of the DX11 shader intrinsics, and removes a rogue non-ASCII character from a comment in the library header which could cause a warning with Visual Studio.
+
 ### What's new in AGS 6.0
 Version 6.0 introduces several new shader intrinsics, namely a DX12 ray tracing hit token for RDNA2 hardware for ray tracing optimisation, ReadLaneAt and explicit float conversions.  There is also a change to the initialization API to make sure the AGS dll matches the header and calling code.
 
