@@ -1194,6 +1194,154 @@ float4 AmdDxExtShaderIntrinsics_WaveScan(uint waveOp, uint flags, float4 src)
 
 /**
 *************************************************************************************************************
+*   AmdDxExtShaderIntrinsics_WaveScan : int
+*************************************************************************************************************
+*/
+int AmdDxExtShaderIntrinsics_WaveScan(uint waveOp, uint flags, int src)
+{
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_WaveScan,
+                                AmdDxExtShaderIntrinsicsOpcodePhase_0,
+                                (waveOp << AmdDxExtShaderIntrinsicsWaveOp_OpcodeShift) |
+                                (flags  << AmdDxExtShaderIntrinsicsWaveOp_FlagShift));
+    uint retVal;
+    AmdDxExtShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src), 0, retVal);
+
+    return asint(retVal);
+}
+
+/**
+*************************************************************************************************************
+*   AmdDxExtShaderIntrinsics_WaveScan : int2
+*************************************************************************************************************
+*/
+int2 AmdDxExtShaderIntrinsics_WaveScan(uint waveOp, uint flags, int2 src)
+{
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_WaveScan,
+                                AmdDxExtShaderIntrinsicsOpcodePhase_0,
+                                (waveOp << AmdDxExtShaderIntrinsicsWaveOp_OpcodeShift) |
+                                (flags  << AmdDxExtShaderIntrinsicsWaveOp_FlagShift));
+    uint2 retVal;
+    AmdDxExtShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.x), 0, retVal.x);
+    AmdDxExtShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.y), 0, retVal.y);
+
+    return int2(asint(retVal.x), asint(retVal.y));
+}
+
+/**
+*************************************************************************************************************
+*   AmdDxExtShaderIntrinsics_WaveScan : int3
+*************************************************************************************************************
+*/
+int3 AmdDxExtShaderIntrinsics_WaveScan(uint waveOp, uint flags, int3 src)
+{
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_WaveScan,
+                                AmdDxExtShaderIntrinsicsOpcodePhase_0,
+                                (waveOp << AmdDxExtShaderIntrinsicsWaveOp_OpcodeShift) |
+                                (flags  << AmdDxExtShaderIntrinsicsWaveOp_FlagShift));
+    uint3 retVal;
+    AmdDxExtShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.x), 0, retVal.x);
+    AmdDxExtShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.y), 0, retVal.y);
+    AmdDxExtShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.z), 0, retVal.z);
+
+    return int3(asint(retVal.x), asint(retVal.y), asint(retVal.z));
+}
+
+/**
+*************************************************************************************************************
+*   AmdDxExtShaderIntrinsics_WaveScan : int4
+*************************************************************************************************************
+*/
+int4 AmdDxExtShaderIntrinsics_WaveScan(uint waveOp, uint flags, int4 src)
+{
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_WaveScan,
+                                AmdDxExtShaderIntrinsicsOpcodePhase_0,
+                                (waveOp << AmdDxExtShaderIntrinsicsWaveOp_OpcodeShift) |
+                                (flags  << AmdDxExtShaderIntrinsicsWaveOp_FlagShift));
+    uint4 retVal;
+    AmdDxExtShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.x), 0, retVal.x);
+    AmdDxExtShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.y), 0, retVal.y);
+    AmdDxExtShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.z), 0, retVal.z);
+    AmdDxExtShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, asuint(src.w), 0, retVal.w);
+
+    return int4(asint(retVal.x), asint(retVal.y), asint(retVal.z), asint(retVal.w));
+}
+
+/**
+*************************************************************************************************************
+*   AmdDxExtShaderIntrinsics_WaveScan : uint
+*************************************************************************************************************
+*/
+uint AmdDxExtShaderIntrinsics_WaveScan(uint waveOp, uint flags, uint src)
+{
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_WaveScan,
+                                AmdDxExtShaderIntrinsicsOpcodePhase_0,
+                                (waveOp << AmdDxExtShaderIntrinsicsWaveOp_OpcodeShift) |
+                                (flags  << AmdDxExtShaderIntrinsicsWaveOp_FlagShift));
+    uint retVal;
+    AmdDxExtShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src, 0, retVal);
+
+    return retVal;
+}
+
+/**
+*************************************************************************************************************
+*   AmdDxExtShaderIntrinsics_WaveScan : uint2
+*************************************************************************************************************
+*/
+uint2 AmdDxExtShaderIntrinsics_WaveScan(uint waveOp, uint flags, uint2 src)
+{
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_WaveScan,
+                                AmdDxExtShaderIntrinsicsOpcodePhase_0,
+                                (waveOp << AmdDxExtShaderIntrinsicsWaveOp_OpcodeShift) |
+                                (flags  << AmdDxExtShaderIntrinsicsWaveOp_FlagShift));
+    uint2 retVal;
+    AmdDxExtShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.x, 0, retVal.x);
+    AmdDxExtShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.y, 0, retVal.y);
+
+    return retVal;
+}
+
+/**
+*************************************************************************************************************
+*   AmdDxExtShaderIntrinsics_WaveScan : uint3
+*************************************************************************************************************
+*/
+uint3 AmdDxExtShaderIntrinsics_WaveScan(uint waveOp, uint flags, uint3 src)
+{
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_WaveScan,
+                                AmdDxExtShaderIntrinsicsOpcodePhase_0,
+                                (waveOp << AmdDxExtShaderIntrinsicsWaveOp_OpcodeShift) |
+                                (flags  << AmdDxExtShaderIntrinsicsWaveOp_FlagShift));
+    uint3 retVal;
+    AmdDxExtShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.x, 0, retVal.x);
+    AmdDxExtShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.y, 0, retVal.y);
+    AmdDxExtShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.z, 0, retVal.z);
+
+    return retVal;
+}
+
+/**
+*************************************************************************************************************
+*   AmdDxExtShaderIntrinsics_WaveScan : uint4
+*************************************************************************************************************
+*/
+uint4 AmdDxExtShaderIntrinsics_WaveScan(uint waveOp, uint flags, uint4 src)
+{
+    uint instruction = MakeAmdShaderIntrinsicsInstruction(AmdDxExtShaderIntrinsicsOpCode_WaveScan,
+                                AmdDxExtShaderIntrinsicsOpcodePhase_0,
+                                (waveOp << AmdDxExtShaderIntrinsicsWaveOp_OpcodeShift) |
+                                (flags  << AmdDxExtShaderIntrinsicsWaveOp_FlagShift));
+    uint4 retVal;
+    AmdDxExtShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.x, 0, retVal.x);
+    AmdDxExtShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.y, 0, retVal.y);
+    AmdDxExtShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.z, 0, retVal.z);
+    AmdDxExtShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, src.w, 0, retVal.w);
+
+    return retVal;
+}
+
+/**
+*************************************************************************************************************
 *   AmdDxExtShaderIntrinsics_GetDrawIndex
 *
 *   Returns the 0-based draw index in an indirect draw. Always returns 0 for direct draws.
