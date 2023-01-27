@@ -1,4 +1,4 @@
-mkdir VS2019
-cd VS2019
-cmake ..\.. -G "Visual Studio 16 2019" -A x64
+mkdir VS2022
+cd VS2022
+cmake ..\.. -G "Visual Studio 17 2022" -A x64
 cd ..

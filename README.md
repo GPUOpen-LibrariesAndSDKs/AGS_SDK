@@ -11,6 +11,13 @@ In addition to the library itself, the AGS SDK includes several samples to demon
   <a href="https://github.com/GPUOpen-LibrariesAndSDKs/AGS_SDK/releases/latest/"><img src="http://gpuopen-librariesandsdks.github.io/media/latest-release-button.svg" alt="Latest release" title="Latest release"></a>
 </div>
 
+### What's new in AGS 6.1
+Version 6.1 includes RDNA3 GPU detection.
+
+The DLL version of AGS now statically links against the runtime library, and there are now versions of the static library built with the VS 2022 toolchain.
+
+There is also a DX12 extensions sample to demonstrate how to use the extensions mechanism.
+
 ### What's new in AGS 6.0.1
 Version 6.0.1 is a bugfix release that corrects symbols for some of the DX11 shader intrinsics, and removes a rogue non-ASCII character from a comment in the library header which could cause a warning with Visual Studio.
 

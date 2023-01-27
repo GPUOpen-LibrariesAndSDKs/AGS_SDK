@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,9 +25,6 @@
 //-----------------------------------------------------------------------------
 
 #define WIN32_LEAN_AND_MEAN
-// normally you would have already included d3d header files so forward declaring the DX types is not necessary
-#define AGS_FORWARD_DECLARE_DIRECTX_TYPES
-
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -70,7 +67,8 @@ void PrintDisplayInfo( const AGSGPUInfo& gpuInfo )
             "GCN Gen4",
             "Vega",
             "RDNA",
-            "RDNA2"
+            "RDNA2",
+            "RDNA3"
         };
 
         static_assert( _countof( asicFamily ) == AGSDeviceInfo::AsicFamily_Count, "asic family table out of date" );

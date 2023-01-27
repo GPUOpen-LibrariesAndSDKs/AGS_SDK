@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -296,8 +296,6 @@ uint MakeAmdShaderIntrinsicsInstruction(uint opcode, uint opcodePhase, uint imme
 *
 *   Returns the value of float src for the first active lane of the wavefront.
 *
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_Readfirstlane) returned S_OK.
-*
 *************************************************************************************************************
 */
 float AmdDxExtShaderIntrinsics_ReadfirstlaneF(float src)
@@ -317,8 +315,6 @@ float AmdDxExtShaderIntrinsics_ReadfirstlaneF(float src)
 *
 *   Returns the value of unsigned integer src for the first active lane of the wavefront.
 *
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_Readfirstlane) returned S_OK.
-*
 *************************************************************************************************************
 */
 uint AmdDxExtShaderIntrinsics_ReadfirstlaneU(uint src)
@@ -336,8 +332,6 @@ uint AmdDxExtShaderIntrinsics_ReadfirstlaneU(uint src)
 *   AmdDxExtShaderIntrinsics_ReadlaneF
 *
 *   Returns the value of float src for the lane within the wavefront specified by laneId.
-*
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_Readlane) returned S_OK.
 *
 *************************************************************************************************************
 */
@@ -357,8 +351,6 @@ float AmdDxExtShaderIntrinsics_ReadlaneF(float src, uint laneId)
 *
 *   Returns the value of unsigned integer src for the lane within the wavefront specified by laneId.
 *
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_Readlane) returned S_OK.
-*
 *************************************************************************************************************
 */
 uint AmdDxExtShaderIntrinsics_ReadlaneU(uint src, uint laneId)
@@ -377,8 +369,6 @@ uint AmdDxExtShaderIntrinsics_ReadlaneU(uint src, uint laneId)
 *
 *   Returns the current lane id for the thread within the wavefront.
 *
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_LaneId) returned S_OK.
-*
 *************************************************************************************************************
 */
 uint AmdDxExtShaderIntrinsics_LaneId()
@@ -395,8 +385,6 @@ uint AmdDxExtShaderIntrinsics_LaneId()
 *   AmdDxExtShaderIntrinsics_GetWaveSize
 *
 *   Returns the wave size for the current shader, including active, inactive and helper lanes.
-*
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_GetWaveSize) returned S_OK.
 *
 *************************************************************************************************************
 */
@@ -416,8 +404,6 @@ uint AmdDxExtShaderIntrinsics_GetWaveSize()
 *   Generic instruction to shuffle the float src value among different lanes as specified by the
 *   operation.
 *   Note that the operation parameter must be an immediately specified value not a value from a variable.
-*
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_Swizzle) returned S_OK.
 *
 *************************************************************************************************************
 */
@@ -439,8 +425,6 @@ float AmdDxExtShaderIntrinsics_SwizzleF(float src, uint operation)
 *   operation.
 *   Note that the operation parameter must be an immediately specified value not a value from a variable.
 *
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_Swizzle) returned S_OK.
-*
 *************************************************************************************************************
 */
 uint AmdDxExtShaderIntrinsics_SwizzleU(uint src, uint operation)
@@ -460,8 +444,6 @@ uint AmdDxExtShaderIntrinsics_SwizzleU(uint src, uint operation)
 *   Given an input predicate returns a bit mask indicating for which lanes the predicate is true.
 *   Inactive or non-existent lanes will always return 0.  The number of existent lanes is the
 *   wavefront size.
-*
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_Ballot) returned S_OK.
 *
 *************************************************************************************************************
 */
@@ -490,8 +472,6 @@ uint2 AmdDxExtShaderIntrinsics_Ballot(bool predicate)
 *   Convenience routine that uses Ballot and returns true if for any of the active lanes the predicate
 *   is true.
 *
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_Ballot) returned S_OK.
-*
 *************************************************************************************************************
 */
 bool AmdDxExtShaderIntrinsics_BallotAny(bool predicate)
@@ -508,8 +488,6 @@ bool AmdDxExtShaderIntrinsics_BallotAny(bool predicate)
 *
 *   Convenience routine that uses Ballot and returns true if for all of the active lanes the predicate
 *   is true.
-*
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_Ballot) returned S_OK.
 *
 *************************************************************************************************************
 */
@@ -530,8 +508,6 @@ bool AmdDxExtShaderIntrinsics_BallotAll(bool predicate)
 *   Returns the masked bit count of the source register for this thread within all the active threads
 *   within a wavefront.
 *
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_MBCnt) returned S_OK.
-*
 *************************************************************************************************************
 */
 uint AmdDxExtShaderIntrinsics_MBCnt(uint2 src)
@@ -550,8 +526,6 @@ uint AmdDxExtShaderIntrinsics_MBCnt(uint2 src)
 *   AmdDxExtShaderIntrinsics_Min3F
 *
 *   Returns the minimum value of the three floating point source arguments.
-*
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_Compare3) returned S_OK.
 *
 *************************************************************************************************************
 */
@@ -578,8 +552,6 @@ float AmdDxExtShaderIntrinsics_Min3F(float src0, float src1, float src2)
 *
 *   Returns the minimum value of the three unsigned integer source arguments.
 *
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_Compare3) returned S_OK.
-*
 *************************************************************************************************************
 */
 uint AmdDxExtShaderIntrinsics_Min3U(uint src0, uint src1, uint src2)
@@ -604,8 +576,6 @@ uint AmdDxExtShaderIntrinsics_Min3U(uint src0, uint src1, uint src2)
 *   AmdDxExtShaderIntrinsics_Med3F
 *
 *   Returns the median value of the three floating point source arguments.
-*
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_Compare3) returned S_OK.
 *
 *************************************************************************************************************
 */
@@ -632,8 +602,6 @@ float AmdDxExtShaderIntrinsics_Med3F(float src0, float src1, float src2)
 *
 *   Returns the median value of the three unsigned integer source arguments.
 *
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_Compare3) returned S_OK.
-*
 *************************************************************************************************************
 */
 uint AmdDxExtShaderIntrinsics_Med3U(uint src0, uint src1, uint src2)
@@ -659,8 +627,6 @@ uint AmdDxExtShaderIntrinsics_Med3U(uint src0, uint src1, uint src2)
 *
 *   Returns the maximum value of the three floating point source arguments.
 *
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_Compare3) returned S_OK.
-*
 *************************************************************************************************************
 */
 float AmdDxExtShaderIntrinsics_Max3F(float src0, float src1, float src2)
@@ -685,8 +651,6 @@ float AmdDxExtShaderIntrinsics_Max3F(float src0, float src1, float src2)
 *   AmdDxExtShaderIntrinsics_Max3U
 *
 *   Returns the maximum value of the three unsigned integer source arguments.
-*
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_Compare3) returned S_OK.
 *
 *************************************************************************************************************
 */
@@ -715,8 +679,6 @@ uint AmdDxExtShaderIntrinsics_Max3U(uint src0, uint src1, uint src2)
 *   interpolation mode at the specified pixel location.  Should not be used for "pull-model" interpolation,
 *   PullModelBarycentricCoords should be used instead
 *
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_BaryCoord) returned S_OK.
-*
 *   Can only be used in pixel shader stages.
 *
 *************************************************************************************************************
@@ -744,8 +706,6 @@ float2 AmdDxExtShaderIntrinsics_IjBarycentricCoords(uint interpMode)
 *
 *   Returns the (1/W,1/I,1/J) coordinates at the pixel center which can be used for custom interpolation at
 *   any location in the pixel.
-*
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_BaryCoord) returned S_OK.
 *
 *   Can only be used in pixel shader stages.
 *
@@ -779,8 +739,6 @@ float3 AmdDxExtShaderIntrinsics_PullModelBarycentricCoords()
 *
 *   Returns the triangle's parameter information at the specified triangle vertex.
 *   The vertex and parameter indices must specified as immediate values.
-*
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_VtxParam) returned S_OK.
 *
 *   Only available in pixel shader stages.
 *
@@ -829,8 +787,6 @@ float4 AmdDxExtShaderIntrinsics_VertexParameter(uint vertexIdx, uint parameterId
 *   Returns the triangle's parameter information at the specified triangle vertex and component.
 *   The vertex, parameter and component indices must be specified as immediate values.
 *
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_VtxParam) returned S_OK.
-*
 *   Only available in pixel shader stages.
 *
 *************************************************************************************************************
@@ -855,8 +811,6 @@ float AmdDxExtShaderIntrinsics_VertexParameterComponent(uint vertexIdx, uint par
 *   Returns current viewport index for replicated draws when MultiView extension is enabled (broadcast masks
 *   are set).
 *
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_MultiViewIndices) returned S_OK.
-*
 *   Only available in vertex/geometry/domain shader stages.
 *
 *************************************************************************************************************
@@ -879,8 +833,6 @@ uint AmdDxExtShaderIntrinsics_GetViewportIndex()
 *   Returns current viewport index for replicated draws when MultiView extension is enabled (broadcast masks
 *   are set).
 *
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_MultiViewIndices) returned S_OK.
-*
 *   Only available in pixel shader stage.
 *
 *************************************************************************************************************
@@ -901,8 +853,6 @@ uint AmdDxExtShaderIntrinsics_GetViewportIndexPsOnly()
 *
 *   Returns current RT array slice for replicated draws when MultiView extension is enabled (broadcast masks
 *   are set).
-*
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_MultiViewIndices) returned S_OK.
 *
 *   Only available in vertex/geometry/domain shader stages.
 *
@@ -926,8 +876,6 @@ uint AmdDxExtShaderIntrinsics_GetRTArraySlice()
 *   Returns current RT array slice for replicated draws when MultiView extension is enabled (broadcast masks
 *   are set).
 *
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_MultiViewIndices) returned S_OK.
-*
 *   Only available in pixel shader stage.
 *
 *************************************************************************************************************
@@ -947,8 +895,6 @@ uint AmdDxExtShaderIntrinsics_GetRTArraySlicePsOnly()
 *   AmdDxExtShaderIntrinsics_WaveReduce
 *
 *   The following functions perform the specified reduction operation across a wavefront.
-*
-*   They are available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_WaveReduce) returned S_OK.
 *
 *   Available in all shader stages.
 *
@@ -1111,8 +1057,6 @@ int4 AmdDxExtShaderIntrinsics_WaveReduce(uint waveOp, int4 src)
 *
 *   The following functions perform the specified scan operation across a wavefront.
 *
-*   They are available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_WaveScan) returned S_OK.
-*
 *   Available in all shader stages.
 *
 *************************************************************************************************************
@@ -1198,8 +1142,6 @@ float4 AmdDxExtShaderIntrinsics_WaveScan(uint waveOp, uint flags, float4 src)
 *
 *   Returns the 0-based draw index in an indirect draw. Always returns 0 for direct draws.
 *
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_DrawIndex) returned S_OK.
-*
 *   Only available in vertex shader stage.
 *
 *************************************************************************************************************
@@ -1220,8 +1162,6 @@ uint AmdDxExtShaderIntrinsics_GetDrawIndex()
 *   AmdDxExtShaderIntrinsics_GetBaseInstance
 *
 *   Returns the StartInstanceLocation parameter passed to direct or indirect drawing commands.
-*
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_BaseInstance) returned S_OK.
 *
 *   Only available in vertex shader stage.
 *
@@ -1244,8 +1184,6 @@ uint AmdDxExtShaderIntrinsics_GetBaseInstance()
 *
 *   For non-indexed draw commands, returns the StartVertexLocation parameter. For indexed draw commands,
 *   returns the BaseVertexLocation parameter.
-*
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsSupport_BaseVertex) returned S_OK.
 *
 *   Only available in vertex shader stage.
 *
@@ -1410,8 +1348,6 @@ uint2 AmdDxExtShaderIntrinsics_AtomicOp(
 ***********************************************************************************************************************
 *   AmdDxExtShaderIntrinsics_AtomicMinU64
 *
-*   The following functions are available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_AtomicU64) returned S_OK.
-*
 *   Performs 64-bit atomic minimum of value with the UAV at address, returns the original value.
 *
 *   Available in all shader stages.
@@ -1445,8 +1381,6 @@ uint2 AmdDxExtShaderIntrinsics_AtomicMinU64(RWTexture3D<uint2> uav, uint3 addres
 /**
 ***********************************************************************************************************************
 *   AmdDxExtShaderIntrinsics_AtomicMaxU64
-*
-*   The following functions are available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_AtomicU64) returned S_OK.
 *
 *   Performs 64-bit atomic maximum of value with the UAV at address, returns the original value.
 *
@@ -1482,8 +1416,6 @@ uint2 AmdDxExtShaderIntrinsics_AtomicMaxU64(RWTexture3D<uint2> uav, uint3 addres
 ***********************************************************************************************************************
 *   AmdDxExtShaderIntrinsics_AtomicAndU64
 *
-*   The following functions are available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_AtomicU64) returned S_OK.
-*
 *   Performs 64-bit atomic AND of value with the UAV at address, returns the original value.
 *
 *   Available in all shader stages.
@@ -1517,8 +1449,6 @@ uint2 AmdDxExtShaderIntrinsics_AtomicAndU64(RWTexture3D<uint2> uav, uint3 addres
 /**
 ***********************************************************************************************************************
 *   AmdDxExtShaderIntrinsics_AtomicOrU64
-*
-*   The following functions are available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_AtomicU64) returned S_OK.
 *
 *   Performs 64-bit atomic OR of value with the UAV at address, returns the original value.
 *
@@ -1554,8 +1484,6 @@ uint2 AmdDxExtShaderIntrinsics_AtomicOrU64(RWTexture3D<uint2> uav, uint3 address
 ***********************************************************************************************************************
 *   AmdDxExtShaderIntrinsics_AtomicXorU64
 *
-*   The following functions are available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_AtomicU64) returned S_OK.
-*
 *   Performs 64-bit atomic XOR of value with the UAV at address, returns the original value.
 *
 *   Available in all shader stages.
@@ -1589,8 +1517,6 @@ uint2 AmdDxExtShaderIntrinsics_AtomicXorU64(RWTexture3D<uint2> uav, uint3 addres
 /**
 ***********************************************************************************************************************
 *   AmdDxExtShaderIntrinsics_AtomicAddU64
-*
-*   The following functions are available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_AtomicU64) returned S_OK.
 *
 *   Performs 64-bit atomic add of value with the UAV at address, returns the original value.
 *
@@ -1626,8 +1552,6 @@ uint2 AmdDxExtShaderIntrinsics_AtomicAddU64(RWTexture3D<uint2> uav, uint3 addres
 ***********************************************************************************************************************
 *   AmdDxExtShaderIntrinsics_AtomicXchgU64
 *
-*   The following functions are available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_AtomicU64) returned S_OK.
-*
 *   Performs 64-bit atomic exchange of value with the UAV at address, returns the original value.
 *
 *   Available in all shader stages.
@@ -1661,8 +1585,6 @@ uint2 AmdDxExtShaderIntrinsics_AtomicXchgU64(RWTexture3D<uint2> uav, uint3 addre
 /**
 ***********************************************************************************************************************
 *   AmdDxExtShaderIntrinsics_AtomicCmpXchgU64
-*
-*   The following functions are available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_AtomicU64) returned S_OK.
 *
 *   Performs 64-bit atomic compare of comparison value with UAV at address, stores value if values match,
 *   returns the original value.
@@ -1706,8 +1628,6 @@ uint2 AmdDxExtShaderIntrinsics_AtomicCmpXchgU64(
 *
 *   Performs reduction operation across a wave and returns the result of the reduction (sum of all threads in a wave)
 *   to all participating lanes.
-*
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_WaveReduce) returned S_OK.
 *
 *   Available in all shader stages.
 *
@@ -1835,8 +1755,6 @@ uint4 AmdDxExtShaderIntrinsics_WaveActiveSum(uint4 src)
 *   Performs reduction operation across a wave and returns the result of the reduction (product of all threads in a
 *   wave) to all participating lanes.
 *
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_WaveReduce) returned S_OK.
-*
 *   Available in all shader stages.
 *
 ***********************************************************************************************************************
@@ -1962,8 +1880,6 @@ uint4 AmdDxExtShaderIntrinsics_WaveActiveProduct(uint4 src)
 *
 *   Performs reduction operation across a wave and returns the result of the reduction (minimum of all threads in a
 *   wave) to all participating lanes.
-*
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_WaveReduce) returned S_OK.
 *
 *   Available in all shader stages.
 *
@@ -2091,8 +2007,6 @@ uint4 AmdDxExtShaderIntrinsics_WaveActiveMin(uint4 src)
 *   Performs reduction operation across a wave and returns the result of the reduction (maximum of all threads in a
 *   wave) to all participating lanes.
 *
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_WaveReduce) returned S_OK.
-*
 *   Available in all shader stages.
 *
 ***********************************************************************************************************************
@@ -2219,8 +2133,6 @@ uint4 AmdDxExtShaderIntrinsics_WaveActiveMax(uint4 src)
 *   Performs reduction operation across a wave and returns the result of the reduction (Bitwise AND of all threads in a
 *   wave) to all participating lanes.
 *
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_WaveReduce) returned S_OK.
-*
 *   Available in all shader stages.
 *
 ***********************************************************************************************************************
@@ -2312,8 +2224,6 @@ uint4 AmdDxExtShaderIntrinsics_WaveActiveBitAnd(uint4 src)
 *
 *   Performs reduction operation across a wave and returns the result of the reduction (Bitwise OR of all threads in a
 *   wave) to all participating lanes.
-*
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_WaveReduce) returned S_OK.
 *
 *   Available in all shader stages.
 *
@@ -2407,8 +2317,6 @@ uint4 AmdDxExtShaderIntrinsics_WaveActiveBitOr(uint4 src)
 *   Performs reduction operation across a wave and returns the result of the reduction (Bitwise XOR of all threads in a
 *   wave) to all participating lanes.
 *
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_WaveReduce) returned S_OK.
-*
 *   Available in all shader stages.
 *
 ***********************************************************************************************************************
@@ -2499,8 +2407,6 @@ uint4 AmdDxExtShaderIntrinsics_WaveActiveBitXor(uint4 src)
 *   AmdDxExtShaderIntrinsics_WavePrefixSum
 *
 *   Performs a prefix (exclusive) scan operation across a wave and returns the resulting sum to all participating lanes.
-*
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_WaveScan) returned S_OK.
 *
 *   Available in all shader stages.
 *
@@ -2652,8 +2558,6 @@ uint4 AmdDxExtShaderIntrinsics_WavePrefixSum(uint4 src)
 *
 *   Performs a prefix scan operation across a wave and returns the resulting product to all participating lanes.
 *
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_WaveScan) returned S_OK.
-*
 *   Available in all shader stages.
 *
 ***********************************************************************************************************************
@@ -2802,8 +2706,6 @@ uint4 AmdDxExtShaderIntrinsics_WavePrefixProduct(uint4 src)
 *   AmdDxExtShaderIntrinsics_WavePrefixMin
 *
 *   Performs a prefix scan operation across a wave and returns the resulting minimum value to all participating lanes.
-*
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_WaveScan) returned S_OK.
 *
 *   Available in all shader stages.
 *
@@ -2954,8 +2856,6 @@ uint4 AmdDxExtShaderIntrinsics_WavePrefixMin(uint4 src)
 *
 *   Performs a prefix scan operation across a wave and returns the resulting maximum value to all participating lanes.
 *
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_WaveScan) returned S_OK.
-*
 *   Available in all shader stages.
 *
 ***********************************************************************************************************************
@@ -3104,8 +3004,6 @@ uint4 AmdDxExtShaderIntrinsics_WavePrefixMax(uint4 src)
 *   AmdDxExtShaderIntrinsics_WavePostfixSum
 *
 *   Performs a Postfix (Inclusive) scan operation across a wave and returns the resulting sum to all participating lanes.
-*
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_WaveScan) returned S_OK.
 *
 *   Available in all shader stages.
 *
@@ -3256,8 +3154,6 @@ uint4 AmdDxExtShaderIntrinsics_WavePostfixSum(uint4 src)
 *
 *   Performs a Postfix scan operation across a wave and returns the resulting product to all participating lanes.
 *
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_WaveScan) returned S_OK.
-*
 *   Available in all shader stages.
 *
 ***********************************************************************************************************************
@@ -3407,8 +3303,6 @@ uint4 AmdDxExtShaderIntrinsics_WavePostfixProduct(uint4 src)
 *
 *   Performs a Postfix scan operation across a wave and returns the resulting minimum value to all participating lanes.
 *
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_WaveScan) returned S_OK.
-*
 *   Available in all shader stages.
 *
 ***********************************************************************************************************************
@@ -3557,8 +3451,6 @@ uint4 AmdDxExtShaderIntrinsics_WavePostfixMin(uint4 src)
 *   AmdDxExtShaderIntrinsics_WavePostfixMax
 *
 *   Performs a Postfix scan operation across a wave and returns the resulting maximum value to all participating lanes.
-*
-*   Available if CheckSupport(AmdDxExtShaderIntrinsicsOpcode_WaveScan) returned S_OK.
 *
 *   Available in all shader stages.
 *
