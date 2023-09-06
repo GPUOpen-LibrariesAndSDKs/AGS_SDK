@@ -353,7 +353,7 @@ void D3D12Sample::CreateDeviceAndSwapChain ()
     {
         Print( "AMD GPU detected\n" );
 
-        AGSReturnCode result = agsInitialize( AGS_MAKE_VERSION( AMD_AGS_VERSION_MAJOR, AMD_AGS_VERSION_MINOR, AMD_AGS_VERSION_PATCH ), nullptr, &m_agsContext, &m_agsGPUInfo);
+        AGSReturnCode result = agsInitialize( AGS_CURRENT_VERSION, nullptr, &m_agsContext, &m_agsGPUInfo );
         if (result == AGS_SUCCESS)
         {
             Print( "AGS initialized successfully, version %d.%d.%d\n", AMD_AGS_VERSION_MAJOR, AMD_AGS_VERSION_MINOR, AMD_AGS_VERSION_PATCH );
@@ -382,6 +382,10 @@ void D3D12Sample::CreateDeviceAndSwapChain ()
                 if ( m_agsDeviceExtensions.rayHitToken )
                 {
                     Print( "\tRay hit token available\n" );
+                }
+                if ( m_agsDeviceExtensions.shaderClock )
+                {
+                    Print( "\tShader clock intrinsics available\n" );
                 }
             }
             else

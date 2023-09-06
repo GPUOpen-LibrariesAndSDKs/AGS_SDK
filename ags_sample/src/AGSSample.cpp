@@ -190,7 +190,7 @@ int main(int , char**)
     AGSContext* agsContext = nullptr;
     AGSGPUInfo gpuInfo = {};
     AGSConfiguration config = {};
-    if ( agsInitialize( AGS_MAKE_VERSION( AMD_AGS_VERSION_MAJOR, AMD_AGS_VERSION_MINOR, AMD_AGS_VERSION_PATCH ), &config, &agsContext, &gpuInfo ) == AGS_SUCCESS )
+    if ( agsInitialize( AGS_CURRENT_VERSION, &config, &agsContext, &gpuInfo ) == AGS_SUCCESS )
     {
         printf( "\nAGS Library initialized: v%d.%d.%d\n", AMD_AGS_VERSION_MAJOR, AMD_AGS_VERSION_MINOR, AMD_AGS_VERSION_PATCH );
         printf( "-----------------------------------------------------------------\n" );
@@ -201,7 +201,7 @@ int main(int , char**)
         PrintDisplayInfo( gpuInfo );
         printf( "-----------------------------------------------------------------\n" );
 
-        if(  0 )
+        if( 0 )
         {
             printf( "\n" );
             testDriver( gpuInfo.radeonSoftwareVersion, AGS_MAKE_VERSION( 20, 1, 0 ) );

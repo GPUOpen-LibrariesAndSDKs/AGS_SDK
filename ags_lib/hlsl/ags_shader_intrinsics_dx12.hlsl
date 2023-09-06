@@ -68,33 +68,36 @@ RWByteAddressBuffer AmdExtD3DShaderIntrinsicsUAV : register(u0, AmdExtD3DShaderI
 *   Intrinsic opcodes.
 ***********************************************************************************************************************
 */
-#define AmdExtD3DShaderIntrinsicsOpcode_Readfirstlane       0x01
-#define AmdExtD3DShaderIntrinsicsOpcode_Readlane            0x02
-#define AmdExtD3DShaderIntrinsicsOpcode_LaneId              0x03
-#define AmdExtD3DShaderIntrinsicsOpcode_Swizzle             0x04
-#define AmdExtD3DShaderIntrinsicsOpcode_Ballot              0x05
-#define AmdExtD3DShaderIntrinsicsOpcode_MBCnt               0x06
-#define AmdExtD3DShaderIntrinsicsOpcode_Min3U               0x07
-#define AmdExtD3DShaderIntrinsicsOpcode_Min3F               0x08
-#define AmdExtD3DShaderIntrinsicsOpcode_Med3U               0x09
-#define AmdExtD3DShaderIntrinsicsOpcode_Med3F               0x0a
-#define AmdExtD3DShaderIntrinsicsOpcode_Max3U               0x0b
-#define AmdExtD3DShaderIntrinsicsOpcode_Max3F               0x0c
-#define AmdExtD3DShaderIntrinsicsOpcode_BaryCoord           0x0d
-#define AmdExtD3DShaderIntrinsicsOpcode_VtxParam            0x0e
-#define AmdExtD3DShaderIntrinsicsOpcode_Reserved1           0x0f
-#define AmdExtD3DShaderIntrinsicsOpcode_Reserved2           0x10
-#define AmdExtD3DShaderIntrinsicsOpcode_Reserved3           0x11
-#define AmdExtD3DShaderIntrinsicsOpcode_WaveReduce          0x12
-#define AmdExtD3DShaderIntrinsicsOpcode_WaveScan            0x13
-#define AmdExtD3DShaderIntrinsicsOpcode_LoadDwAtAddr        0x14
-#define AmdExtD3DShaderIntrinsicsOpcode_DrawIndex           0x17
-#define AmdExtD3DShaderIntrinsicsOpcode_AtomicU64           0x18
-#define AmdExtD3DShaderIntrinsicsOpcode_GetWaveSize         0x19
-#define AmdExtD3DShaderIntrinsicsOpcode_BaseInstance        0x1a
-#define AmdExtD3DShaderIntrinsicsOpcode_BaseVertex          0x1b
-#define AmdExtD3DShaderIntrinsicsOpcode_FloatConversion     0x1c
-#define AmdExtD3DShaderIntrinsicsOpcode_ReadlaneAt          0x1d
+#define AmdExtD3DShaderIntrinsicsOpcode_Readfirstlane           0x01
+#define AmdExtD3DShaderIntrinsicsOpcode_Readlane                0x02
+#define AmdExtD3DShaderIntrinsicsOpcode_LaneId                  0x03
+#define AmdExtD3DShaderIntrinsicsOpcode_Swizzle                 0x04
+#define AmdExtD3DShaderIntrinsicsOpcode_Ballot                  0x05
+#define AmdExtD3DShaderIntrinsicsOpcode_MBCnt                   0x06
+#define AmdExtD3DShaderIntrinsicsOpcode_Min3U                   0x07
+#define AmdExtD3DShaderIntrinsicsOpcode_Min3F                   0x08
+#define AmdExtD3DShaderIntrinsicsOpcode_Med3U                   0x09
+#define AmdExtD3DShaderIntrinsicsOpcode_Med3F                   0x0a
+#define AmdExtD3DShaderIntrinsicsOpcode_Max3U                   0x0b
+#define AmdExtD3DShaderIntrinsicsOpcode_Max3F                   0x0c
+#define AmdExtD3DShaderIntrinsicsOpcode_BaryCoord               0x0d
+#define AmdExtD3DShaderIntrinsicsOpcode_VtxParam                0x0e
+#define AmdExtD3DShaderIntrinsicsOpcode_Reserved1               0x0f
+#define AmdExtD3DShaderIntrinsicsOpcode_Reserved2               0x10
+#define AmdExtD3DShaderIntrinsicsOpcode_Reserved3               0x11
+#define AmdExtD3DShaderIntrinsicsOpcode_WaveReduce              0x12
+#define AmdExtD3DShaderIntrinsicsOpcode_WaveScan                0x13
+#define AmdExtD3DShaderIntrinsicsOpcode_LoadDwAtAddr            0x14
+#define AmdExtD3DShaderIntrinsicsOpcode_DrawIndex               0x17
+#define AmdExtD3DShaderIntrinsicsOpcode_AtomicU64               0x18
+#define AmdExtD3DShaderIntrinsicsOpcode_GetWaveSize             0x19
+#define AmdExtD3DShaderIntrinsicsOpcode_BaseInstance            0x1a
+#define AmdExtD3DShaderIntrinsicsOpcode_BaseVertex              0x1b
+#define AmdExtD3DShaderIntrinsicsOpcode_FloatConversion         0x1c
+#define AmdExtD3DShaderIntrinsicsOpcode_ReadlaneAt              0x1d
+#define AmdExtD3DShaderIntrinsicsOpcode_ShaderClock             0x1f
+#define AmdExtD3DShaderIntrinsicsOpcode_ShaderRealtimeClock     0x20
+
 
 /**
 ***********************************************************************************************************************
@@ -1388,6 +1391,79 @@ uint3 AmdExtD3DShaderIntrinsics_ConvertF32toF16NegInf(in float3 inVec)
 uint3 AmdExtD3DShaderIntrinsics_ConvertF32toF16PosInf(in float3 inVec)
 {
     return AmdExtD3DShaderIntrinsics_ConvertF32toF16(AmdExtD3DShaderIntrinsicsFloatConversionOp_FToF16PlusInf, inVec);
+}
+
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_ShaderClock
+*
+*   Returns the current value of the timestamp clock. The value monotonically increments and will wrap after it
+*   exceeds the maximum representable value. The units are not defined and need not be constant, and the value
+*   is not guaranteed to be dynamically uniform across a single draw or dispatch.
+*
+*   The function serves as a code motion barrier. Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_ShaderClock
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_ShaderClock()
+{
+    uint2 retVal;
+
+    uint instruction;
+    instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_ShaderClock,
+                                                     AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+                                                     0);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, 0, 0, retVal.x);
+
+    instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_ShaderClock,
+                                                     AmdExtD3DShaderIntrinsicsOpcodePhase_1,
+                                                     0);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, 0, 0, retVal.y);
+
+    return retVal;
+}
+
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_ShaderRealtimeClock
+*
+*   Returns a value representing the real-time clock that is globally coherent by all invocations on the GPU.
+*   The units are not defined and the value will wrap after exceeding the maximum representable value.
+*
+*   The function serves as a code motion barrier. Available in all shader stages.
+*
+***********************************************************************************************************************
+*/
+
+/**
+***********************************************************************************************************************
+*   AmdExtD3DShaderIntrinsics_ShaderRealtimeClock
+***********************************************************************************************************************
+*/
+uint2 AmdExtD3DShaderIntrinsics_ShaderRealtimeClock()
+{
+    uint2 retVal;
+
+    uint instruction;
+    instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_ShaderRealtimeClock,
+                                                     AmdExtD3DShaderIntrinsicsOpcodePhase_0,
+                                                     0);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, 0, 0, retVal.x);
+
+    instruction = MakeAmdShaderIntrinsicsInstruction(AmdExtD3DShaderIntrinsicsOpcode_ShaderRealtimeClock,
+                                                     AmdExtD3DShaderIntrinsicsOpcodePhase_1,
+                                                     0);
+    AmdExtD3DShaderIntrinsicsUAV.InterlockedCompareExchange(instruction, 0, 0, retVal.y);
+
+    return retVal;
 }
 
 
@@ -3785,7 +3861,6 @@ uint4 AmdExtD3DShaderIntrinsics_WavePostfixMax(uint4 src)
                                               AmdExtD3DShaderIntrinsicsWaveOp_Inclusive,
                                               src);
 }
-
 
 #if defined (AGS_RAY_HIT_TOKEN)
 

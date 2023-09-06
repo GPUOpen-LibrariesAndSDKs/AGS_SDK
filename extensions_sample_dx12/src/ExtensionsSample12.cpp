@@ -106,6 +106,11 @@ void ExtensionsSample12::RenderImpl (ID3D12GraphicsCommandList * commandList)
     static int counter = 0;
     counter++;
 
+    if ( m_agsContext )
+    {
+        agsDriverExtensionsDX12_PushMarker( m_agsContext, commandList, "Render" );
+    }
+
     commandList->SetGraphicsRootSignature( m_rootSignature.Get() );
 
     // Set our state (shaders, etc.)
@@ -131,6 +136,11 @@ void ExtensionsSample12::RenderImpl (ID3D12GraphicsCommandList * commandList)
     commandList->IASetVertexBuffers( 0, 1, &m_triVertexBufferView );
     commandList->IASetIndexBuffer( &m_indexBufferView );
     commandList->DrawIndexedInstanced( 3, 1, 0, 0, 0 );
+
+    if ( m_agsContext )
+    {
+        agsDriverExtensionsDX12_PopMarker( m_agsContext, commandList );
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -271,7 +281,7 @@ void ExtensionsSample12::CreateRootSignature ()
     if ( m_agsDeviceExtensions.intrinsics16 )
     {
         //*** add AMD Intrinsic Resource ***
-        range[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, AGS_DX12_SHADER_INSTRINSICS_SPACE_ID); // u0
+        range[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, AGS_DX12_SHADER_INTRINSICS_SPACE_ID); // u0
         parameters[2].InitAsDescriptorTable(1, &range[1], D3D12_SHADER_VISIBILITY_ALL);
         descRootSignature.Init(3, parameters, 1, samplers, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
     }

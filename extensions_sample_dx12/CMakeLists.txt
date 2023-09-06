@@ -3,9 +3,9 @@ set(CMAKE_GENERATOR_PLATFORM x64)
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
 
 if(AGS_INTERNAL_DEBUG)
-project(ExtensionsSample12_internal VERSION 6.1.0)
+project(ExtensionsSample12_internal VERSION 6.2.0)
 else()
-project(ExtensionsSample12 VERSION 6.1.0)
+project(ExtensionsSample12 VERSION 6.2.0)
 endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
