@@ -148,24 +148,24 @@ enum D3D_FEATURE_LEVEL;
 enum D3D_PRIMITIVE_TOPOLOGY;
 
 // Forward declaration of D3D11 types
-struct ID3D11Device;
-struct ID3D11DeviceContext;
-struct ID3D11Resource;
-struct ID3D11Buffer;
-struct ID3D11Texture1D;
-struct ID3D11Texture2D;
-struct ID3D11Texture3D;
-struct D3D11_BUFFER_DESC;
-struct D3D11_TEXTURE1D_DESC;
-struct D3D11_TEXTURE2D_DESC;
-struct D3D11_TEXTURE3D_DESC;
-struct D3D11_SUBRESOURCE_DATA;
-struct tagRECT;
+typedef struct ID3D11Device ID3D11Device;
+typedef struct ID3D11DeviceContext ID3D11DeviceContext;
+typedef struct ID3D11Resource ID3D11Resource;
+typedef struct ID3D11Buffer ID3D11Buffer;
+typedef struct ID3D11Texture1D ID3D11Texture1D;
+typedef struct ID3D11Texture2D ID3D11Texture2D;
+typedef struct ID3D11Texture3D ID3D11Texture3D;
+typedef struct D3D11_BUFFER_DESC D3D11_BUFFER_DESC;
+typedef struct D3D11_TEXTURE1D_DESC D3D11_TEXTURE1D_DESC;
+typedef struct D3D11_TEXTURE2D_DESC D3D11_TEXTURE2D_DESC;
+typedef struct D3D11_TEXTURE3D_DESC D3D11_TEXTURE3D_DESC;
+typedef struct D3D11_SUBRESOURCE_DATA D3D11_SUBRESOURCE_DATA;
+typedef struct tagRECT tagRECT;
 typedef tagRECT D3D11_RECT;             ///< typedef this ourselves so we don't have to drag d3d11.h in
 
 // Forward declaration of D3D12 types
-struct ID3D12Device;
-struct ID3D12GraphicsCommandList;
+typedef struct ID3D12Device ID3D12Device;
+typedef struct ID3D12GraphicsCommandList ID3D12GraphicsCommandList;
 #endif
 
 /// \defgroup enums General enumerations
@@ -189,7 +189,7 @@ typedef enum AGSReturnCode
 
 /// @}
 
-struct AGSContext;  ///< All function calls in AGS require a pointer to a context. This is generated via \ref agsInitialize
+typedef struct AGSContext AGSContext;  ///< All function calls in AGS require a pointer to a context. This is generated via \ref agsInitialize
 
 /// The rectangle struct used by AGS.
 typedef struct AGSRect
@@ -252,26 +252,26 @@ typedef struct AGSDisplayInfo
     int                     reserved;                       ///< reserved field
 } AGSDisplayInfo;
 
+/// The ASIC family
+typedef enum AsicFamily
+{
+    AsicFamily_Unknown,                                         ///< Unknown architecture, potentially from another IHV. Check \ref AGSDeviceInfo::vendorId
+    AsicFamily_PreGCN,                                          ///< Pre GCN architecture.
+    AsicFamily_GCN1,                                            ///< AMD GCN 1 architecture: Oland, Cape Verde, Pitcairn & Tahiti.
+    AsicFamily_GCN2,                                            ///< AMD GCN 2 architecture: Hawaii & Bonaire.  This also includes APUs Kaveri and Carrizo.
+    AsicFamily_GCN3,                                            ///< AMD GCN 3 architecture: Tonga & Fiji.
+    AsicFamily_GCN4,                                            ///< AMD GCN 4 architecture: Polaris.
+    AsicFamily_Vega,                                            ///< AMD Vega architecture, including Raven Ridge (ie AMD Ryzen CPU + AMD Vega GPU).
+    AsicFamily_RDNA,                                            ///< AMD RDNA architecture
+    AsicFamily_RDNA2,                                           ///< AMD RDNA2 architecture
+    AsicFamily_RDNA3,                                           ///< AMD RDNA3 architecture
+
+    AsicFamily_Count                                            ///< Number of enumerated ASIC families
+} AsicFamily;
+
 /// The device info struct used to describe a physical GPU enumerated by AGS
 typedef struct AGSDeviceInfo
 {
-    /// The ASIC family
-    typedef enum AsicFamily
-    {
-        AsicFamily_Unknown,                                         ///< Unknown architecture, potentially from another IHV. Check \ref AGSDeviceInfo::vendorId
-        AsicFamily_PreGCN,                                          ///< Pre GCN architecture.
-        AsicFamily_GCN1,                                            ///< AMD GCN 1 architecture: Oland, Cape Verde, Pitcairn & Tahiti.
-        AsicFamily_GCN2,                                            ///< AMD GCN 2 architecture: Hawaii & Bonaire.  This also includes APUs Kaveri and Carrizo.
-        AsicFamily_GCN3,                                            ///< AMD GCN 3 architecture: Tonga & Fiji.
-        AsicFamily_GCN4,                                            ///< AMD GCN 4 architecture: Polaris.
-        AsicFamily_Vega,                                            ///< AMD Vega architecture, including Raven Ridge (ie AMD Ryzen CPU + AMD Vega GPU).
-        AsicFamily_RDNA,                                            ///< AMD RDNA architecture
-        AsicFamily_RDNA2,                                           ///< AMD RDNA2 architecture
-        AsicFamily_RDNA3,                                           ///< AMD RDNA3 architecture
-
-        AsicFamily_Count                                            ///< Number of enumerated ASIC families
-    } AsicFamily;
-
     const char*                     adapterString;                  ///< The adapter name string
     AsicFamily                      asicFamily;                     ///< Set to Unknown if not AMD hardware
     unsigned int                    isAPU : 1;                      ///< Whether this device is an APU
@@ -334,23 +334,24 @@ typedef struct AGSGPUInfo
     AGSDeviceInfo*          devices;                        ///< List of GPUs in the system
 } AGSGPUInfo;
 
+/// The display mode
+typedef enum AGSDisplayMode
+{
+    AGSDisplayMode_SDR,                                           ///< SDR mode
+    AGSDisplayMode_HDR10_PQ,                                      ///< HDR10 PQ encoding, requiring a 1010102 UNORM swapchain and PQ encoding in the output shader.
+    AGSDisplayMode_HDR10_scRGB,                                   ///< HDR10 scRGB, requiring an FP16 swapchain. Values of 1.0 == 80 nits, 125.0 == 10000 nits.
+    AGSDisplayMode_FreesyncHDR_scRGB,                             ///< Freesync HDR scRGB, requiring an FP16 swapchain. A value of 1.0 == 80 nits.
+    AGSDisplayMode_FreesyncHDR_Gamma22,                           ///< Freesync HDR Gamma 2.2, requiring a 1010102 UNORM swapchain.  The output needs to be encoded to gamma 2.2.
+    AGSDisplayMode_DolbyVision,                                   ///< Dolby Vision, requiring an 8888 UNORM swapchain
+
+    AGSDisplayMode_Count                                          ///< Number of enumerated display modes
+} AGSDisplayMode;
+
 /// The struct to specify the display settings to the driver.
 typedef struct AGSDisplaySettings
 {
-    /// The display mode
-    typedef enum Mode
-    {
-        Mode_SDR,                                           ///< SDR mode
-        Mode_HDR10_PQ,                                      ///< HDR10 PQ encoding, requiring a 1010102 UNORM swapchain and PQ encoding in the output shader.
-        Mode_HDR10_scRGB,                                   ///< HDR10 scRGB, requiring an FP16 swapchain. Values of 1.0 == 80 nits, 125.0 == 10000 nits.
-        Mode_FreesyncHDR_scRGB,                             ///< Freesync HDR scRGB, requiring an FP16 swapchain. A value of 1.0 == 80 nits.
-        Mode_FreesyncHDR_Gamma22,                           ///< Freesync HDR Gamma 2.2, requiring a 1010102 UNORM swapchain.  The output needs to be encoded to gamma 2.2.
-        Mode_DolbyVision,                                   ///< Dolby Vision, requiring an 8888 UNORM swapchain
 
-        Mode_Count                                          ///< Number of enumerated display modes
-    } Mode;
-
-    Mode                    mode;                           ///< The display mode to set the display into
+    AGSDisplayMode          mode;                           ///< The display mode to set the display into
 
     double                  chromaticityRedX;               ///< Red display primary X coord
     double                  chromaticityRedY;               ///< Red display primary Y coord
@@ -500,29 +501,30 @@ typedef struct AGSDX12ExtensionParams
     unsigned int    engineVersion;          ///< Engine version
     unsigned int    uavSlot;                ///< The UAV slot reserved for intrinsic support.  Refer to the \ref agsDriverExtensionsDX12_CreateDevice documentation for more details.
 } AGSDX12ExtensionParams;
+	
+typedef struct AGSDX12ExtensionsSupported                   /// Extensions for DX12
+{
+    unsigned int        intrinsics16 : 1;                   ///< Supported in Radeon Software Version 16.9.2 onwards. ReadFirstLane, ReadLane, LaneID, Swizzle, Ballot, MBCount, Med3, Barycentrics
+    unsigned int        intrinsics17 : 1;                   ///< Supported in Radeon Software Version 17.9.1 onwards. WaveReduce, WaveScan
+    unsigned int        userMarkers : 1;                    ///< Supported in Radeon Software Version 17.9.1 onwards.
+    unsigned int        appRegistration : 1;                ///< Supported in Radeon Software Version 17.9.1 onwards.
+    unsigned int        UAVBindSlot : 1;                    ///< Supported in Radeon Software Version 19.5.1 onwards.
+    unsigned int        intrinsics19 : 1;                   ///< Supported in Radeon Software Version 19.12.2 onwards. DrawIndex, AtomicU64
+    unsigned int        baseVertex : 1;                     ///< Supported in Radeon Software Version 20.2.1 onwards.
+    unsigned int        baseInstance : 1;                   ///< Supported in Radeon Software Version 20.2.1 onwards.
+    unsigned int        getWaveSize : 1;                    ///< Supported in Radeon Software Version 20.5.1 onwards.
+    unsigned int        floatConversion : 1;                ///< Supported in Radeon Software Version 20.5.1 onwards.
+    unsigned int        readLaneAt : 1;                     ///< Supported in Radeon Software Version 20.11.2 onwards.
+    unsigned int        rayHitToken : 1;                    ///< Supported in Radeon Software Version 20.11.2 onwards.
+    unsigned int        shaderClock : 1;                    ///< Supported in Radeon Software Version 23.1.1 onwards.
+    unsigned int        padding : 19;                       ///< Reserved
+} AGSDX12ExtensionsSupported;
 
 /// The struct to hold all the returned parameters from the device creation call
 typedef struct AGSDX12ReturnedParams
 {
-    ID3D12Device*           pDevice;                            ///< The newly created device
-    typedef struct ExtensionsSupported                          /// Extensions for DX12
-    {
-        unsigned int        intrinsics16 : 1;                   ///< Supported in Radeon Software Version 16.9.2 onwards. ReadFirstLane, ReadLane, LaneID, Swizzle, Ballot, MBCount, Med3, Barycentrics
-        unsigned int        intrinsics17 : 1;                   ///< Supported in Radeon Software Version 17.9.1 onwards. WaveReduce, WaveScan
-        unsigned int        userMarkers : 1;                    ///< Supported in Radeon Software Version 17.9.1 onwards.
-        unsigned int        appRegistration : 1;                ///< Supported in Radeon Software Version 17.9.1 onwards.
-        unsigned int        UAVBindSlot : 1;                    ///< Supported in Radeon Software Version 19.5.1 onwards.
-        unsigned int        intrinsics19 : 1;                   ///< Supported in Radeon Software Version 19.12.2 onwards. DrawIndex, AtomicU64
-        unsigned int        baseVertex : 1;                     ///< Supported in Radeon Software Version 20.2.1 onwards.
-        unsigned int        baseInstance : 1;                   ///< Supported in Radeon Software Version 20.2.1 onwards.
-        unsigned int        getWaveSize : 1;                    ///< Supported in Radeon Software Version 20.5.1 onwards.
-        unsigned int        floatConversion : 1;                ///< Supported in Radeon Software Version 20.5.1 onwards.
-        unsigned int        readLaneAt : 1;                     ///< Supported in Radeon Software Version 20.11.2 onwards.
-        unsigned int        rayHitToken : 1;                    ///< Supported in Radeon Software Version 20.11.2 onwards.
-        unsigned int        shaderClock : 1;                    ///< Supported in Radeon Software Version 23.1.1 onwards.
-        unsigned int        padding : 19;                       ///< Reserved
-    } ExtensionsSupported;
-    ExtensionsSupported     extensionsSupported;                ///< List of supported extensions
+    ID3D12Device*                  pDevice;                 ///< The newly created device
+    AGSDX12ExtensionsSupported     extensionsSupported;     ///< List of supported extensions
 } AGSDX12ReturnedParams;
 
 /// The space id for DirectX12 intrinsic support
@@ -649,40 +651,41 @@ typedef struct AGSDX11ExtensionParams
     AGSCrossfireMode            crossfireMode;              ///< Desired Crossfire mode
 } AGSDX11ExtensionParams;
 
+typedef struct AGSDX11ExtensionsSupported                   /// Extensions for DX11
+{
+    unsigned int        quadList : 1;                       ///< Supported in Radeon Software Version 16.9.2 onwards.
+    unsigned int        screenRectList : 1;                 ///< Supported in Radeon Software Version 16.9.2 onwards.
+    unsigned int        uavOverlap : 1;                     ///< Supported in Radeon Software Version 16.9.2 onwards.
+    unsigned int        depthBoundsTest : 1;                ///< Supported in Radeon Software Version 16.9.2 onwards.
+    unsigned int        multiDrawIndirect : 1;              ///< Supported in Radeon Software Version 16.9.2 onwards.
+    unsigned int        multiDrawIndirectCountIndirect : 1; ///< Supported in Radeon Software Version 16.9.2 onwards.
+    unsigned int        crossfireAPI : 1;                   ///< Supported in Radeon Software Version 16.9.2 onwards.
+    unsigned int        createShaderControls : 1;           ///< Supported in Radeon Software Version 16.9.2 onwards.
+    unsigned int        intrinsics16 : 1;                   ///< Supported in Radeon Software Version 16.9.2 onwards. ReadFirstLane, ReadLane, LaneID, Swizzle, Ballot, MBCount, Med3, Barycentrics
+    unsigned int        multiView : 1;                      ///< Supported in Radeon Software Version 16.12.1 onwards.
+    unsigned int        intrinsics17 : 1;                   ///< Supported in Radeon Software Version 17.9.1 onwards. WaveReduce, WaveScan
+    unsigned int        appRegistration : 1;                ///< Supported in Radeon Software Version 17.9.1 onwards.
+    unsigned int        breadcrumbMarkers : 1;              ///< Supported in Radeon Software Version 17.11.1 onwards.
+    unsigned int        MDIDeferredContexts : 1;            ///< Supported in Radeon Software Version 18.8.1 onwards.
+    unsigned int        UAVOverlapDeferredContexts : 1;     ///< Supported in Radeon Software Version 18.8.1 onwards.
+    unsigned int        depthBoundsDeferredContexts : 1;    ///< Supported in Radeon Software Version 18.8.1 onwards.
+    unsigned int        intrinsics19 : 1;                   ///< Supported in Radeon Software Version 19.12.2 onwards. DrawIndex, AtomicU64
+    unsigned int        getWaveSize : 1;                    ///< Supported in Radeon Software Version 20.2.1 onwards.
+    unsigned int        baseVertex : 1;                     ///< Supported in Radeon Software Version 20.2.1 onwards.
+    unsigned int        baseInstance : 1;                   ///< Supported in Radeon Software Version 20.2.1 onwards.
+    unsigned int        padding : 12;                       ///< Reserved
+} AGSDX11ExtensionsSupported;
+
 /// The struct to hold all the returned parameters from the device creation call
 typedef struct AGSDX11ReturnedParams
 {
-    ID3D11Device*           pDevice;                            ///< The newly created device
-    ID3D11DeviceContext*    pImmediateContext;                  ///< The newly created immediate device context
-    IDXGISwapChain*         pSwapChain;                         ///< The newly created swap chain. This is only created if a valid pSwapChainDesc is supplied in AGSDX11DeviceCreationParams.
-    D3D_FEATURE_LEVEL       featureLevel;                       ///< The feature level supported by the newly created device
-    typedef struct ExtensionsSupported                          /// Extensions for DX11
-    {
-        unsigned int        quadList : 1;                       ///< Supported in Radeon Software Version 16.9.2 onwards.
-        unsigned int        screenRectList : 1;                 ///< Supported in Radeon Software Version 16.9.2 onwards.
-        unsigned int        uavOverlap : 1;                     ///< Supported in Radeon Software Version 16.9.2 onwards.
-        unsigned int        depthBoundsTest : 1;                ///< Supported in Radeon Software Version 16.9.2 onwards.
-        unsigned int        multiDrawIndirect : 1;              ///< Supported in Radeon Software Version 16.9.2 onwards.
-        unsigned int        multiDrawIndirectCountIndirect : 1; ///< Supported in Radeon Software Version 16.9.2 onwards.
-        unsigned int        crossfireAPI : 1;                   ///< Supported in Radeon Software Version 16.9.2 onwards.
-        unsigned int        createShaderControls : 1;           ///< Supported in Radeon Software Version 16.9.2 onwards.
-        unsigned int        intrinsics16 : 1;                   ///< Supported in Radeon Software Version 16.9.2 onwards. ReadFirstLane, ReadLane, LaneID, Swizzle, Ballot, MBCount, Med3, Barycentrics
-        unsigned int        multiView : 1;                      ///< Supported in Radeon Software Version 16.12.1 onwards.
-        unsigned int        intrinsics17 : 1;                   ///< Supported in Radeon Software Version 17.9.1 onwards. WaveReduce, WaveScan
-        unsigned int        appRegistration : 1;                ///< Supported in Radeon Software Version 17.9.1 onwards.
-        unsigned int        breadcrumbMarkers : 1;              ///< Supported in Radeon Software Version 17.11.1 onwards.
-        unsigned int        MDIDeferredContexts : 1;            ///< Supported in Radeon Software Version 18.8.1 onwards.
-        unsigned int        UAVOverlapDeferredContexts : 1;     ///< Supported in Radeon Software Version 18.8.1 onwards.
-        unsigned int        depthBoundsDeferredContexts : 1;    ///< Supported in Radeon Software Version 18.8.1 onwards.
-        unsigned int        intrinsics19 : 1;                   ///< Supported in Radeon Software Version 19.12.2 onwards. DrawIndex, AtomicU64
-        unsigned int        getWaveSize : 1;                    ///< Supported in Radeon Software Version 20.2.1 onwards.
-        unsigned int        baseVertex : 1;                     ///< Supported in Radeon Software Version 20.2.1 onwards.
-        unsigned int        baseInstance : 1;                   ///< Supported in Radeon Software Version 20.2.1 onwards.
-        unsigned int        padding : 12;                       ///< Reserved
-    } ExtensionsSupported;
-    ExtensionsSupported     extensionsSupported;                ///< List of supported extensions
-    unsigned int            crossfireGPUCount;                  ///< The number of GPUs that are active for this app
-    void*                   breadcrumbBuffer;                   ///< The CPU buffer returned if the initialization of the breadcrumb was successful
+    ID3D11Device*                   pDevice;                //< The newly created device
+    ID3D11DeviceContext*            pImmediateContext;      //< The newly created immediate device context
+    IDXGISwapChain*                 pSwapChain;             //< The newly created swap chain. This is only created if a valid pSwapChainDesc is supplied in AGSDX11DeviceCreationParams.
+    D3D_FEATURE_LEVEL              featureLevel;            ///< The feature level supported by the newly created device
+    AGSDX11ExtensionsSupported     extensionsSupported;     ///< List of supported extensions
+    unsigned int                   crossfireGPUCount;       ///< The number of GPUs that are active for this app
+    void*                          breadcrumbBuffer;        ///< The CPU buffer returned if the initialization of the breadcrumb was successful
 } AGSDX11ReturnedParams;
 
 ///
@@ -890,20 +893,20 @@ AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_DestroyDevice( AGSContext* con
 /// \endcode
 /// 
 /// @{
+///
+/// The marker type
+typedef enum AGSBreadcrumbMarkerType
+{
+    AGSBreadcrumbMarkerType_TopOfPipe       = 0,    ///< Top-of-pipe marker
+    AGSBreadcrumbMarkerType_BottomOfPipe    = 1     ///< Bottom-of-pipe marker
+} AGSBreadcrumbMarkerType;
 
 /// The breadcrumb marker struct used by \ref agsDriverExtensionsDX11_WriteBreadcrumb
 typedef struct AGSBreadcrumbMarker
 {
-    /// The marker type
-    typedef enum Type
-    {
-        TopOfPipe       = 0,    ///< Top-of-pipe marker
-        BottomOfPipe    = 1     ///< Bottom-of-pipe marker
-    } Type;
-
-    unsigned long long  markerData; ///< The user data to write.
-    Type                type;       ///< Whether this marker is top or bottom of pipe.
-    unsigned int        index;      ///< The index of the marker. This should be less than the value specified in \ref AGSDX11ExtensionParams::numBreadcrumbMarkers
+    unsigned long long      markerData; ///< The user data to write.
+    AGSBreadcrumbMarkerType type;       ///< Whether this marker is top or bottom of pipe.
+    unsigned int            index;      ///< The index of the marker. This should be less than the value specified in \ref AGSDX11ExtensionParams::numBreadcrumbMarkers
 } AGSBreadcrumbMarker;
 
 ///
@@ -1178,17 +1181,17 @@ AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_SetViewBroadcastMasks( AGSCont
 ///
 AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_GetMaxClipRects( AGSContext* context, unsigned int* maxRectCount );
 
+/// The inclusion mode for the rect
+typedef enum AGSClipRectMode
+{
+    ClipRectIncluded = 0,   ///< Include the rect
+    ClipRectExcluded = 1    ///< Exclude the rect
+} AGSClipRectMode;
+
 /// The clip rectangle struct used by \ref agsDriverExtensionsDX11_SetClipRects
 typedef struct AGSClipRect
 {
-    /// The inclusion mode for the rect
-    typedef enum Mode
-    {
-        ClipRectIncluded = 0,   ///< Include the rect
-        ClipRectExcluded = 1    ///< Exclude the rect
-    } Mode;
-
-    Mode            mode; ///< Include/exclude rect region
+	AGSClipRectMode mode; ///< Include/exclude rect region
     AGSRect         rect; ///< The rect to include/exclude
 } AGSClipRect;
 
@@ -1199,7 +1202,7 @@ typedef struct AGSClipRect
 /// \param [in] clipRectCount                       Number of specified clip rectangles. Use 0 to disable clip rectangles.
 /// \param [in] clipRects                           Array of clip rectangles.
 ///
-AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_SetClipRects( AGSContext* context, unsigned int clipRectCount, const AGSClipRect* clipRects );
+AMD_AGS_API AGSReturnCode agsDriverExtensionsDX11_SetClipRects(AGSContext* context, unsigned int clipRectCount, const AGSClipRect* clipRects);
 
 /// @}
 
