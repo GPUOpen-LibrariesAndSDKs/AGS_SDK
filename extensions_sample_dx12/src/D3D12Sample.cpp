@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 #include <d3dcompiler.h>
 #include <algorithm>
 #include <assert.h>
-
+#include <vector>
 #include "Window.h"
 
 #ifdef max
@@ -82,7 +82,7 @@ void D3D12Sample::PrepareRender ()
     commandList->RSSetScissorRects (1, &m_rectScissor);
 
     // Transition back buffer
-    D3D12_RESOURCE_BARRIER barrier;
+    D3D12_RESOURCE_BARRIER barrier = {};
     barrier.Transition.pResource = m_renderTargets [m_currentBackBuffer].Get ();
     barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
     barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
@@ -119,7 +119,7 @@ void D3D12Sample::Render ()
 void D3D12Sample::FinalizeRender ()
 {
     // Transition the swap chain back to present
-    D3D12_RESOURCE_BARRIER barrier;
+    D3D12_RESOURCE_BARRIER barrier = {};
     barrier.Transition.pResource = m_renderTargets [m_currentBackBuffer].Get ();
     barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
     barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
@@ -197,7 +197,7 @@ void D3D12Sample::SetupRenderTargets ()
 
     for (int i = 0; i < GetQueueSlotCount (); ++i)
     {
-        D3D12_RENDER_TARGET_VIEW_DESC viewDesc;
+        D3D12_RENDER_TARGET_VIEW_DESC viewDesc = {};
         viewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
         viewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
         viewDesc.Texture2D.MipSlice = 0;
@@ -321,6 +321,7 @@ void D3D12Sample::Shutdown ()
     }
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
 void D3D12Sample::CreateDeviceAndSwapChain ()
 {
@@ -366,6 +367,12 @@ void D3D12Sample::CreateDeviceAndSwapChain ()
             AGSDX12ExtensionParams extensionParams = {};
             AGSDX12ReturnedParams returnedParams = {};
 
+            // Example use of the AGS app registration API
+            extensionParams.pAppName = L"AGS DX12 Extensions Sample";
+            extensionParams.appVersion = AGS_MAKE_VERSION( 1, 0, 0 );
+            extensionParams.pEngineName = L"DX12 Sample Framework";
+            extensionParams.engineVersion = AGS_MAKE_VERSION( 1, 0, 0 );
+
             // Create AGS Device
             //
             AGSReturnCode rc = agsDriverExtensionsDX12_CreateDevice(m_agsContext, &creationParams, &extensionParams, &returnedParams);
@@ -386,6 +393,19 @@ void D3D12Sample::CreateDeviceAndSwapChain ()
                 if ( m_agsDeviceExtensions.shaderClock )
                 {
                     Print( "\tShader clock intrinsics available\n" );
+                }
+
+                // {d5a2a91b-7003-4f12-89de-209beb51fb94}
+                static const GUID IID_AGSContextData = {0xd5a2a91b, 0x7003, 0x4f12, {0x89, 0xde, 0x20, 0x9b, 0xeb, 0x51, 0xfb, 0x94}};
+
+                AGSContext* retrievedContext = nullptr;
+                UINT contextPointerSize = sizeof( retrievedContext );
+                if ( m_device->GetPrivateData( IID_AGSContextData, &contextPointerSize, &retrievedContext ) == S_OK )
+                {
+                    if ( contextPointerSize == sizeof( m_agsContext ) && m_agsContext == retrievedContext )
+                    {
+                        Print( "Retrieved the correct AGS context from the D3D device\n" );
+                    }
                 }
             }
             else

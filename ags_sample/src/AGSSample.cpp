@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -68,15 +68,16 @@ void PrintDisplayInfo( const AGSGPUInfo& gpuInfo )
             "Vega",
             "RDNA",
             "RDNA2",
-            "RDNA3"
+            "RDNA3",
+            "RDNA4"
         };
 
-        static_assert( _countof( asicFamily ) == AGSDeviceInfo::AsicFamily_Count, "asic family table out of date" );
+        static_assert( _countof( asicFamily ) == AGSAsicFamily_Count, "asic family table out of date" );
 
         if ( device.vendorId == 0x1002 )
         {
             char wgpInfo[ 256 ] = {};
-            if ( device.asicFamily >= AGSDeviceInfo::AsicFamily_RDNA )
+            if ( device.asicFamily >= AGSAsicFamily_RDNA )
             {
                 sprintf_s( wgpInfo, ", %d WGPs", device.numWGPs );
             }
@@ -154,7 +155,7 @@ void PrintDisplayInfo( const AGSGPUInfo& gpuInfo )
 }
 
 
-void testDriver( const char* driver, unsigned int driverToCompareAgainst )
+void testRadeonSoftwareVersion( const char* driver, unsigned int driverToCompareAgainst )
 {
     AGSDriverVersionResult result = agsCheckDriverVersion( driver, driverToCompareAgainst );
 
@@ -171,6 +172,7 @@ void testDriver( const char* driver, unsigned int driverToCompareAgainst )
         printf( "Driver check shows the installed %s driver is %s the %d.%d.%d required version\n", driver, result == AGS_SOFTWAREVERSIONCHECK_OK ? "newer or the same as" : "older than", major, minor, patch );
     }
 }
+
 
 int main(int , char**)
 {
@@ -201,16 +203,19 @@ int main(int , char**)
         PrintDisplayInfo( gpuInfo );
         printf( "-----------------------------------------------------------------\n" );
 
-        if( 0 )
+        if ( 0 )
         {
+            // It should be noted that the Radeon Software Version can be empty, or just have the internal driver string in this field.
+            // Therefore, it is recommended to use the internal driver version as a minimum driver version check.
             printf( "\n" );
-            testDriver( gpuInfo.radeonSoftwareVersion, AGS_MAKE_VERSION( 20, 1, 0 ) );
-            testDriver( "18.8.randombetadriver", AGS_MAKE_VERSION( 18, 8, 2 ) );
-            testDriver( "18.8.123randomdriver", AGS_MAKE_VERSION( 18, 8, 2 ) );
-            testDriver( "18.9.randomdriver", AGS_MAKE_VERSION( 18, 8, 2 ) );
-            testDriver( "18.8.2", AGS_MAKE_VERSION( 18, 8, 2 ) );
-            testDriver( "18.8.2", AGS_MAKE_VERSION( 18, 8, 1 ) );
-            testDriver( "18.8.2", AGS_MAKE_VERSION( 18, 8, 3 ) );
+            testRadeonSoftwareVersion( gpuInfo.radeonSoftwareVersion, AGS_MAKE_VERSION( 24, 1, 1 ) );
+            testRadeonSoftwareVersion( "24.1.randombetadriver", AGS_MAKE_VERSION( 24, 1, 1 ) );
+            testRadeonSoftwareVersion( "24.1.123randomdriver", AGS_MAKE_VERSION( 24, 1, 1 ) );
+            testRadeonSoftwareVersion( "24.2.randomdriver", AGS_MAKE_VERSION( 24, 1, 1 ) );
+            testRadeonSoftwareVersion( "24.Q1", AGS_MAKE_VERSION( 24, 1, 1 ) );
+            testRadeonSoftwareVersion( "24.1.1", AGS_MAKE_VERSION( 24, 1, 1 ) );
+            testRadeonSoftwareVersion( "24.1.1", AGS_MAKE_VERSION( 23, 12, 1 ) );
+            testRadeonSoftwareVersion( "24.1.1", AGS_MAKE_VERSION( 25, 2, 4 ) );
             printf( "\n" );
         }
 

@@ -11,6 +11,9 @@ In addition to the library itself, the AGS SDK includes several samples to demon
   <a href="https://github.com/GPUOpen-LibrariesAndSDKs/AGS_SDK/releases/latest/"><img src="http://gpuopen-librariesandsdks.github.io/media/latest-release-button.svg" alt="Latest release" title="Latest release"></a>
 </div>
 
+### What's new in AGS 6.3
+Version 6.3 includes RDNA4 detection and more robust driver version and GPU specifications detection.
+
 ### What's new in AGS 6.2
 Version 6.2 includes support for the shader clock intriniscs.
 
