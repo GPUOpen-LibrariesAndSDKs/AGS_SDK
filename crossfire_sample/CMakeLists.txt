@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 4.1.1)
 set(CMAKE_GENERATOR_PLATFORM x64)
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
 
-project(crossfire_sample VERSION 6.2.0)
+project(crossfire_sample VERSION 6.3.1)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
@@ -11,8 +11,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../ags_lib/inc)
 
 file( GLOB AGS_SOURCES
-	"${CMAKE_CURRENT_SOURCE_DIR}/src/*.h"
-	"${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 )
 set(AGS_PUBLIC_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/../ags_lib/inc/amd_ags.h)
 
@@ -28,5 +28,5 @@ set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX d)
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 
 source_group("Source"                           FILES ${AGS_SOURCES}) 
-source_group("Inc"              				FILES ${AGS_PUBLIC_HEADER})
+source_group("Inc"                              FILES ${AGS_PUBLIC_HEADER})
 

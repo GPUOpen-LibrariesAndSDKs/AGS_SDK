@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2016 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -480,72 +480,76 @@ HRESULT CALLBACK OnD3D11SwapChainResized( ID3D11Device* pd3dDevice, IDXGISwapCha
     g_iWidth = pBackBufferSurfaceDesc->Width;
     g_iHeight = pBackBufferSurfaceDesc->Height;
 
-    const AGSDeviceInfo& device = g_AGSGPUInfo.devices[ 0 ];
+    const AGSDeviceInfo* device = nullptr;
     g_EyefinityEnabled = false;
     bool isPortraitEyefinity = false;
 
-    if ( device.eyefinityEnabled )
+    if ( g_AGSGPUInfo.numDevices > 0 )
     {
-        BOOL bFullScreen;
-        pSwapChain->GetFullscreenState( &bFullScreen, NULL );
-
-        if ( bFullScreen )
+        device = &g_AGSGPUInfo.devices[ 0 ];
+        if ( device->eyefinityEnabled )
         {
-            g_EyefinityEnabled = true;
-            for ( int i = 0; i< device.numDisplays; i++ )
-            {
-                if ( device.displays[ i ].eyefinityPreferredDisplay )
-                {
-                    // Get the view rect of visibleResolution instead of currentResolution so the UI wouldn't be occluded by the bezels.
-                    g_MainDisplayRect.left = device.displays[ i ].visibleResolution.offsetX;
-                    g_MainDisplayRect.right = device.displays[ i ].visibleResolution.offsetX + device.displays[ i ].visibleResolution.width;
-                    g_MainDisplayRect.top = device.displays[ i ].visibleResolution.offsetY;
-                    g_MainDisplayRect.bottom = device.displays[ i ].visibleResolution.offsetY + device.displays[ i ].visibleResolution.height;
-                }
+            BOOL bFullScreen;
+            pSwapChain->GetFullscreenState( &bFullScreen, NULL );
 
-                isPortraitEyefinity |= device.displays[ i ].eyefinityInPortraitMode;
-            }
-
-            if ( device.eyefinityGridWidth == 3 && device.eyefinityGridHeight == 1 )
+            if ( bFullScreen )
             {
-                D3D11_MAPPED_SUBRESOURCE res;
-                DXUTGetD3D11DeviceContext()->Map( g_LinesVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &res );
-                LineVertex* verts = (LineVertex*)res.pData;
-                for ( int i = 0; i< device.numDisplays; i++ )
+                g_EyefinityEnabled = true;
+                for ( int i = 0; i< device->numDisplays; i++ )
                 {
-                    if ( device.displays[ i ].eyefinityInGroup )
+                    if ( device->displays[ i ].eyefinityPreferredDisplay )
                     {
-                        const float offset = 2.0f;
-
-                        float x0 = device.displays[ i ].visibleResolution.offsetX + offset;
-                        float x1 = device.displays[ i ].visibleResolution.offsetX + device.displays[ i ].visibleResolution.width - 2 * offset;
-
-                        float y0 = device.displays[ i ].visibleResolution.offsetY + offset;
-                        float y1 = device.displays[ i ].visibleResolution.offsetY + device.displays[ i ].visibleResolution.height - 2 * offset;
-
-                        x0 = 2.0f * ( x0 / pBackBufferSurfaceDesc->Width ) - 1.0f;
-                        x1 = 2.0f * ( x1 / pBackBufferSurfaceDesc->Width ) - 1.0f;
-
-                        y0 = 2.0f * ( y0 / pBackBufferSurfaceDesc->Height ) - 1.0f;
-                        y1 = 2.0f * ( y1 / pBackBufferSurfaceDesc->Height ) - 1.0f;
-
-                        verts[ 0 ].x = x0;
-                        verts[ 0 ].y = y0;
-
-                        verts[ 1 ].x = x1;
-                        verts[ 1 ].y = y0;
-
-                        verts[ 2 ].x = x1;
-                        verts[ 2 ].y = y1;
-
-                        verts[ 3 ].x = x0;
-                        verts[ 3 ].y = y1;
-
-                        verts += 4;
+                        // Get the view rect of visibleResolution instead of currentResolution so the UI wouldn't be occluded by the bezels.
+                        g_MainDisplayRect.left = device->displays[ i ].visibleResolution.offsetX;
+                        g_MainDisplayRect.right = device->displays[ i ].visibleResolution.offsetX + device->displays[ i ].visibleResolution.width;
+                        g_MainDisplayRect.top = device->displays[ i ].visibleResolution.offsetY;
+                        g_MainDisplayRect.bottom = device->displays[ i ].visibleResolution.offsetY + device->displays[ i ].visibleResolution.height;
                     }
+
+                    isPortraitEyefinity |= device->displays[ i ].eyefinityInPortraitMode;
                 }
 
-                DXUTGetD3D11DeviceContext()->Unmap( g_LinesVertexBuffer, 0 );
+                if ( device->eyefinityGridWidth == 3 && device->eyefinityGridHeight == 1 )
+                {
+                    D3D11_MAPPED_SUBRESOURCE res;
+                    DXUTGetD3D11DeviceContext()->Map( g_LinesVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &res );
+                    LineVertex* verts = (LineVertex*)res.pData;
+                    for ( int i = 0; i< device->numDisplays; i++ )
+                    {
+                        if ( device->displays[ i ].eyefinityInGroup )
+                        {
+                            const float offset = 2.0f;
+
+                            float x0 = device->displays[ i ].visibleResolution.offsetX + offset;
+                            float x1 = device->displays[ i ].visibleResolution.offsetX + device->displays[ i ].visibleResolution.width - 2 * offset;
+
+                            float y0 = device->displays[ i ].visibleResolution.offsetY + offset;
+                            float y1 = device->displays[ i ].visibleResolution.offsetY + device->displays[ i ].visibleResolution.height - 2 * offset;
+
+                            x0 = 2.0f * ( x0 / pBackBufferSurfaceDesc->Width ) - 1.0f;
+                            x1 = 2.0f * ( x1 / pBackBufferSurfaceDesc->Width ) - 1.0f;
+
+                            y0 = 2.0f * ( y0 / pBackBufferSurfaceDesc->Height ) - 1.0f;
+                            y1 = 2.0f * ( y1 / pBackBufferSurfaceDesc->Height ) - 1.0f;
+
+                            verts[ 0 ].x = x0;
+                            verts[ 0 ].y = y0;
+
+                            verts[ 1 ].x = x1;
+                            verts[ 1 ].y = y0;
+
+                            verts[ 2 ].x = x1;
+                            verts[ 2 ].y = y1;
+
+                            verts[ 3 ].x = x0;
+                            verts[ 3 ].y = y1;
+
+                            verts += 4;
+                        }
+                    }
+
+                    DXUTGetD3D11DeviceContext()->Unmap( g_LinesVertexBuffer, 0 );
+                }
             }
         }
     }
@@ -571,7 +575,7 @@ HRESULT CALLBACK OnD3D11SwapChainResized( ID3D11Device* pd3dDevice, IDXGISwapCha
 	float fAspectRatio;
 	if ( g_EyefinityEnabled )
 	{
-        fAspectRatio = (float)(device.eyefinityResolutionX / device.eyefinityGridWidth ) / (float)( device.eyefinityResolutionY / device.eyefinityGridHeight );
+        fAspectRatio = (float)(device->eyefinityResolutionX / device->eyefinityGridWidth ) / (float)( device->eyefinityResolutionY / device->eyefinityGridHeight );
         g_MultiCameraProjM = DirectX::XMMatrixPerspectiveFovLH( YFOV, fAspectRatio, 0.01f, 500.0f );
 		
 		float xScale = (cosf(YFOV*0.5f)/sinf(YFOV*0.5f)) / fAspectRatio;
@@ -589,7 +593,7 @@ HRESULT CALLBACK OnD3D11SwapChainResized( ID3D11Device* pd3dDevice, IDXGISwapCha
     g_SampleUI.SetSize( 170, 170 );
 
     // Only enable multi camera mode in 3x1 Eyefinity mode (non bezel compensated)
-    g_HUD.GetCheckBox( IDC_USEMULTICAMERA )->SetEnabled( g_EyefinityEnabled && !device.eyefinityBezelCompensated && device.eyefinityGridWidth == 3 && device.eyefinityGridHeight == 1 );
+    g_HUD.GetCheckBox( IDC_USEMULTICAMERA )->SetEnabled( g_EyefinityEnabled && !device->eyefinityBezelCompensated && device->eyefinityGridWidth == 3 && device->eyefinityGridHeight == 1 );
 
     return hr;
 }

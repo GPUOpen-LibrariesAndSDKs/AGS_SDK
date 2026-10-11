@@ -1,11 +1,11 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 4.1.1)
 set(CMAKE_GENERATOR_PLATFORM x64)
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
 
 if(AGS_INTERNAL_DEBUG)
-project(ExtensionsSample12_internal VERSION 6.2.0)
+project(ExtensionsSample12_internal VERSION 6.3.1)
 else()
-project(ExtensionsSample12 VERSION 6.2.0)
+project(ExtensionsSample12 VERSION 6.3.1)
 endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)

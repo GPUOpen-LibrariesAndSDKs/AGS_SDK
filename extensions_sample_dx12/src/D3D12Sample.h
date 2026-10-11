@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -57,25 +57,25 @@ protected:
         return QUEUE_SLOT_COUNT;
     }
 
-    D3D12_VIEWPORT m_viewport;
-    D3D12_RECT m_rectScissor;
-    Microsoft::WRL::ComPtr<IDXGISwapChain> m_swapChain;
-    Microsoft::WRL::ComPtr<ID3D12Device> m_device;
-    Microsoft::WRL::ComPtr<ID3D12Resource> m_renderTargets [QUEUE_SLOT_COUNT];
-    Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_commandQueue;
+    D3D12_VIEWPORT m_viewport = {};
+    D3D12_RECT m_rectScissor = {};
+    Microsoft::WRL::ComPtr<IDXGISwapChain> m_swapChain = {};
+    Microsoft::WRL::ComPtr<ID3D12Device> m_device = {};
+    Microsoft::WRL::ComPtr<ID3D12Resource> m_renderTargets [QUEUE_SLOT_COUNT] = {};
+    Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_commandQueue = {};
 
-    HANDLE m_frameFenceEvents [QUEUE_SLOT_COUNT];
-    Microsoft::WRL::ComPtr<ID3D12Fence> m_frameFences [QUEUE_SLOT_COUNT];
-    UINT64 m_currentFenceValue;
-    UINT64 m_fenceValues[QUEUE_SLOT_COUNT];
+    HANDLE m_frameFenceEvents [QUEUE_SLOT_COUNT] = {};
+    Microsoft::WRL::ComPtr<ID3D12Fence> m_frameFences [QUEUE_SLOT_COUNT] = {};
+    UINT64 m_currentFenceValue = 0;
+    UINT64 m_fenceValues[QUEUE_SLOT_COUNT] = {};
 
-    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_renderTargetDescriptorHeap;
+    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_renderTargetDescriptorHeap = {};
 
-    Microsoft::WRL::ComPtr<ID3D12RootSignature> m_rootSignature;
+    Microsoft::WRL::ComPtr<ID3D12RootSignature> m_rootSignature = {};
 
     AGSContext*                                 m_agsContext = nullptr;
     AGSGPUInfo                                  m_agsGPUInfo = {};
-    AGSDX12ReturnedParams::ExtensionsSupported  m_agsDeviceExtensions = {};
+    AGSDX12ExtensionsSupported                  m_agsDeviceExtensions = {};
 
     virtual void InitializeImpl(ID3D12GraphicsCommandList* uploadCommandList) = 0;
     virtual void ShutdownImpl() = 0;

@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 4.1.1)
 set(CMAKE_GENERATOR_PLATFORM x64)
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
 
-project(eyefinity_sample VERSION 6.2.0)
+project(eyefinity_sample VERSION 6.3.1)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
